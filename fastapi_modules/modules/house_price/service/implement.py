@@ -6,10 +6,10 @@ import joblib
 import numpy as np
 from loguru import logger
 
-from fastapi_skeleton.core.messages import NO_VALID_PAYLOAD
+from fastapi_modules.core.messages import NO_VALID_PAYLOAD
 
-from fastapi_skeleton.modules.house_price.pydantic_model.payload import (HousePredictionPayload, payload_to_list)
-from fastapi_skeleton.modules.house_price.pydantic_model.prediction import HousePredictionResult
+from fastapi_modules.modules.house_price.schema.payload import (HousePredictionPayload, payload_to_list)
+from fastapi_modules.modules.house_price.schema.prediction import HousePredictionResult
 
 
 class HousePriceModel(object):

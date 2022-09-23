@@ -7,7 +7,7 @@ from starlette.testclient import TestClient
 environ["API_KEY"] = "a1279d26-63ac-41f1-8266-4ef3702ad7cb"
 
 
-from fastapi_skeleton.main import get_app  # noqa: E402
+from fastapi_modules.main import get_app  # noqa: E402
 
 
 @pytest.fixture()

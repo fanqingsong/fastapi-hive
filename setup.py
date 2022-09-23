@@ -7,5 +7,5 @@ setup(name='FastAPI Skeleton',
       description='Sample code fro FastAPI',
       author='Jan Forster',
       author_email='eightbec@protonmail.ch',
-      packages=['fastapi_skeleton'],
+      packages=['fastapi_modules'],
       )

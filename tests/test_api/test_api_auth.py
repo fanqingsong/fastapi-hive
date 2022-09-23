@@ -1,17 +1,17 @@
 
 
-from fastapi_skeleton.core import messages
+from fastapi_modules.core import messages
 
 
 def test_auth_using_prediction_api_no_apikey_header(test_client) -> None:
-    response = test_client.post('/api/pydantic_model/predict')
+    response = test_client.post('/api/schema/predict')
     assert response.status_code == 400
     assert response.json() == {"detail": messages.NO_API_KEY}
 
 
 def test_auth_using_prediction_api_wrong_apikey_header(test_client) -> None:
     response = test_client.post(
-        '/api/pydantic_model/predict',
+        '/api/schema/predict',
         json={"image": "test"},
         headers={"token": "WRONG_TOKEN"}
     )

@@ -6,7 +6,7 @@ class Discover():
     def __init__(self):
         self._modules = {}
 
-        self._module_path = "./fastapi_skeleton/modules"
+        self._module_path = "./fastapi_modules/modules"
 
         self._load_modules()
 
@@ -27,20 +27,11 @@ class Discover():
         module_paths = {}
 
         for one_name in module_names:
-            one_module_paths = {}
+            module_path = os.path.join("fastapi_modules/modules", one_name)
 
-            module_path = os.path.join("fastapi_skeleton/modules", one_name)
+            module_path = module_path.replace(os.path.sep, ".")
 
-            service_path = os.path.join(module_path, "service")
-            router_path = os.path.join(module_path, "router")
-
-            service_path = service_path.replace(os.path.sep, ".")
-            router_path = router_path.replace(os.path.sep, ".")
-
-            one_module_paths["service"] = service_path
-            one_module_paths["router"] = router_path
-
-            module_paths[one_name] = one_module_paths
+            module_paths[one_name] = module_path
 
         return module_paths
 
@@ -48,15 +39,9 @@ class Discover():
         module_paths = self._get_module_paths()
 
         for one_module in module_paths:
-            one_module_entity = {}
+            one_module_path = module_paths[one_module]
 
-            one_module_paths = module_paths[one_module]
-
-            service_path = one_module_paths["service"]
-            router_path = one_module_paths["router"]
-
-            one_module_entity["service"] = importlib.import_module(service_path)
-            one_module_entity["router"] = importlib.import_module(router_path)
+            one_module_entity = importlib.import_module(one_module_path)
 
             self._modules[one_module] = one_module_entity
 

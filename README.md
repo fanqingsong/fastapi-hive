@@ -38,12 +38,12 @@ print(str(uuid.uuid4()))
 1. Start your  app with: 
 
 ```bash
-uvicorn fastapi_skeleton.main:app
+uvicorn fastapi_modules.main:app
 ```
 
 debug status:
 ```bash
-uvicorn fastapi_skeleton.main:app --reload
+uvicorn fastapi_modules.main:app --reload
 ```
 
 2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).

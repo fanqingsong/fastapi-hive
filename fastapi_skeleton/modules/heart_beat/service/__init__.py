@@ -1,4 +1,0 @@
-
-
-model_instance = None
-
