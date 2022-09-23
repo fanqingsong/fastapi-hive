@@ -16,8 +16,9 @@ def setup_router() -> APIRouter:
     for one_module, one_entity in modules.items():
         module_router = one_entity.router
 
-        api_router.include_router(module_router, tags=[f"{one_module}"], prefix=f"/{one_module}")
+        api_router.include_router(
+            module_router,
+            tags=[f"{one_module}"],
+            prefix=f"/{one_module}")
 
     return api_router
-
-

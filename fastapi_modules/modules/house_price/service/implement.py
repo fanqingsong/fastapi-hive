@@ -8,7 +8,8 @@ from loguru import logger
 
 from fastapi_modules.core.messages import NO_VALID_PAYLOAD
 
-from fastapi_modules.modules.house_price.schema.payload import (HousePredictionPayload, payload_to_list)
+from fastapi_modules.modules.house_price.schema.payload import (
+    HousePredictionPayload, payload_to_list)
 from fastapi_modules.modules.house_price.schema.prediction import HousePredictionResult
 
 

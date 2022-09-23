@@ -16,5 +16,3 @@ def setup(app: FastAPI) -> None:
 
 def teardown(app: FastAPI) -> None:
     teardown_service(app)
-
-

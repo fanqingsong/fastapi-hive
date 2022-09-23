@@ -13,4 +13,3 @@ def setup_service(app: FastAPI) -> None:
 
 def teardown_service(app: FastAPI) -> None:
     app.state.discover = None
-

@@ -17,7 +17,8 @@ class Discover():
     def _get_module_names(self):
         folder_names = os.listdir(self._module_path)
 
-        module_names = [one_name for one_name in folder_names if one_name != "__init__.py" and one_name != "__pycache__"]
+        module_names = [one_name for one_name in folder_names if one_name !=
+                        "__init__.py" and one_name != "__pycache__"]
 
         return module_names
 
@@ -55,5 +56,3 @@ class Discover():
 
 
 discover = Discover()
-
-
