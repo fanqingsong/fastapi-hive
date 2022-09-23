@@ -2,9 +2,12 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 
 from fastapi_skeleton.core import security
-from fastapi_skeleton.models.payload import HousePredictionPayload
-from fastapi_skeleton.models.prediction import HousePredictionResult
-from fastapi_skeleton.services.models import HousePriceModel
+
+from fastapi_skeleton.modules.house_price.pydantic_model.payload import (HousePredictionPayload, payload_to_list)
+from fastapi_skeleton.modules.house_price.pydantic_model.prediction import HousePredictionResult
+
+from fastapi_skeleton.modules.house_price.service import HousePriceModel
+
 
 router = APIRouter()
 
@@ -16,7 +19,7 @@ def post_predict(
     block_data: HousePredictionPayload = None
 ) -> HousePredictionResult:
 
-    model: HousePriceModel = request.app.state.model
+    model: HousePriceModel = request.app.state.discover.get_module("house_price")["service"].model_instance
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction

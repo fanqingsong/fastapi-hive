@@ -1,10 +1,15 @@
 # FastAPI Model Server Skeleton
 
+Based on https://github.com/eightBEC/fastapi-ml-skeleton
+Refactor code into module management, ie, every model could be set in one folder.
+
+
 Serving machine learning models production-ready, fast, easy and secure powered by the great FastAPI by [Sebastián Ramírez]([)](https://github.com/tiangolo).
 
 This repository contains a skeleton app which can be used to speed-up your next machine learning project. The code is fully tested and provides a preconfigured `tox` to quickly expand this sample code.
 
 To experiment and get a feeling on how to use this skeleton, a sample regression model for house price prediction is included in this project. Follow the installation and setup instructions to run the sample model and serve it aso RESTful API.
+
 
 ## Requirements
 
@@ -31,8 +36,14 @@ print(str(uuid.uuid4()))
 ## Run It
 
 1. Start your  app with: 
+
 ```bash
 uvicorn fastapi_skeleton.main:app
+```
+
+debug status:
+```bash
+uvicorn fastapi_skeleton.main:app --reload
 ```
 
 2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).
