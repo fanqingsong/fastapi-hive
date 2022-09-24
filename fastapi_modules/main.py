@@ -3,33 +3,19 @@
 from fastapi import FastAPI
 from typing import Callable
 from loguru import logger
-from fastapi_modules.core.config import (APP_NAME, APP_VERSION,
+from fastapi_modules.core.config import (APP_NAME, APP_VERSION, API_PREFIX,
                                          IS_DEBUG)
 
-from fastapi_modules.ioc_container import (setup, teardown)
-
-
-def start_app_handler(app: FastAPI) -> Callable:
-    def startup() -> None:
-        logger.info("Running app start handler.")
-
-        setup(app)
-    return startup
-
-
-def stop_app_handler(app: FastAPI) -> Callable:
-    def shutdown() -> None:
-        logger.info("Running app shutdown handler.")
-
-        teardown(app)
-    return shutdown
+from fastapi_modules.ioc_container import ioc_container
 
 
 def get_app() -> FastAPI:
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
 
-    fast_app.add_event_handler("startup", start_app_handler(fast_app))
-    fast_app.add_event_handler("shutdown", stop_app_handler(fast_app))
+    ioc_container\
+        .bind_app(fast_app)\
+        .set_params({"API_PREFIX": API_PREFIX})\
+        .init()
 
     return fast_app
 

@@ -2,17 +2,26 @@ import importlib
 import os
 
 
-class Discover():
+class ModuleContainer():
     def __init__(self):
         self._modules = {}
 
         self._module_path = "./fastapi_modules/modules"
 
-        self._load_modules()
-
     @property
     def modules(self):
         return self._modules
+
+    def init(self):
+        self._load_modules()
+
+    def get_module(self, module_name: str):
+        module_name = module_name.upper()
+
+        for one_name, one_entity in self._modules.items():
+            one_name = one_name.upper()
+            if module_name == one_name:
+                return one_entity
 
     def _get_module_names(self):
         folder_names = os.listdir(self._module_path)
@@ -46,13 +55,4 @@ class Discover():
 
             self._modules[one_module] = one_module_entity
 
-    def get_module(self, module_name: str):
-        module_name = module_name.upper()
 
-        for one_name, one_entity in self._modules.items():
-            one_name = one_name.upper()
-            if module_name == one_name:
-                return one_entity
-
-
-discover = Discover()
