@@ -34,5 +34,8 @@ class RouterMounter:
 
         return api_router
 
-    def unmount(self) -> None:
+    def unmount(self, api_prefix: str) -> None:
         app: FastAPI = self._app
+
+        # api_router = APIRouter()
+        # app.include_router(api_router, prefix=api_prefix)

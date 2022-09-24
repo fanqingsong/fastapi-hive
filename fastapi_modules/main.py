@@ -16,9 +16,12 @@ def get_app() -> FastAPI:
         .bind_app(fast_app)\
         .set_params({
             "API_PREFIX": API_PREFIX,
-            "MODULE_RELATIVE_PATH": ["./fastapi_modules/modules", "./fastapi_modules/modules_another"]
+            "MODULE_PACKAGE_PATHS": ["./fastapi_modules/modules"]
         })\
         .init()
+
+    # ioc_container.delete_module_packages(["./fastapi_modules/modules"])
+    ioc_container.add_module_packages(["./fastapi_modules/modules_another"])
 
     return fast_app
 

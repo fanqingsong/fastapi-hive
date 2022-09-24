@@ -8,16 +8,34 @@ from .module_path import ModulePath
 class ModuleContainer:
     def __init__(self):
         self._modules = {}
+        self._module_package_paths = set([])
 
     @property
     def modules(self):
         return self._modules
 
-    def load_modules(self, relative_paths):
-        logger.info(f"relative path = {relative_paths}")
+    def register_module_package_paths(self, module_package_paths):
+        module_package_paths = set(module_package_paths)
+        current_package_paths = self._module_package_paths
 
-        for one_relative_path in relative_paths:
-            module_paths = self._get_module_paths(one_relative_path)
+        self._module_package_paths = current_package_paths | module_package_paths
+
+        logger.info(f"after registering, module package paths = {self._module_package_paths}")
+
+    def unregister_module_package_paths(self, module_package_paths):
+        module_package_paths = set(module_package_paths)
+        current_package_paths = self._module_package_paths
+
+        self._module_package_paths = current_package_paths - module_package_paths
+
+        logger.info(f"after unregistering, module package paths = {self._module_package_paths}")
+
+    def load_modules(self):
+        module_package_paths = self._module_package_paths
+        logger.info(f"module package paths = {module_package_paths}")
+
+        for one_package_path in module_package_paths:
+            module_paths = self._get_module_paths(one_package_path)
 
             for one_module in module_paths:
                 one_module_path = module_paths[one_module]
