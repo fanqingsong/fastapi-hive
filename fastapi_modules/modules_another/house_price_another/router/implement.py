@@ -3,11 +3,11 @@ from starlette.requests import Request
 
 from fastapi_modules.core import security
 
-from fastapi_modules.modules.house_price.schema.payload import (
+from fastapi_modules.modules_another.house_price_another.schema.payload import (
     HousePredictionPayload)
-from fastapi_modules.modules.house_price.schema.prediction import HousePredictionResult
+from fastapi_modules.modules_another.house_price_another.schema.prediction import HousePredictionResult
 
-from fastapi_modules.modules.house_price.service import HousePriceModel
+from fastapi_modules.modules_another.house_price_another.service import HousePriceModel
 
 
 router = APIRouter()
