@@ -1,6 +1,6 @@
 
 
-from fastapi_modules.main import get_app
+from demo.main import get_app
 
 app = get_app()
 

@@ -1,11 +1,10 @@
 
 import pytest
 
-from fastapi_modules.core import config
-from fastapi_modules.modules.house_price.schema.payload import HousePredictionPayload
-from fastapi_modules.modules.house_price.schema.prediction import HousePredictionResult
-from fastapi_modules.modules.house_price.service.implement import HousePriceModel
-from fastapi_modules.modules.house_price import config
+from demo.modules.house_price.schema.payload import HousePredictionPayload
+from demo.modules.house_price.schema.prediction import HousePredictionResult
+from demo.modules.house_price.service.implement import HousePriceModel
+from demo.modules.house_price import config
 
 
 def test_prediction(test_client) -> None:

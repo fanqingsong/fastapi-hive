@@ -2,4 +2,12 @@
 setup.cfg
 setup.py
 fastapi_modules/__init__.py
-fastapi_modules/main.py
+fastapi_modules/ioc_container/__init__.py
+fastapi_modules/ioc_container/implement.py
+fastapi_modules/ioc_container/module_container/__init__.py
+fastapi_modules/ioc_container/module_container/implement.py
+fastapi_modules/ioc_container/module_container/module_path.py
+fastapi_modules/ioc_container/module_mounter/__init__.py
+fastapi_modules/ioc_container/module_mounter/implement.py
+fastapi_modules/ioc_container/router_mounter/__init__.py
+fastapi_modules/ioc_container/router_mounter/implement.py

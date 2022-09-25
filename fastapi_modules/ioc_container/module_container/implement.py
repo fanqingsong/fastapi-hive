@@ -74,7 +74,7 @@ class ModuleContainer:
     def _get_module_names(self, relative_path):
         folder_names = os.listdir(relative_path)
 
-        module_names = [one_name for one_name in folder_names if one_name !=
-                        "__init__.py" and one_name != "__pycache__"]
+        module_names = [one_name for one_name in folder_names
+                        if one_name != "__init__.py" and one_name != "__pycache__"]
 
         return module_names

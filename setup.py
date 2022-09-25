@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
+from distutils.core import setup
+# from setuptools import setup
 
-with open('requirements.txt', mode="r", encoding="utf8") as f:
-    required = f.read().splitlines()
+# with open('requirements.txt', mode="r", encoding="utf8") as f:
+#     required = f.read().splitlines()
 
 setup(
       name='fastapi_modules',
@@ -20,6 +21,6 @@ setup(
             "fastapi_modules.ioc_container.module_mounter",
             "fastapi_modules.ioc_container.router_mounter",
       ],
-      install_requires=required,
-      python_requires=">=3.7",
+      # install_requires=required,
+      # python_requires=">=3.7",
 )

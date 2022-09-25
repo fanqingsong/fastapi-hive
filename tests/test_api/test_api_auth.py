@@ -1,6 +1,6 @@
 
 
-from fastapi_modules.core import messages
+from demo.core import messages
 
 
 def test_auth_using_prediction_api_no_apikey_header(test_client) -> None:

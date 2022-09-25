@@ -16,9 +16,14 @@ To experiment and get a feeling on how to use this skeleton, a sample regression
 Python 3.6+
 
 ## Installation
-Install the required packages in your local environment (ideally virtualenv, conda, etc.).
+First, install IoC Container Package
 ```bash
-pip install -r requirements
+python3 setup.py install
+```
+
+Second, install the required packages in your local environment (ideally virtualenv, conda, etc.).
+```bash
+pip3 install -r requirements
 ``` 
 
 
@@ -38,12 +43,12 @@ print(str(uuid.uuid4()))
 1. Start your  app with: 
 
 ```bash
-uvicorn fastapi_modules.main:app
+uvicorn demo.main:app
 ```
 
 debug status:
 ```bash
-uvicorn fastapi_modules.main:app --reload
+uvicorn demo.main:app --reload
 ```
 
 2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).

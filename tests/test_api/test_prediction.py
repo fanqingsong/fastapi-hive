@@ -1,6 +1,6 @@
 
 
-from fastapi_modules.core import config
+from demo.core import config
 
 
 def test_prediction(test_client) -> None:
