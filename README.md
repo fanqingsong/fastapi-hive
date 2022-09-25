@@ -1,4 +1,4 @@
-# FastAPI Model Server Skeleton
+# FastAPI Modules Framework
 
 Based on [fastapi-ml-skeleton](https://github.com/eightBEC/fastapi-ml-skeleton)
 
