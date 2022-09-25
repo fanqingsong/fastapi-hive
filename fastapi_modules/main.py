@@ -1,7 +1,6 @@
 
 
 from fastapi import FastAPI
-from typing import Callable
 from loguru import logger
 from fastapi_modules.core.config import (APP_NAME, APP_VERSION, API_PREFIX,
                                          IS_DEBUG)
@@ -10,6 +9,8 @@ from fastapi_modules.ioc_container import ioc_container
 
 
 def get_app() -> FastAPI:
+    logger.info("app is starting.")
+
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
 
     ioc_container\

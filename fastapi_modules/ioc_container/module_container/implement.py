@@ -1,8 +1,8 @@
 import importlib
 import os
 from loguru import logger
-import sys
-from .module_path import ModulePath
+# import sys
+# from .module_path import ModulePath
 
 
 class ModuleContainer:
@@ -20,7 +20,8 @@ class ModuleContainer:
 
         self._module_package_paths = current_package_paths | module_package_paths
 
-        logger.info(f"after registering, module package paths = {self._module_package_paths}")
+        logger.info(
+            f"after registering, module package paths = {self._module_package_paths}")
 
     def unregister_module_package_paths(self, module_package_paths):
         module_package_paths = set(module_package_paths)
@@ -28,7 +29,8 @@ class ModuleContainer:
 
         self._module_package_paths = current_package_paths - module_package_paths
 
-        logger.info(f"after unregistering, module package paths = {self._module_package_paths}")
+        logger.info(
+            f"after unregistering, module package paths = {self._module_package_paths}")
 
     def load_modules(self):
         module_package_paths = self._module_package_paths
@@ -76,6 +78,3 @@ class ModuleContainer:
                         "__init__.py" and one_name != "__pycache__"]
 
         return module_names
-
-
-

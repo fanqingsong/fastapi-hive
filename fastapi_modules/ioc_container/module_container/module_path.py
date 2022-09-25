@@ -1,5 +1,6 @@
 
-import sys, os
+import sys
+import os
 
 
 class ModulePath:
@@ -26,6 +27,3 @@ class ModulePath:
 
 if __name__ == "__main__":
     module_path = ModulePath("./fastapi_modules/modules")
-
-
-

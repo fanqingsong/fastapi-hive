@@ -1,6 +1,5 @@
 
 from fastapi import FastAPI
-from fastapi_modules.core.config import (API_PREFIX)
 from typing import Callable, Dict
 from loguru import logger
 from fastapi_modules.ioc_container.module_container import module_container
@@ -27,7 +26,8 @@ class IoCContainer:
         return self
 
     def init(self) -> None:
-        module_container.register_module_package_paths(self._params["MODULE_PACKAGE_PATHS"])
+        module_container.register_module_package_paths(
+            self._params["MODULE_PACKAGE_PATHS"])
         module_container.load_modules()
 
         app = self._app
@@ -72,5 +72,3 @@ class IoCContainer:
 
             self._teardown()
         return shutdown
-
-

@@ -1,6 +1,5 @@
 
 from fastapi_modules.modules.house_price.service.implement import HousePriceModel
+from fastapi_modules.modules.house_price.config import DEFAULT_MODEL_PATH
 
-model_path = "./fastapi_modules/modules/house_price/model/lin_reg_california_housing_model.joblib"
-
-service = HousePriceModel(model_path)
+service = HousePriceModel(DEFAULT_MODEL_PATH)

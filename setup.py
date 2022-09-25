@@ -4,8 +4,8 @@ from distutils.core import setup
 
 setup(name='FastAPI Skeleton',
       version='1.0',
-      description='Sample code fro FastAPI',
-      author='Jan Forster',
-      author_email='eightbec@protonmail.ch',
+      description='Sample code for FastAPI',
+      author='Qingsong Fan',
+      author_email='qsfan@qq.com',
       packages=['fastapi_modules'],
       )

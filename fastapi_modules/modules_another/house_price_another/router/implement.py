@@ -20,7 +20,8 @@ def post_predict(
     block_data: HousePredictionPayload = None
 ) -> HousePredictionResult:
 
-    model: HousePriceModel = request.app.state.module_container.get_module("house_price_another").service
+    model: HousePriceModel = request.app.state.module_container.get_module(
+        "house_price_another").service
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction

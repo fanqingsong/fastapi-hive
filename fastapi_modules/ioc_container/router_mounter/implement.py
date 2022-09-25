@@ -1,6 +1,5 @@
 
 
-from typing import Callable
 from fastapi import FastAPI
 from loguru import logger
 from fastapi_modules.ioc_container.module_container import module_container
@@ -9,6 +8,8 @@ from fastapi import APIRouter
 
 class RouterMounter:
     def __int__(self):
+        logger.info("router mounter is starting.")
+
         self._app = None
 
     def bind_app(self, app: FastAPI):
@@ -35,7 +36,12 @@ class RouterMounter:
         return api_router
 
     def unmount(self, api_prefix: str) -> None:
-        app: FastAPI = self._app
+        pass
+        # app: FastAPI = self._app
 
+        '''
+        fastapi don't support unmount router now.
+        '''
         # api_router = APIRouter()
         # app.include_router(api_router, prefix=api_prefix)
+
