@@ -21,8 +21,8 @@ def get_app() -> FastAPI:
         })\
         .init()
 
-    # ioc_container.delete_module_packages(["./fastapi_modules/modules"])
-    # ioc_container.add_module_packages(["./fastapi_modules/modules_another"])
+    # ioc_container.delete_module_packages(["./demo/modules"])
+    ioc_container.add_module_packages(["./demo/modules_another"])
 
     return fast_app
 
