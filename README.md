@@ -1,7 +1,10 @@
 # FastAPI Model Server Skeleton
 
-Based on https://github.com/eightBEC/fastapi-ml-skeleton
+Based on [fastapi-ml-skeleton](https://github.com/eightBEC/fastapi-ml-skeleton)
+
 Refactor code into module management, ie, every model could be set in one folder.
+
+Go to formal site for more information [FastAPI Modules Framework](https://fanqingsong.github.io/fastapi-ml-skeleton/)
 
 
 Serving machine learning models production-ready, fast, easy and secure powered by the great FastAPI by [Sebastián Ramírez]([)](https://github.com/tiangolo).
