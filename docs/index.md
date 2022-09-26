@@ -1,6 +1,20 @@
-# Welcome to FastAPI Modules Framework
+# FastAPI Modules Framework
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+![architecture](./architecture.png)
+
+<p align="center">
+    <em>FastAPI Module Framework, packages/modules code struture, developer-friendly, easy to be integrated</em>
+</p>
+
+
+---
+
+**Documentation**: <a href="https://fanqingsong.github.io/fastapi-ml-skeleton/" target="_blank">https://fanqingsong.github.io/fastapi-ml-skeleton/</a>
+
+**Source Code**: <a href="https://github.com/fanqingsong/fastapi-ml-skeleton" target="_blank">https://github.com/fanqingsong/fastapi-ml-skeleton</a>
+
+---
+
 
 ## Commands
 

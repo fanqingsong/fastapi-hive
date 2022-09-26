@@ -20,6 +20,7 @@ Python 3.6+
 
 ## Installation
 First, install IoC Container Package
+Note: If just treat it as a library, and want to integrate it into your app, you can just run this command. 
 ```bash
 python3 setup.py install
 ```
