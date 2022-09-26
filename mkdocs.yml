@@ -3,5 +3,8 @@ theme:
   name: material
 nav:
 - FastAPI Modules: index.md
-- why.md
-- how.md
+- why modules?: why.md
+- how to use?: how.md
+- design idea: design.md
+
+
