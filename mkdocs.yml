@@ -1,3 +1,7 @@
 site_name: FastAPI Modules Framework
 theme:
   name: material
+nav:
+- FastAPI Modules: index.md
+- why.md
+- how.md
