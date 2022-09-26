@@ -20,10 +20,12 @@ The key features are:
 
 * **Packages**: a top-level folder to contain all codes by service. 
 * **Modules**: a sub-folder in packages, contains functional code in service.
+* **Router Mounting Automatically**: the router defined by module will be mounted into app automatically.
+* **Service Mounting Automatically**: the service defined by module will be mounted into app automatically, to reducing loading time during call.
 * **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different services.
 * **Easy-to-be-Integrated**: Just servral line code to integrate in your app.
 
-<small>* estimation based on tests by author, have a look at demo folder.</small>
+<small>estimation based on tests by author, have a look at demo folder.</small>
 
 
 ## Commands
