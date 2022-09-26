@@ -6,7 +6,6 @@
     <em>FastAPI Module Framework, packages/modules code struture, developer-friendly, easy to be integrated</em>
 </p>
 
-
 ---
 
 **Documentation**: <a href="https://fanqingsong.github.io/fastapi-ml-skeleton/" target="_blank">https://fanqingsong.github.io/fastapi-ml-skeleton/</a>
@@ -14,6 +13,17 @@
 **Source Code**: <a href="https://github.com/fanqingsong/fastapi-ml-skeleton" target="_blank">https://github.com/fanqingsong/fastapi-ml-skeleton</a>
 
 ---
+
+FastAPI Modules Framework is a developer friendly and easy to be integrated framework for mananging your code by packages/modules.
+
+The key features are:
+
+* **Packages**: a top-level folder to contain all codes by service. 
+* **Modules**: a sub-folder in packages, contains functional code in service.
+* **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different services.
+* **Easy-to-be-Integrated**: Just servral line code to integrate in your app.
+
+<small>* estimation based on tests by author, have a look at demo folder.</small>
 
 
 ## Commands
