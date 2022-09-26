@@ -3,7 +3,7 @@
 ![architecture](./architecture.png)
 
 <p align="center">
-    <em>FastAPI Module Framework, packages/modules code struture, developer-friendly, easy to be integrated</em>
+    <em>FastAPI Module Framework, packages&modules code struture, developer-friendly, easy to be integrated</em>
 </p>
 
 ---
@@ -21,11 +21,81 @@ The key features are:
 * **Packages**: a top-level folder to contain all codes by service. 
 * **Modules**: a sub-folder in packages, contains functional code in service.
 * **Router Mounting Automatically**: the router defined by module will be mounted into app automatically.
-* **Service Mounting Automatically**: the service defined by module will be mounted into app automatically, to reducing loading time during call.
+* **Service Mounting Automatically**: the service defined by module will be mounted into app automatically, to reduce loading time during call.
 * **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different services.
 * **Easy-to-be-Integrated**: Just servral line code to integrate in your app.
 
 <small>estimation based on tests by author, have a look at demo folder.</small>
+
+## Requirements
+
+Python 3.7+
+
+FastAPI Modules Framework stands on the shoulders of giants:
+
+* <a href="https://fastapi.tiangolo.com/" class="external-link" target="_blank">FastAPI</a> web framework.
+
+## Installation 
+
+First, install IoC Container Package
+Note: If just treat it as a library, and want to integrate it into your app, you can just run this command. 
+
+```bash
+python3 setup.py install
+```
+
+Second, install the required packages in your local environment (ideally virtualenv, conda, etc.).
+
+```bash
+pip3 install -r requirements
+``` 
+
+
+## Setup
+1. Duplicate the `.env.example` file and rename it to `.env` 
+
+
+2. In the `.env` file configure the `API_KEY` entry. The key is used for authenticating our API. <br>
+   A sample API key can be generated using Python REPL:
+```python
+import uuid
+print(str(uuid.uuid4()))
+```
+
+## Run It
+
+1. Start your  app with: 
+
+```bash
+uvicorn demo.main:app
+```
+
+debug status:
+```bash
+uvicorn demo.main:app --reload
+```
+
+2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).
+   
+3. Click `Authorize` and enter the API key as created in the Setup step.
+![Authroization](./docs/authorize.png)
+   
+4. You can use the sample payload from the `docs/sample_payload.json` file when trying out the house price prediction model using the API.
+   ![Prediction with example payload](./docs/sample_payload.png)
+
+## Run Tests
+
+If you're not using `tox`, please install with:
+```bash
+pip install tox
+```
+
+Run your tests with: 
+```bash
+tox
+```
+
+This runs tests and coverage for Python 3.6 and Flake8, Autopep8, Bandit.
 
 
 ## Commands
