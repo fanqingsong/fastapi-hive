@@ -6,6 +6,7 @@ from typing import Optional
 class Module:
     def __init__(self):
         self._name: Optional[str] = None
+        self._package: Optional[str] = None
         self._service = None
         self._router: Optional[APIRouter] = None
 
@@ -16,6 +17,14 @@ class Module:
     @name.setter
     def name(self, value: str):
         self._name = value
+
+    @property
+    def package(self) -> str:
+        return self._package
+
+    @package.setter
+    def package(self, value: str):
+        self._package = value
 
     @property
     def service(self):

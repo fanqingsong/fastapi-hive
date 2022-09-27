@@ -3,16 +3,14 @@
 from fastapi import FastAPI
 from loguru import logger
 from fastapi_modules.ioc_framework.module_container import module_container
+from fastapi_modules.ioc_framework.module_abstraction import Module
 from fastapi import APIRouter
 
 
 class RouterMounter:
-    def __int__(self):
+    def __init__(self, app: FastAPI):
         logger.info("router mounter is starting.")
 
-        self._app = None
-
-    def bind_app(self, app: FastAPI):
         self._app = app
 
     def mount(self, api_prefix: str) -> None:
@@ -26,11 +24,13 @@ class RouterMounter:
 
         modules = module_container.modules
         for one_module, one_entity in modules.items():
+            one_entity: Module = one_entity
             module_router = one_entity.router
+            package_name = one_entity.package
 
             api_router.include_router(
                 module_router,
-                tags=[f"{one_module}"],
+                tags=[f"{package_name}"],
                 prefix=f"/{one_module}")
 
         return api_router

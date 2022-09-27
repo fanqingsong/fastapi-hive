@@ -6,12 +6,9 @@ from fastapi_modules.ioc_framework.module_container import module_container
 
 
 class ModuleMounter:
-    def __int__(self) -> None:
+    def __init__(self, app: FastAPI) -> None:
         logger.info("module mounter is starting.")
 
-        self._app = None
-
-    def bind_app(self, app: FastAPI):
         self._app = app
 
     def mount(self) -> None:

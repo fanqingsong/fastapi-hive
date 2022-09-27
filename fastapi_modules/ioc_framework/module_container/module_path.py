@@ -26,4 +26,4 @@ class ModulePath:
 
 
 if __name__ == "__main__":
-    module_path = ModulePath("./fastapi_modules/modules")
+    module_path = ModulePath("./fastapi_modules/module_package1")

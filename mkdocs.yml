@@ -1,5 +1,5 @@
 site_name: FastAPI Modules
-site_description: FastAPI Module Framework, packages&modules code struture, developer-friendly, easy to be integrated.
+site_description: FastAPI Module Framework, packages&module_package1 code struture, developer-friendly, easy to be integrated.
 site_url: https://fanqingsong.github.io/fastapi-ml-skeleton/
 theme:
   name: material

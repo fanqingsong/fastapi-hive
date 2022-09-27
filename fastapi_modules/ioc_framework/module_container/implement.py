@@ -39,6 +39,7 @@ class ModuleContainer:
 
         for one_package_path in module_package_paths:
             module_paths = self._get_module_paths(one_package_path)
+            package_name = os.path.basename(one_package_path)
 
             for one_module in module_paths:
                 one_module_path = module_paths[one_module]
@@ -47,6 +48,7 @@ class ModuleContainer:
 
                 module_instance = Module()
                 module_instance.name = one_module
+                module_instance.package = package_name
                 module_instance.router = one_module_entity.router
                 module_instance.service = one_module_entity.service
 
@@ -60,13 +62,13 @@ class ModuleContainer:
             if module_name == one_name:
                 return one_module_instance
 
-    def _get_module_paths(self, relative_path):
-        module_names = self._get_module_names(relative_path)
+    def _get_module_paths(self, package_path):
+        module_names = self._get_module_names(package_path)
 
         module_paths = {}
 
         for one_name in module_names:
-            module_path = os.path.join(relative_path, one_name)
+            module_path = os.path.join(package_path, one_name)
 
             module_path = module_path.replace("./", "")
             module_path = module_path.replace(os.path.sep, ".")
@@ -77,8 +79,8 @@ class ModuleContainer:
 
         return module_paths
 
-    def _get_module_names(self, relative_path):
-        folder_names = os.listdir(relative_path)
+    def _get_module_names(self, package_path):
+        folder_names = os.listdir(package_path)
 
         module_names = [one_name for one_name in folder_names
                         if one_name != "__init__.py" and one_name != "__pycache__"]

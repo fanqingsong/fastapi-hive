@@ -1,39 +1,35 @@
 
 from fastapi import FastAPI
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 from loguru import logger
 from fastapi_modules.ioc_framework.module_container import module_container
-from fastapi_modules.ioc_framework.router_mounter import router_mounter
-from fastapi_modules.ioc_framework.module_mounter import module_mounter
+from fastapi_modules.ioc_framework.router_mounter import RouterMounter
+from fastapi_modules.ioc_framework.module_mounter import ModuleMounter
+from pydantic import BaseModel
+
+
+class Config(BaseModel):
+    API_PREFIX: str = ""
+    MODULE_PACKAGE_PATHS: List[str] = ["./demo/module_package1"]
 
 
 class IoCFramework:
-    def __init__(self):
-        self._app = None
-        self._params = {
-            "API_PREFIX": "",
-            "MODULE_PACKAGE_PATHS": ["./fastapi_modules/modules"],
-        }
-
-    def bind_app(self, app: FastAPI):
+    def __init__(self, app: FastAPI):
         self._app = app
+        self._config: Config = Config()
+        self._router_mounter = RouterMounter(app)
+        self._module_mounter = ModuleMounter(app)
 
-        return self
+    @property
+    def config(self):
+        return self._config
 
-    def set_params(self, params: Dict):
-        self._params.update(params)
-
-        return self
-
-    def init(self) -> None:
+    def inject_modules(self) -> None:
         module_container.register_module_package_paths(
-            self._params["MODULE_PACKAGE_PATHS"])
+            self._config.MODULE_PACKAGE_PATHS)
         module_container.resolve_modules()
 
         app = self._app
-        module_mounter.bind_app(app)
-        router_mounter.bind_app(app)
-
         app.add_event_handler("startup", self._start_container_handler())
         app.add_event_handler("shutdown", self._stop_container_handler())
 
@@ -52,12 +48,12 @@ class IoCFramework:
         self._setup()
 
     def _setup(self) -> None:
-        module_mounter.mount()
-        router_mounter.mount(self._params.get("API_PREFIX"))
+        self._module_mounter.mount()
+        self._router_mounter.mount(self._config.API_PREFIX)
 
     def _teardown(self) -> None:
-        module_mounter.unmount()
-        router_mounter.unmount(self._params.get("API_PREFIX"))
+        self._module_mounter.unmount()
+        self._router_mounter.unmount(self._config.API_PREFIX)
 
     def _start_container_handler(self) -> Callable:
         def startup() -> None:
