@@ -24,6 +24,10 @@ def get_app() -> FastAPI:
     # ioc_container.delete_module_packages(["./demo/modules"])
     ioc_container.add_module_packages(["./demo/modules_another"])
 
+    @fast_app.get("/")
+    def get_root():
+        return "Go to docs URL to look up API: http://localhost:8000/docs"
+
     return fast_app
 
 

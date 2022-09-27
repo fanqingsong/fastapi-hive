@@ -3,6 +3,7 @@ import os
 from loguru import logger
 # import sys
 # from .module_path import ModulePath
+from fastapi_modules.ioc_container.module_abstraction import Module
 
 
 class ModuleContainer:
@@ -32,7 +33,7 @@ class ModuleContainer:
         logger.info(
             f"after unregistering, module package paths = {self._module_package_paths}")
 
-    def load_modules(self):
+    def resolve_modules(self):
         module_package_paths = self._module_package_paths
         logger.info(f"module package paths = {module_package_paths}")
 
@@ -44,15 +45,20 @@ class ModuleContainer:
 
                 one_module_entity = importlib.import_module(one_module_path)
 
-                self._modules[one_module] = one_module_entity
+                module_instance = Module()
+                module_instance.name = one_module
+                module_instance.router = one_module_entity.router
+                module_instance.service = one_module_entity.service
+
+                self._modules[one_module] = module_instance
 
     def get_module(self, module_name: str):
         module_name = module_name.upper()
 
-        for one_name, one_entity in self._modules.items():
+        for one_name, one_module_instance in self._modules.items():
             one_name = one_name.upper()
             if module_name == one_name:
-                return one_entity
+                return one_module_instance
 
     def _get_module_paths(self, relative_path):
         module_names = self._get_module_names(relative_path)

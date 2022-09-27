@@ -28,7 +28,7 @@ class IoCContainer:
     def init(self) -> None:
         module_container.register_module_package_paths(
             self._params["MODULE_PACKAGE_PATHS"])
-        module_container.load_modules()
+        module_container.resolve_modules()
 
         app = self._app
         module_mounter.bind_app(app)
@@ -39,14 +39,14 @@ class IoCContainer:
 
     def add_module_packages(self, module_package_paths):
         module_container.register_module_package_paths(module_package_paths)
-        module_container.load_modules()
+        module_container.resolve_modules()
 
         self._teardown()
         self._setup()
 
     def delete_module_packages(self, module_package_paths):
         module_container.unregister_module_package_paths(module_package_paths)
-        module_container.load_modules()
+        module_container.resolve_modules()
 
         self._teardown()
         self._setup()

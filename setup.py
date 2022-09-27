@@ -18,6 +18,7 @@ setup(
             "fastapi_modules",
             "fastapi_modules.ioc_container",
             "fastapi_modules.ioc_container.module_container",
+            "fastapi_modules.ioc_container.module_abstraction",
             "fastapi_modules.ioc_container.module_mounter",
             "fastapi_modules.ioc_container.router_mounter",
       ],
