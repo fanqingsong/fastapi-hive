@@ -1,5 +1,11 @@
 # FastAPI Modules Framework
 
+![architecture](./docs/architecture.png)
+
+<p align="center">
+    <em>FastAPI Module Framework, packages&modules code struture, developer-friendly, easy to be integrated</em>
+</p>
+
 Based on [fastapi-ml-skeleton](https://github.com/eightBEC/fastapi-ml-skeleton)
 
 Refactor code into module management, ie, every modules could be set in one folder.
