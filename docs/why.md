@@ -1,4 +1,4 @@
-# WHY Fastapi Modules?
+# Why Fastapi Modules?
 
 
 ## Regular project layout & its cons.
