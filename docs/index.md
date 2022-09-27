@@ -3,7 +3,7 @@
 ![architecture](./architecture.png)
 
 <p align="center">
-    <em>FastAPI Module Framework, packages&modules code struture, developer-friendly, easy to be integrated</em>
+    <em>FastAPI Module Framework, packages&modules code struture, developer-friendly, easy to be integrated.</em>
 </p>
 
 ---

@@ -9,6 +9,7 @@ from demo.modules.house_price.schema.prediction import HousePredictionResult
 
 from demo.modules.house_price.service import HousePriceModel
 
+from fastapi_modules.ioc_framework.module_container import ModuleContainer
 
 router = APIRouter()
 
@@ -20,8 +21,8 @@ def post_predict(
     block_data: HousePredictionPayload = None
 ) -> HousePredictionResult:
 
-    model: HousePriceModel = request.app.state.module_container.get_module(
-        "house_price").service
+    module_container: ModuleContainer = request.app.state.module_container
+    model: HousePriceModel = module_container.get_module("house_price").service
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction
