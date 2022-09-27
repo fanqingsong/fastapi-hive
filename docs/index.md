@@ -1,4 +1,4 @@
-# FastAPI Modules Framework
+# FastAPI Modules
 
 ![architecture](./architecture.png)
 
