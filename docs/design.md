@@ -1,123 +1,42 @@
-# FastAPI Modules Framework
+# Design Idea
 
-![architecture](./architecture.png)
+![architecture](./dip.png)
 
 <p align="center">
-    <em>FastAPI Module Framework, packages&modules code struture, developer-friendly, easy to be integrated</em>
+    <em>
+    DIP is one of the SOLID object-oriented principle invented by Robert Martin (a.k.a. Uncle Bob) 
+
+    DIP Definition
+
+    * High-level modules should not depend on low-level modules. Both should depend on the abstraction.
+    * Abstractions should not depend on details. Details should depend on abstractions.
+</em>
 </p>
 
 ---
 
-**Documentation**: <a href="https://fanqingsong.github.io/fastapi-ml-skeleton/" target="_blank">https://fanqingsong.github.io/fastapi-ml-skeleton/</a>
+**Source**: <a href="https://martinfowler.com/articles/injection.html" target="_blank">https://martinfowler.com/articles/injection.html</a>
 
-**Source Code**: <a href="https://github.com/fanqingsong/fastapi-ml-skeleton" target="_blank">https://github.com/fanqingsong/fastapi-ml-skeleton</a>
+**Theory**: <a href="https://www.cs.utexas.edu/users/downing/papers/DIP-1996.pdf" target="_blank">https://www.cs.utexas.edu/users/downing/papers/DIP-1996.pdf</a>
+
+**Example**: <a href="https://www.geeksforgeeks.org/dependecy-inversion-principle-solid/" target="_blank">https://www.geeksforgeeks.org/dependecy-inversion-principle-solid/</a>
+
+**Tutorial**: <a href="https://www.tutorialsteacher.com/ioc" target="_blank">https://www.tutorialsteacher.com/ioc</a>
 
 ---
 
-FastAPI Modules Framework is a developer friendly and easy to be integrated framework for mananging your code by packages/modules structure.
+FastAPI Modules Framework loads modules of packages, It extracts the abstraction Module properties, including router and service, which will be mounted into app during app startup.
 
-The key features are:
+---
+## Application
 
-* **Packages**: a top-level folder to contain all codes by service. 
-* **Modules**: a sub-folder in packages, contains functional code in service.
-* **Router Mounting Automatically**: the router defined by module will be mounted into app automatically.
-* **Service Mounting Automatically**: the service(such as ML model) defined by module will be mounted into app automatically, to reduce loading time during call.
-* **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different services.
-* **Easy-to-be-Integrated**: Just servral line code to integrate in your app.
+From code view, router and service property must be set in __init__.py.
 
-<small>estimation based on tests by author, have a look at demo folder.</small>
-
-## Requirements
-
-Python 3.7+
-
-FastAPI Modules Framework stands on the shoulders of giants:
-
-* <a href="https://fastapi.tiangolo.com/" class="external-link" target="_blank">FastAPI</a> web framework.
-
-## Installation 
-
-First, git clone this repo.
-
-```bash
-git clone git@github.com:fanqingsong/fastapi-ml-skeleton.git
-```
-
-Second, install IoC Container Package<br/>
-<small>Note: If just treat it as a library, and want to integrate it into your app, you can just run this command. </small>
-
-```bash
-python3 setup.py install
-```
-
-Third, install the required packages for running demo in your local environment (ideally virtualenv, conda, etc.).
-<small>Note: You can reference demo code to make up your own app in anywhere. </small>
-
-```bash
-pip3 install -r requirements.txt
-``` 
-
-
-## Setup
-1. Duplicate the `.env.example` file and rename it to `.env` 
-
-
-2. In the `.env` file configure the `API_KEY` entry. The key is used for authenticating our API. <br>
-   A sample API key can be generated using Python REPL:
-```python
-import uuid
-print(str(uuid.uuid4()))
-```
-
-## Run DEMO APP
-
-1. Start demo app with: 
-
-production running command:
-
-```bash
-uvicorn demo.main:app
-```
-
-developing running command:
-```bash
-uvicorn demo.main:app --reload
-```
-
-2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).
-   
-3. Click `Authorize` and enter the API key as created in the Setup step.
-![Authroization](./authorize.png)
-   
-4. You can use the sample payload from the `docs/sample_payload.json` file when trying out the house price prediction model using the API.
-   ![Prediction with example payload](./sample_payload.png)
-
-## Run Tests
-
-If you're not using `tox`, please install with:
-```bash
-pip3 install tox
-```
-
-Run your tests with: 
-```bash
-tox
-```
-
-This runs tests and coverage for Python 3.6 and Flake8, Autopep8, Bandit.
-
-
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+    app
+        packages
+            heartbeat
+                api.py
+                models.py
+                service.py
+                __init__.py
 
