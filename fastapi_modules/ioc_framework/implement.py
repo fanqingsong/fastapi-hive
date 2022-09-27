@@ -2,12 +2,12 @@
 from fastapi import FastAPI
 from typing import Callable, Dict
 from loguru import logger
-from fastapi_modules.ioc_container.module_container import module_container
-from fastapi_modules.ioc_container.router_mounter import router_mounter
-from fastapi_modules.ioc_container.module_mounter import module_mounter
+from fastapi_modules.ioc_framework.module_container import module_container
+from fastapi_modules.ioc_framework.router_mounter import router_mounter
+from fastapi_modules.ioc_framework.module_mounter import module_mounter
 
 
-class IoCContainer:
+class IoCFramework:
     def __init__(self):
         self._app = None
         self._params = {

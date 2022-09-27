@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from loguru import logger
-from fastapi_modules.ioc_container.module_container import module_container
+from fastapi_modules.ioc_framework.module_container import module_container
 from fastapi import APIRouter
 
 

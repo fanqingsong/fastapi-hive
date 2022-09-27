@@ -31,14 +31,13 @@ First, create or refactor you code into module:
 
 Second, setup the initial sentence of ioc_container in main.py
 
-
 ```Python
 from fastapi import FastAPI
 from loguru import logger
 from demo.core.config import (APP_NAME, APP_VERSION, API_PREFIX,
-                                         IS_DEBUG)
+                              IS_DEBUG)
 
-from fastapi_modules.ioc_container import ioc_container
+from fastapi_modules.ioc_framework import ioc_framework
 
 
 def get_app() -> FastAPI:
@@ -46,19 +45,19 @@ def get_app() -> FastAPI:
 
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
 
-    ioc_container\
-        .bind_app(fast_app)\
-        .set_params({
-            "API_PREFIX": API_PREFIX,
-            "MODULE_PACKAGE_PATHS": ["./demo/modules"]
-        })\
-        .init()
+    ioc_framework
+    .bind_app(fast_app)
+    .set_params({
+        "API_PREFIX": API_PREFIX,
+        "MODULE_PACKAGE_PATHS": ["./demo/modules"]
+    })
+    .init()
 
-    # ioc_container.delete_module_packages(["./demo/modules"])
-    ioc_container.add_module_packages(["./demo/modules_another"])
 
-    return fast_app
+# ioc_framework.delete_module_packages(["./demo/modules"])
+ioc_framework.add_module_packages(["./demo/modules_another"])
 
+return fast_app
 
 app = get_app()
 
