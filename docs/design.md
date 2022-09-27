@@ -4,14 +4,15 @@
 
 <p align="center">
     <em>
-    DIP is one of the SOLID object-oriented principle invented by Robert Martin (a.k.a. Uncle Bob) 
+    DIP is one of the SOLID object-oriented principle invented by Robert Martin (a.k.a. Uncle Bob)
+    </em>
+</p>
 
     DIP Definition
 
     * High-level modules should not depend on low-level modules. Both should depend on the abstraction.
     * Abstractions should not depend on details. Details should depend on abstractions.
-</em>
-</p>
+
 
 ---
 
