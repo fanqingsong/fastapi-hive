@@ -2,16 +2,23 @@
 
 from fastapi import FastAPI
 from loguru import logger
-from fastapi_modules.ioc_framework.module_container import module_container
+from fastapi_modules.ioc_framework.module_container import ModuleContainer
 from fastapi_modules.ioc_framework.module_abstraction import Module
 from fastapi import APIRouter
+from dependency_injector.wiring import Provide, inject
+from fastapi_modules.ioc_framework.di_contiainer import DIContainer
 
 
 class RouterMounter:
-    def __init__(self, app: FastAPI):
+    def __init__(
+            self,
+            app: FastAPI,
+            module_container: ModuleContainer = Provide[DIContainer.module_container],
+    ):
         logger.info("router mounter is starting.")
 
         self._app = app
+        self._module_container = module_container
 
     def mount(self, api_prefix: str) -> None:
         app: FastAPI = self._app
@@ -22,7 +29,7 @@ class RouterMounter:
     def _collect_router(self) -> APIRouter:
         api_router = APIRouter()
 
-        modules = module_container.modules
+        modules = self._module_container.modules
         for one_module, one_entity in modules.items():
             one_entity: Module = one_entity
             module_router = one_entity.router

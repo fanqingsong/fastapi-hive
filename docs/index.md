@@ -43,7 +43,7 @@ First, git clone this repo.
 git clone git@github.com:fanqingsong/fastapi-ml-skeleton.git
 ```
 
-Second, install IoC Container Package<br/>
+Second, install IoC DIContainer Package<br/>
 <small>Note: If just treat it as a library, and want to integrate it into your app, you can just run this command. </small>
 
 ```bash
