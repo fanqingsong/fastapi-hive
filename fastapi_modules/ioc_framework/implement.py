@@ -5,12 +5,7 @@ from loguru import logger
 from fastapi_modules.ioc_framework.module_container import module_container
 from fastapi_modules.ioc_framework.router_mounter import RouterMounter
 from fastapi_modules.ioc_framework.module_mounter import ModuleMounter
-from pydantic import BaseModel
-
-
-class Config(BaseModel):
-    API_PREFIX: str = ""
-    MODULE_PACKAGE_PATHS: List[str] = ["./demo/module_package1"]
+from fastapi_modules.ioc_framework.config import Config
 
 
 class IoCFramework:
@@ -24,7 +19,7 @@ class IoCFramework:
     def config(self):
         return self._config
 
-    def inject_modules(self) -> None:
+    def init_modules(self) -> None:
         module_container.register_module_package_paths(
             self._config.MODULE_PACKAGE_PATHS)
         module_container.resolve_modules()
@@ -33,14 +28,14 @@ class IoCFramework:
         app.add_event_handler("startup", self._start_container_handler())
         app.add_event_handler("shutdown", self._stop_container_handler())
 
-    def add_module_packages(self, module_package_paths):
+    def add_modules_by_packages(self, module_package_paths):
         module_container.register_module_package_paths(module_package_paths)
         module_container.resolve_modules()
 
         self._teardown()
         self._setup()
 
-    def delete_module_packages(self, module_package_paths):
+    def delete_modules_by_packages(self, module_package_paths):
         module_container.unregister_module_package_paths(module_package_paths)
         module_container.resolve_modules()
 

@@ -36,7 +36,7 @@ So it is ideal for developer to maintain all functianal code files in one module
 ---
 
 
-## Ideal project layout.
+## Ideal project layout & its pros.
 
 ---
 
