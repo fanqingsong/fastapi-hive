@@ -95,8 +95,8 @@ Then, the API URLs will be like below:
 ```
 
 Note: 
-- xxx is defined in packages/heartbeat/router.py
-- yyy is defined in packages/prediction/router.py
+1. xxx is defined in packages/heartbeat/router.py
+2. yyy is defined in packages/prediction/router.py
 
 if your app set several packages, you can turn off HIDE_PACKAGE_IN_URL of configuration.
 
