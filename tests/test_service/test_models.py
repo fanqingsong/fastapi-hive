@@ -1,10 +1,10 @@
 
 import pytest
 
-from demo.module_package1.house_price.schema.payload import HousePredictionPayload
-from demo.module_package1.house_price.schema.prediction import HousePredictionResult
-from demo.module_package1.house_price.service.implement import HousePriceModel
-from demo.module_package1.house_price import config
+from demo.package1.house_price.schema.payload import HousePredictionPayload
+from demo.package1.house_price.schema.prediction import HousePredictionResult
+from demo.package1.house_price.service.implement import HousePriceModel
+from demo.package1.house_price import config
 
 
 def test_prediction(test_client) -> None:

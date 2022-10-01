@@ -15,8 +15,3 @@ class DIContainer(containers.DeclarativeContainer):
     ioc_config = providers.Singleton(
         IoCConfig
     )
-
-
-
-
-

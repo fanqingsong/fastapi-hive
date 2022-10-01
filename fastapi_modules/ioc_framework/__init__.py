@@ -10,5 +10,3 @@ di_container.wire(
         "fastapi_modules.ioc_framework.router_mounter",
     ]
 )
-
-

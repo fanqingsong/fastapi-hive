@@ -41,12 +41,3 @@ class Module:
     @router.setter
     def router(self, value: APIRouter):
         self._router = value
-
-
-
-
-
-
-
-
-

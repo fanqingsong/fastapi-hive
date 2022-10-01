@@ -13,11 +13,11 @@ from fastapi_modules.ioc_framework.di_contiainer import DIContainer
 class IoCFramework:
     @inject
     def __init__(
-            self,
-            app: FastAPI,
-            ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
-            module_container: ModuleContainer = Provide[DIContainer.module_container],
-                 ):
+        self,
+        app: FastAPI,
+        ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
+        module_container: ModuleContainer = Provide[DIContainer.module_container],
+    ):
         self._app = app
         self._ioc_config: IoCConfig = ioc_config
         self._module_container = module_container
@@ -73,4 +73,3 @@ class IoCFramework:
 
             self._teardown()
         return shutdown
-
