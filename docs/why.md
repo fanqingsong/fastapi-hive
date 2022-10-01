@@ -18,11 +18,11 @@ So it is ideal for developer to maintain all functianal code files in one module
 **DEMO**: <a href="https://github.com/eightBEC/fastapi-ml-skeleton/tree/master/fastapi_skeleton" target="_blank">https://github.com/eightBEC/fastapi-ml-skeleton/tree/master/fastapi_skeleton</a>
 
 
+```text
     app
-        api
-            routes
-                heartbeat.py
-                prediction.py
+        router
+            heartbeat.py
+            prediction.py
         models
             heartbeat.py
             prediction.py
@@ -30,7 +30,7 @@ So it is ideal for developer to maintain all functianal code files in one module
             heartbeat.py
             prediction.py
         main.py
-
+```
 
 
 ---
@@ -46,15 +46,17 @@ For each of modules(heartbeat and prediction), there is one module folder for co
 Furthermore, developers do not have to register function into app, such as router.
 
 
+```text
     app
         packages
             heartbeat
-                api.py
+                router.py
                 models.py
                 service.py
             prediction
-                api.py
+                router.py
                 models.py
                 service.py
         main.py
+```
 

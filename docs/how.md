@@ -64,3 +64,37 @@ def get_app() -> FastAPI:
 app = get_app()
 
 ```
+
+## URL MAPPING
+
+As you know, this framework will discover all modules of all packages automatically.
+So the API URLs contain package folder name and module folder name.
+
+If the folder structure likes below
+
+```text
+    app
+        packages
+            heartbeat
+                router.py
+                models.py
+                service.py
+            prediction
+                router.py
+                models.py
+                service.py
+        main.py
+        
+```
+
+Then, the API URLs will be like below:
+
+```text
+{API_PREFIX}/packages/heartbeat/xxx
+{API_PREFIX}/packages/prediction/yyy
+```
+
+Note: 
+- xxx is defined in packages/heartbeat/router.py
+- yyy is defined in packages/prediction/router.py
+
