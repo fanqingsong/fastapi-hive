@@ -12,6 +12,8 @@
 
 **Source Code**: <a href="https://github.com/fanqingsong/fastapi-ml-skeleton" target="_blank">https://github.com/fanqingsong/fastapi-ml-skeleton</a>
 
+**PYPI**: <a href="https://pypi.org/project/fastapi-hive/" target="_blank">https://pypi.org/project/fastapi-hive/</a>
+
 ---
 
 FastAPI Hive Framework is a developer friendly and easy to be integrated framework for mananging your code by packages/modules structure.
