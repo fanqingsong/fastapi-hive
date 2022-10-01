@@ -12,7 +12,7 @@ First, git clone this repo.
 git clone git@github.com:fanqingsong/fastapi-ml-skeleton.git
 ```
 
-Second, install IoC DIContainer Package<br/>
+Second, install fastapi_modules package<br/>
 <small>Note: If just treat it as a library, and want to integrate it into your app, you can just run this command. </small>
 
 ```bash
@@ -94,7 +94,8 @@ Then, the API URLs will be like below:
 {API_PREFIX}/prediction/yyy
 ```
 
-Note: 
+Note:
+
 1. xxx is defined in packages/heartbeat/router.py
 2. yyy is defined in packages/prediction/router.py
 
