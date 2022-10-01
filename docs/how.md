@@ -90,11 +90,17 @@ If the folder structure likes below
 Then, the API URLs will be like below:
 
 ```text
-{API_PREFIX}/packages/heartbeat/xxx
-{API_PREFIX}/packages/prediction/yyy
+{API_PREFIX}/heartbeat/xxx
+{API_PREFIX}/prediction/yyy
 ```
 
 Note: 
 - xxx is defined in packages/heartbeat/router.py
 - yyy is defined in packages/prediction/router.py
 
+if your app set several packages, you can turn off HIDE_PACKAGE_IN_URL of configuration.
+
+```text
+{API_PREFIX}/packages/heartbeat/xxx
+{API_PREFIX}/packages/prediction/yyy
+```
