@@ -14,5 +14,5 @@ Go to detailed site for more information [FastAPI Hive Framework](https://fanqin
 
 This repository contains a demo app and fastapi modules which can be used to speed-up your next machine learning project. The code is fully tested and provides a preconfigured `tox` to quickly expand this sample code.
 
-To experiment and get a feeling on how to use this framework, two packages and two modules of each package are set in the demo folder. Follow the installation and setup instructions to run the demo app and serve it with RESTful API, go to [FastAPI Modules Framework](https://fanqingsong.github.io/fastapi-ml-skeleton/) for that.
+To experiment and get a feeling on how to use this framework, two packages and two modules of each package are set in the demo folder. Follow the installation and setup instructions to run the demo app and serve it with RESTful API, go to [FastAPI Hive Framework](https://fanqingsong.github.io/fastapi-ml-skeleton/) for that.
 
