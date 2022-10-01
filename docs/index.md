@@ -1,11 +1,11 @@
-# FastAPI Modules
+# FastAPI Hive
 
 ![architecture](./hive.jpg)
 
 ![architecture](./architecture.png)
 
 <p align="center">
-    <em>FastAPI Module Framework, packages&modules code struture, developer-friendly, easy to be integrated.</em>
+    <em>FastAPI Hive Framework, packages&modules code struture, developer-friendly, easy to be integrated.</em>
 </p>
 
 ---
@@ -16,7 +16,7 @@
 
 ---
 
-FastAPI Modules Framework is a developer friendly and easy to be integrated framework for mananging your code by packages/modules structure.
+FastAPI Hive Framework is a developer friendly and easy to be integrated framework for mananging your code by packages/modules structure.
 
 The key features are:
 
@@ -33,7 +33,7 @@ The key features are:
 
 Python 3.7+
 
-FastAPI Modules Framework stands on the shoulders of giants:
+FastAPI Hive Framework stands on the shoulders of giants:
 
 * <a href="https://fastapi.tiangolo.com/" class="external-link" target="_blank">FastAPI</a> web framework.
 

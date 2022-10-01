@@ -1,6 +1,6 @@
 # How to Use?
 
-FastAPI Modules Framework is the solution to the problems in why chapter.
+FastAPI Hive Framework is the solution to the problems in why chapter.
 
 ---
 

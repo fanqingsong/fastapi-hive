@@ -29,7 +29,7 @@
 
 ---
 
-FastAPI Modules Framework loads modules of packages, It extracts the abstraction Module properties, including router and service, which will be mounted into app during app startup.
+FastAPI Hive Framework loads modules of packages, It extracts the abstraction Module properties, including router and service, which will be mounted into app during app startup.
 
 ---
 ## Application

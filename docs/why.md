@@ -1,4 +1,4 @@
-# Why Fastapi Modules?
+# Why Fastapi Hive?
 
 
 ## Regular project layout & its cons.
