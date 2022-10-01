@@ -3,7 +3,7 @@ import os
 from loguru import logger
 # import sys
 # from .module_path import ModulePath
-from fastapi_modules.ioc_framework.module_abstraction import Module
+from fastapi_hive.ioc_framework.module_abstraction import Module
 
 
 class ModuleContainer:

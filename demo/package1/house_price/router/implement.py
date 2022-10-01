@@ -9,7 +9,7 @@ from demo.package1.house_price.schema.prediction import HousePredictionResult
 
 from demo.package1.house_price.service import HousePriceModel
 
-from fastapi_modules.ioc_framework.module_container import ModuleContainer
+from fastapi_hive.ioc_framework.module_container import ModuleContainer
 
 router = APIRouter()
 

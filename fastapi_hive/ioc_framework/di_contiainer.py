@@ -1,6 +1,6 @@
 
-from fastapi_modules.ioc_framework.module_container import ModuleContainer
-from fastapi_modules.ioc_framework.ioc_config import IoCConfig
+from fastapi_hive.ioc_framework.module_container import ModuleContainer
+from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector import containers, providers
 
 

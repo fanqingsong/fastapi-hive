@@ -7,20 +7,20 @@ from distutils.core import setup
 #     required = f.read().splitlines()
 
 setup(
-      name='fastapi_modules',
+      name='fastapi_hive',
       version='1.0',
-      description='framework for FastAPI Modules',
+      description='framework for FastAPI modules management',
       url="https://github.com/fanqingsong/fastapi-ml-skeleton",
       license='MIT License',
       author='Qingsong Fan',
       author_email='qsfan@qq.com',
       packages=[
-            "fastapi_modules",
-            "fastapi_modules.ioc_framework",
-            "fastapi_modules.ioc_framework.module_container",
-            "fastapi_modules.ioc_framework.module_abstraction",
-            "fastapi_modules.ioc_framework.module_mounter",
-            "fastapi_modules.ioc_framework.router_mounter",
+            "fastapi_hive",
+            "fastapi_hive.ioc_framework",
+            "fastapi_hive.ioc_framework.module_container",
+            "fastapi_hive.ioc_framework.module_abstraction",
+            "fastapi_hive.ioc_framework.module_mounter",
+            "fastapi_hive.ioc_framework.router_mounter",
       ],
       # install_requires=required,
       # python_requires=">=3.7",

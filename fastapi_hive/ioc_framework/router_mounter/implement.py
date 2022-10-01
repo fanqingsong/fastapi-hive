@@ -2,15 +2,16 @@
 
 from fastapi import FastAPI
 from loguru import logger
-from fastapi_modules.ioc_framework.module_container import ModuleContainer
-from fastapi_modules.ioc_framework.module_abstraction import Module
+from fastapi_hive.ioc_framework.module_container import ModuleContainer
+from fastapi_hive.ioc_framework.module_abstraction import Module
 from fastapi import APIRouter
 from dependency_injector.wiring import Provide, inject
-from fastapi_modules.ioc_framework.di_contiainer import DIContainer
-from fastapi_modules.ioc_framework.ioc_config import IoCConfig
+from fastapi_hive.ioc_framework.di_contiainer import DIContainer
+from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 
 
 class RouterMounter:
+    @inject
     def __init__(
             self,
             app: FastAPI,

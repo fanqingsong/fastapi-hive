@@ -37,7 +37,7 @@ from loguru import logger
 from demo.core.config import (APP_NAME, APP_VERSION, API_PREFIX,
                               IS_DEBUG)
 
-from fastapi_modules.ioc_framework import IoCFramework
+from fastapi_hive.ioc_framework import IoCFramework
 
 
 def get_app() -> FastAPI:
@@ -47,12 +47,12 @@ def get_app() -> FastAPI:
 
     ioc_framework = IoCFramework(fast_app)
     ioc_framework.config.API_PREFIX = API_PREFIX
-    ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1"]
+    ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1", "./demo/package2"]
     ioc_framework.config.HIDE_PACKAGE_IN_URL = True
     ioc_framework.init_modules()
 
     # ioc_framework.delete_modules_by_packages(["./demo/package1"])
-    ioc_framework.add_modules_by_packages(["./demo/package2"])
+    # ioc_framework.add_modules_by_packages(["./demo/package2"])
 
     @fast_app.get("/")
     def get_root():
