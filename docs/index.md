@@ -1,5 +1,7 @@
 # FastAPI Modules
 
+![architecture](./hive.jpg)
+
 ![architecture](./architecture.png)
 
 <p align="center">
@@ -37,6 +39,15 @@ FastAPI Modules Framework stands on the shoulders of giants:
 
 ## Installation 
 
+### framework 
+
+#### install from pypi
+
+```bash
+pip3 install fastapi_hive
+```
+
+#### install from source code
 First, git clone this repo.
 
 ```bash
@@ -50,6 +61,7 @@ Second, install IoC DIContainer Package<br/>
 python3 setup.py install
 ```
 
+### dependency
 Third, install the required packages for running demo in your local environment (ideally virtualenv, conda, etc.).
 <small>Note: You can reference demo code to make up your own app in anywhere. </small>
 

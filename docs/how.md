@@ -6,18 +6,10 @@ FastAPI Modules Framework is the solution to the problems in why chapter.
 
 ## Install it.
 
-First, git clone this repo.
-
 ```bash
-git clone git@github.com:fanqingsong/fastapi-ml-skeleton.git
+pip3 install fastapi_hive
 ```
 
-Second, install fastapi_modules package<br/>
-<small>Note: If just treat it as a library, and want to integrate it into your app, you can just run this command. </small>
-
-```bash
-python3 setup.py install
-```
 
 ---
 
