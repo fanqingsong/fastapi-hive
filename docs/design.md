@@ -27,6 +27,11 @@
 
 **Tutorial**: <a href="https://www.tutorialsteacher.com/ioc" target="_blank">https://www.tutorialsteacher.com/ioc</a>
 
+
+## Architecture
+
+![architecture](./architecture.png)
+
 ---
 
 FastAPI Hive Framework loads modules of packages, It extracts the abstraction Module properties, including router and service, which will be mounted into app during app startup.
