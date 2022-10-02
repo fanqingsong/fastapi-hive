@@ -54,13 +54,13 @@ FastAPI Hive Framework stands on the shoulders of giants:
 
 ### Installation 
 
-#### framework install from pypi
+#### install hive from pypi
 
 ```bash
 pip3 install fastapi_hive
 ```
 
-#### framework install from source code
+#### install hive from source code
 
 First, git clone this repo.
 
@@ -75,7 +75,7 @@ Second, install ioc framework library<br/>
 python3 setup.py install
 ```
 
-#### dependency install
+#### install dependency
 
 Third, install the required packages for running demo in your local environment (ideally virtualenv, conda, etc.).
 <small>Note: You can reference demo code to make up your own app in anywhere. </small>
@@ -96,7 +96,7 @@ import uuid
 print(str(uuid.uuid4()))
 ```
 
-### Run DEMO APP
+### Run demo app
 
 1. Start demo app with: 
 
