@@ -50,7 +50,7 @@ FastAPI Hive Framework stands on the shoulders of giants:
 
 * <a href="https://fastapi.tiangolo.com/" class="external-link" target="_blank">FastAPI</a> web framework.
 
-## Have a Look
+## Have a Try
 
 ### Installation 
 
