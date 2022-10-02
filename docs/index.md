@@ -3,7 +3,7 @@
 ![architecture](./hive.jpg)
 
 <p align="center">
-    <em>FastAPI Hive Framework, packages&modules code struture, developer-friendly, easy to be integrated.</em>
+    <em>FastAPI Hive Framework, packages&modules code structure, developer-friendly, easy to be integrated.</em>
 </p>
 
 ---
