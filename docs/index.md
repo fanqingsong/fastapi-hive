@@ -11,10 +11,10 @@ Notes:
 ```text
 Regular fastapi project setups some folders for specific function, 
 such as router folder for api registering,  model folder for defining data schema.
-So one requirement code exists in several folders, the problem is the maintenance issue.
+So one requirement codes exist in several folders, the problem is the maintenance issue.
 If you feel it is tiresome task, FastAPI Hive is just for you.
 
-Every bee is thought as one requirement code, including all function codes.
+Every bee is thought as one requirement codes, including all function codes.
 FastAPI Hive is the container for all bees.  
 ```
 
@@ -34,11 +34,11 @@ FastAPI Hive Framework is a developer friendly and easy to be integrated framewo
 The key features are:
 
 * **Packages**: a top-level folder to contain all codes by service. 
-* **Modules**: a sub-folder in packages, contains functional code in service.
+* **Modules**: a sub-folder in packages, contains functional codes in service.
 * **Router Mounting Automatically**: the router defined by module will be mounted into app automatically.
 * **Service Mounting Automatically**: the service(such as ML model) defined by module will be mounted into app automatically, to reduce loading time during call.
 * **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different packages.
-* **Easy-to-be-Integrated**: Just several line code to integrate it in your app.
+* **Easy-to-be-Integrated**: Just several line codes to integrate it in your app.
 
 <small>estimation based on tests by author, have a look at demo folder.</small>
 
