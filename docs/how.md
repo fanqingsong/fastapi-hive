@@ -19,7 +19,7 @@ Note: You can reference demo code to complete this part.
 
 First, create or refactor you code into module:
 
-![module folders](./module_folders.png)
+![module folders](img/module_folders.png)
 
 Second, setup the initial sentence of ioc_container in main.py
 

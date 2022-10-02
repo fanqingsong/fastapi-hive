@@ -1,6 +1,6 @@
 # FastAPI Hive
 
-![architecture](./hive.jpg)
+![architecture](img/hive.jpg)
 
 <p align="center">
     <em>FastAPI Hive Framework, packages&modules code structure, developer-friendly, easy to be integrated.</em>
@@ -99,10 +99,10 @@ uvicorn demo.main:app --reload
 2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).
    
 3. Click `Authorize` and enter the API key as created in the Setup step.
-![Authroization](./authorize.png)
+![Authroization](img/authorize.png)
    
 4. You can use the sample payload from the `docs/sample_payload.json` file when trying out the house price prediction model using the API.
-   ![Prediction with example payload](./sample_payload.png)
+   ![Prediction with example payload](img/sample_payload.png)
 
 ## Run Tests
 

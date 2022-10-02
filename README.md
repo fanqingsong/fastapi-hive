@@ -1,6 +1,6 @@
 # FastAPI Hive
 
-![architecture](./docs/hive.jpg)
+![architecture](docs/img/hive.jpg)
 
 <p align="center">
     <em>FastAPI Hive Framework, packages&modules code structure, developer-friendly, easy to be integrated</em>

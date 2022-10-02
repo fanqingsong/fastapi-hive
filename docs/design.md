@@ -1,6 +1,6 @@
 # Design Idea
 
-![architecture](./dip.png)
+![architecture](img/dip.png)
 
 <p align="center">
     <em>
@@ -30,7 +30,7 @@
 
 ## Architecture
 
-![architecture](./architecture.png)
+![architecture](img/architecture.png)
 
 ---
 
