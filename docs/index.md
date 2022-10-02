@@ -21,7 +21,7 @@ FastAPI Hive is the container for all bees.
 
 ---
 
-**Documentation**: <a href="https://fanqingsong.github.io/fastapi-ml-skeleton/" target="_blank">https://fanqingsong.github.io/fastapi-ml-skeleton/</a>
+**Documentation**: <a href="https://fanqingsong.github.io/fastapi-ml-skeleton" target="_blank">https://fanqingsong.github.io/fastapi-ml-skeleton/</a>
 
 **Source Code**: <a href="https://github.com/fanqingsong/fastapi-ml-skeleton" target="_blank">https://github.com/fanqingsong/fastapi-ml-skeleton</a>
 
