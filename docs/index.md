@@ -9,9 +9,9 @@
 Notes:
 
 ```text
-Regular fastapi project setup some folder for specific function, 
-such as router folder for api registering,  model for defining data schema.
-So one requirement code exists several folders, the problem is maintenance issue.
+Regular fastapi project setups some folders for specific function, 
+such as router folder for api registering,  model folder for defining data schema.
+So one requirement code exists in several folders, the problem is the maintenance issue.
 If you feel it is tiresome task, FastAPI Hive is just for you.
 
 Every bee is thought as one requirement code, including all function codes.
