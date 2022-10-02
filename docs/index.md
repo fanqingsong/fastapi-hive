@@ -37,8 +37,8 @@ The key features are:
 * **Modules**: a sub-folder in packages, contains functional code in service.
 * **Router Mounting Automatically**: the router defined by module will be mounted into app automatically.
 * **Service Mounting Automatically**: the service(such as ML model) defined by module will be mounted into app automatically, to reduce loading time during call.
-* **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different services.
-* **Easy-to-be-Integrated**: Just servral line code to integrate in your app.
+* **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different packages.
+* **Easy-to-be-Integrated**: Just several line code to integrate it in your app.
 
 <small>estimation based on tests by author, have a look at demo folder.</small>
 
