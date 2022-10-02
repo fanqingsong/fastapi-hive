@@ -17,11 +17,22 @@ pip3 install fastapi_hive
 
 Note: You can reference demo code to complete this part. 
 
-First, create or refactor you code into module:
+### First, create or refactor you code into packages&modules:
 
 ![module folders](img/module_folders.png)
 
-Second, setup the initial sentence of ioc_container in main.py
+From code view, router and service property must be set in __init__.py.
+
+    app
+        packages
+            heartbeat
+                api.py
+                models.py
+                service.py
+                __init__.py
+
+
+### Second, setup the init sentence of ioc_framework in main.py
 
 ```Python
 from fastapi import FastAPI
@@ -42,9 +53,6 @@ def get_app() -> FastAPI:
     ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1", "./demo/package2"]
     ioc_framework.config.HIDE_PACKAGE_IN_URL = True
     ioc_framework.init_modules()
-
-    # ioc_framework.delete_modules_by_packages(["./demo/package1"])
-    # ioc_framework.add_modules_by_packages(["./demo/package2"])
 
     @fast_app.get("/")
     def get_root():

@@ -37,15 +37,3 @@
 FastAPI Hive Framework loads modules of packages, It extracts the abstraction Module properties, including router and service, which will be mounted into app during app startup.
 
 ---
-## Application
-
-From code view, router and service property must be set in __init__.py.
-
-    app
-        packages
-            heartbeat
-                api.py
-                models.py
-                service.py
-                __init__.py
-
