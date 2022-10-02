@@ -17,7 +17,9 @@ pip3 install fastapi_hive
 
 Note: You can reference demo code to complete this part. 
 
-### First, create or refactor you code into packages&modules:
+### make packages and modules  
+
+First, create or refactor you code into packages&modules:
 
 ![module folders](img/module_folders.png)
 
@@ -32,7 +34,9 @@ From code view, router and service property must be set in __init__.py.
                 __init__.py
 
 
-### Second, setup the init sentence of ioc_framework in main.py
+### Setup hive framework init codes 
+
+Second, setup the init sentence of ioc_framework in main.py
 
 ```Python
 from fastapi import FastAPI
