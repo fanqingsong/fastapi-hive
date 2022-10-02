@@ -1,10 +1,10 @@
 site_name: FastAPI Hive
 site_description: FastAPI Module Framework, packages&package1 code structure, developer-friendly, easy to be integrated.
-site_url: https://fanqingsong.github.io/fastapi-ml-skeleton/
+site_url: https://fanqingsong.github.io/fastapi-hive/
 theme:
   name: material
-repo_name: fanqingsong/fastapi-ml-skeleton
-repo_url: https://github.com/fanqingsong/fastapi-ml-skeleton
+repo_name: fanqingsong/fastapi-hive
+repo_url: https://github.com/fanqingsong/fastapi-hive
 nav:
 - index.md
 - why.md
