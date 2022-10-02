@@ -50,15 +50,17 @@ FastAPI Hive Framework stands on the shoulders of giants:
 
 * <a href="https://fastapi.tiangolo.com/" class="external-link" target="_blank">FastAPI</a> web framework.
 
-## Installation 
+## Have a Look
 
-### framework install from pypi
+### Installation 
+
+#### framework install from pypi
 
 ```bash
 pip3 install fastapi_hive
 ```
 
-### framework install from source code
+#### framework install from source code
 
 First, git clone this repo.
 
@@ -73,7 +75,7 @@ Second, install ioc framework library<br/>
 python3 setup.py install
 ```
 
-### dependency install
+#### dependency install
 
 Third, install the required packages for running demo in your local environment (ideally virtualenv, conda, etc.).
 <small>Note: You can reference demo code to make up your own app in anywhere. </small>
@@ -83,7 +85,7 @@ pip3 install -r requirements.txt
 ``` 
 
 
-## Setup
+### Setup
 1. Duplicate the `.env.example` file and rename it to `.env` 
 
 
@@ -94,7 +96,7 @@ import uuid
 print(str(uuid.uuid4()))
 ```
 
-## Run DEMO APP
+### Run DEMO APP
 
 1. Start demo app with: 
 

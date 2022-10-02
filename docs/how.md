@@ -17,7 +17,7 @@ pip3 install fastapi_hive
 
 Note: You can reference demo code to complete this part. 
 
-### make packages and modules  
+### Make packages and modules  
 
 First, create or refactor you code into packages&modules:
 
