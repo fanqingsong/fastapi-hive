@@ -67,8 +67,8 @@ app = get_app()
 
 ## URL MAPPING
 
-As you know, this framework will discover all modules of all packages automatically.
-So the API URLs contain package folder name and module folder name.
+As you know, this framework will discover and load all modules in all packages automatically.
+So the API URLs contain package folder name or module folder name, in order to avoid conflicts and be sensible.
 
 If the folder structure likes below
 
@@ -84,7 +84,6 @@ If the folder structure likes below
                 models.py
                 service.py
         main.py
-        
 ```
 
 Then, the API URLs will be like below:
