@@ -29,7 +29,7 @@ FastAPI Hive is the container for all bees.
 
 ---
 
-FastAPI Hive Framework is a developer friendly and easy to be integrated framework for mananging your code by packages/modules structure.
+FastAPI Hive Framework is a developer friendly and easy to be integrated framework for managing your code by packages&modules folder structure.
 
 The key features are:
 
