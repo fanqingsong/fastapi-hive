@@ -42,7 +42,5 @@ setup(
             "fastapi_hive.ioc_framework.module_mounter",
             "fastapi_hive.ioc_framework.router_mounter",
       ],
-      # install_requires=read_requirements(),
       python_requires=">=3.7",
-      # other arguments omitted
 )
