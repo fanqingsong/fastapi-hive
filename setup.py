@@ -28,8 +28,8 @@ setup(
       name='fastapi_hive',
       version='1.0.1',
       description='framework for FastAPI modules management',
-      long_description=long_description,
       long_description_content_type='text/markdown',
+      long_description=long_description,
       url="https://github.com/fanqingsong/fastapi-hive",
       license='MIT License',
       author='Qingsong Fan',
@@ -42,7 +42,7 @@ setup(
             "fastapi_hive.ioc_framework.module_mounter",
             "fastapi_hive.ioc_framework.router_mounter",
       ],
-      install_requires=read_requirements(),
+      # install_requires=read_requirements(),
       python_requires=">=3.7",
       # other arguments omitted
 )
