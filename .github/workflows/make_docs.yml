@@ -1,4 +1,4 @@
-name: ci
+name: make_docs
 on:
   push:
     branches:
