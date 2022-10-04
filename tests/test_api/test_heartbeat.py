@@ -13,4 +13,4 @@ def test_heartbeat(test_client) -> None:
 
 def test_default_route(test_client) -> None:
     response = test_client.get('/')
-    assert response.status_code == 404
+    assert response.status_code == 200

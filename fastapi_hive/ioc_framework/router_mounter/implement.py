@@ -10,6 +10,9 @@ from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 
 
+__all__ = ["RouterMounter"]
+
+
 class RouterMounter:
     @inject
     def __init__(
