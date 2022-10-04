@@ -8,7 +8,7 @@ from distutils.core import setup
 
 setup(
       name='fastapi_hive',
-      version='1.0',
+      version='1.0.1',
       description='framework for FastAPI modules management',
       url="https://github.com/fanqingsong/fastapi-ml-skeleton",
       license='MIT License',
