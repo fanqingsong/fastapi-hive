@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-# from setuptools import setup
+# from distutils.core import setup
+from setuptools import setup
 
 # with open('requirements.txt', mode="r", encoding="utf8") as f:
 #     required = f.read().splitlines()
+
+# read the contents of your README file
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 
 setup(
       name='fastapi_hive',
@@ -24,4 +30,7 @@ setup(
       ],
       # install_requires=required,
       # python_requires=">=3.7",
+      # other arguments omitted
+      long_description=long_description,
+      long_description_content_type='text/markdown'
 )
