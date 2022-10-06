@@ -7,6 +7,7 @@
 </p>
 
 [![build](https://github.com/fanqingsong/fastapi-hive/workflows/pytest_flake8/badge.svg)](https://github.com/fanqingsong/fastapi-hive/actions)
+[![codecov](https://codecov.io/gh/fanqingsong/fastapi-hive/branch/master/graph/badge.svg)](https://codecov.io/gh/fanqingsong/fastapi-hive)
 [![Supported Versions](https://img.shields.io/pypi/pyversions/fastapi-hive.svg)](https://pypi.org/project/requests)
 [![PyPI version](https://badge.fury.io/py/fastapi-hive.svg)](https://badge.fury.io/py/fastapi-hive)
 [![License](https://img.shields.io/github/license/fanqingsong/fastapi-hive.svg)](https://github.com/fanqingsong/fastapi-hive)
