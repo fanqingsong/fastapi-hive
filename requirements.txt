@@ -7,6 +7,6 @@ joblib==0.14.1
 loguru==0.4.1
 dependency-injector==4.40.0
 codecov
-
+pytest-cov
 
 
