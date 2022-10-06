@@ -16,7 +16,7 @@ Beyond the problem, developer also need to register some functions in main.py, s
 
 So it is ideal for developer to maintain all functional code files in one module folder, and register all function into app automatically.
 
-**DEMO**: <a href="https://github.com/eightBEC/fastapi-ml-skeleton/tree/master/fastapi_skeleton" target="_blank">https://github.com/eightBEC/fastapi-ml-skeleton/tree/master/fastapi_skeleton</a>
+**Reference**: <a href="https://github.com/eightBEC/fastapi-ml-skeleton/tree/master/fastapi_skeleton" target="_blank">https://github.com/eightBEC/fastapi-ml-skeleton/tree/master/fastapi_skeleton</a>
 
 
 ```text
