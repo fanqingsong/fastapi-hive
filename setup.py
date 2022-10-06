@@ -21,7 +21,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setup(
     name='fastapi_hive',
-    version='1.0.3',
+    version='1.0.5',
     description='framework for FastAPI modules management',
     long_description_content_type='text/markdown',
     long_description=long_description,
@@ -34,14 +34,15 @@ setup(
         "Issue Tracker": "https://github.com/fanqingsong/fastapi-hive/issues",
         "Documentation": "https://fanqingsong.github.io/fastapi-hive/",
     },
-    packages=[
-        "fastapi_hive",
-        "fastapi_hive.ioc_framework",
-        "fastapi_hive.ioc_framework.module_container",
-        "fastapi_hive.ioc_framework.module_abstraction",
-        "fastapi_hive.ioc_framework.module_mounter",
-        "fastapi_hive.ioc_framework.router_mounter",
-    ],
+    # packages=[
+    #     "fastapi_hive",
+    #     "fastapi_hive.ioc_framework",
+    #     "fastapi_hive.ioc_framework.module_container",
+    #     "fastapi_hive.ioc_framework.module_abstraction",
+    #     "fastapi_hive.ioc_framework.module_mounter",
+    #     "fastapi_hive.ioc_framework.router_mounter",
+    # ],
+    package_dir = {'fastapi_hive': 'fastapi_hive'},
     python_requires=">=3.7",
     install_requires=[
         'fastapi>=0.48.0',
@@ -51,8 +52,8 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
-        "Topic :: WEB Software",
-        "License :: OSI Approved :: Apache License",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
     ],
