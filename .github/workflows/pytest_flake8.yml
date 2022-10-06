@@ -42,7 +42,8 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
-        pytest --cov=tests
+        pytest --help
+        pytest --cov=./tests
         coverage xml
         curl -Os https://uploader.codecov.io/latest/linux/codecov
         chmod +x codecov
