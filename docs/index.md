@@ -49,6 +49,12 @@ The key features are:
 
 <small>estimation based on tests by author, have a look at demo folder.</small>
 
+## Overview
+
+Folders are set in such layout, urls are mapped by folder structure automatically.
+
+![architecture](img/url_by_folder.png)
+
 ## Requirements
 
 Python 3.7+
