@@ -16,12 +16,12 @@
 Notes:
 
 ```text
-Regular fastapi project setups some folders for specific function, 
-such as router folder for api registering,  model folder for defining data schema.
-So one requirement codes exist in several folders, the problem is the maintenance issue.
+Regular fastapi project setups some folders for storing specific function codes, 
+such as router folder for api registering folder and model folder.
+So one service codes have to exist in several folders, the problem is the maintenance issue of looking for them.
 If you feel it is tiresome task, FastAPI Hive is just for you.
 
-Every bee is thought as one requirement codes, including all function codes.
+Every bee is thought as the entity of one service codes, including all function codes.
 FastAPI Hive is the container for all bees.  
 ```
 
