@@ -1,23 +1,9 @@
 #!/usr/bin/env python
 
-# from distutils.core import setup
 from setuptools import setup
-import os
-
-# with open('requirements.txt', mode="r", encoding="utf8") as f:
-#     required = f.read().splitlines()
-
-# read the contents of your README file
-# from pathlib import Path
-# this_directory = Path(__file__).parent
-# long_description = (this_directory / "README.md").read_text()
 
 with open('README.md', 'r', encoding='utf-8') as f:
     long_description = f.read()
-
-
-# install_requires = open("requirements.txt", "rb").read().decode("utf-8")
-
 
 setup(
     name='fastapi_hive',
@@ -34,14 +20,6 @@ setup(
         "Issue Tracker": "https://github.com/fanqingsong/fastapi-hive/issues",
         "Documentation": "https://fanqingsong.github.io/fastapi-hive/",
     },
-    # packages=[
-    #     "fastapi_hive",
-    #     "fastapi_hive.ioc_framework",
-    #     "fastapi_hive.ioc_framework.module_container",
-    #     "fastapi_hive.ioc_framework.module_abstraction",
-    #     "fastapi_hive.ioc_framework.module_mounter",
-    #     "fastapi_hive.ioc_framework.router_mounter",
-    # ],
     package_dir = {'fastapi_hive': 'fastapi_hive'},
     python_requires=">=3.7",
     install_requires=[
@@ -52,9 +30,15 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries :: Application Frameworks",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
 )
