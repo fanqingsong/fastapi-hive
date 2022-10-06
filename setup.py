@@ -16,12 +16,12 @@ with open('README.md', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 
-install_requires = open("requirements.txt", "rb").read().decode("utf-8")
+# install_requires = open("requirements.txt", "rb").read().decode("utf-8")
 
 
 setup(
     name='fastapi_hive',
-    version='1.0.2',
+    version='1.0.3',
     description='framework for FastAPI modules management',
     long_description_content_type='text/markdown',
     long_description=long_description,
@@ -43,7 +43,11 @@ setup(
         "fastapi_hive.ioc_framework.router_mounter",
     ],
     python_requires=">=3.7",
-    install_requires=install_requires,
+    install_requires=[
+        'fastapi>=0.48.0',
+        'loguru>=0.4.1',
+        'dependency-injector>=4.40.0',
+    ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
