@@ -78,7 +78,7 @@ pip3 install fastapi_hive
 First, git clone this repo.
 
 ```bash
-git clone git@github.com:fanqingsong/fastapi-ml-skeleton.git
+git clone git@github.com:fanqingsong/fastapi-hive.git
 ```
 
 Second, install ioc framework library<br/>
