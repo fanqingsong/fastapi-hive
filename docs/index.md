@@ -87,7 +87,7 @@ Second, install ioc framework library<br/>
 <small>Note: If just treat it as a library, and want to integrate it into your app, you can just run this command. </small>
 
 ```bash
-python3 setup.py install
+pip3 install .
 ```
 
 #### install dependency
