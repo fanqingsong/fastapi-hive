@@ -19,7 +19,7 @@ def get_app() -> FastAPI:
     # logger.info("-----------------------------------------------------")
     # logger.info(dir(ioc_framework))
     # logger.info(dir(ioc_framework.config))
-    ioc_framework.config.HIDE_PACKAGE_IN_URL = True
+    ioc_framework.config.HIDE_PACKAGE_IN_URL = False
     ioc_framework.init_modules()
 
     # ioc_framework.delete_modules_by_packages(["./demo/package1"])
