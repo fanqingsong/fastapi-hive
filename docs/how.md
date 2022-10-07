@@ -55,7 +55,7 @@ def get_app() -> FastAPI:
     ioc_framework = IoCFramework(fast_app)
     ioc_framework.config.API_PREFIX = API_PREFIX
     ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1", "./demo/package2"]
-    ioc_framework.config.HIDE_PACKAGE_IN_URL = True
+    ioc_framework.config.HIDE_PACKAGE_IN_URL = False
     ioc_framework.init_modules()
 
     @fast_app.get("/")
@@ -93,8 +93,8 @@ If the folder structure likes below
 Then, the API URLs will be like below:
 
 ```text
-{API_PREFIX}/heartbeat/xxx
-{API_PREFIX}/prediction/yyy
+{API_PREFIX}/packages/heartbeat/xxx
+{API_PREFIX}/packages/prediction/yyy
 ```
 
 Note:
@@ -102,9 +102,9 @@ Note:
 1. xxx is defined in packages/heartbeat/router.py
 2. yyy is defined in packages/prediction/router.py
 
-if your app set several packages, you can turn off HIDE_PACKAGE_IN_URL of configuration.
+if your app don't want display package name in URL, you can turn on HIDE_PACKAGE_IN_URL of configuration.
 
 ```text
-{API_PREFIX}/packages/heartbeat/xxx
-{API_PREFIX}/packages/prediction/yyy
+{API_PREFIX}/heartbeat/xxx
+{API_PREFIX}/prediction/yyy
 ```
