@@ -56,6 +56,7 @@ def get_app() -> FastAPI:
     ioc_framework.config.API_PREFIX = API_PREFIX
     ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1", "./demo/package2"]
     ioc_framework.config.HIDE_PACKAGE_IN_URL = False
+    ioc_framework.config.HIDE_MODULE_IN_URL = False
     ioc_framework.init_modules()
 
     @fast_app.get("/")

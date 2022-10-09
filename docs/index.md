@@ -49,7 +49,7 @@ The key features are:
 * **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different packages.
 * **Easy-to-be-Integrated**: Just several line codes to integrate it in your app.
 
-<small>estimation based on tests by author, have a look at demo folder.</small>
+<small>estimation based on tests by author with this project[**](https://github.com/fanqingsong/machine_learning_system_fastapi), have a look at demo folder.</small>
 
 ## Overview
 
