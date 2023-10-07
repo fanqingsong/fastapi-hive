@@ -7,7 +7,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setup(
     name='fastapi_hive',
-    version='1.0.8',
+    version='1.0.9',
     description='framework for FastAPI modules management',
     long_description_content_type='text/markdown',
     long_description=long_description,

@@ -53,7 +53,7 @@ class RouterMounter:
             '''
             api_router.include_router(
                 module_router,
-                tags=[f"{package_name}"],
+                tags=[f"{package_name}.{one_module}"],
                 prefix=prefix)
 
         return api_router
