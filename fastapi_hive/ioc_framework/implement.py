@@ -61,15 +61,41 @@ class IoCFramework:
         self._router_mounter.unmount(self._ioc_config.API_PREFIX)
 
     def _start_ioc_handler(self) -> Callable:
+        app = self._app
+
         def startup() -> None:
             logger.info("Running container start handler.")
 
+            hive_pre_stetup = self._ioc_config.PRE_SETUP
+            if callable(hive_pre_stetup):
+                logger.info("call hive pre setup")
+                hive_pre_stetup()
+
             self._setup()
+
+            hive_post_stetup = self._ioc_config.POST_SETUP
+            if callable(hive_post_stetup):
+                logger.info("call hive post setup")
+                hive_post_stetup()
+
         return startup
 
     def _stop_ioc_handler(self) -> Callable:
+        app = self._app
+
         def shutdown() -> None:
             logger.info("Running container shutdown handler.")
 
+            hive_pre_teardown = self._ioc_config.PRE_TEARDOWN
+            if callable(hive_pre_teardown):
+                logger.info("call hive pre teardown")
+                hive_pre_teardown()
+
             self._teardown()
+
+            hive_post_teardown = self._ioc_config.POST_TEARDOWN
+            if callable(hive_post_teardown):
+                logger.info("call hive post teardown")
+                hive_post_teardown()
+
         return shutdown

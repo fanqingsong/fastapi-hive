@@ -148,3 +148,16 @@ tox
 
 This runs tests and coverage for Python 3.6 and Flake8, Autopep8, Bandit.
 
+## Package and Upload
+
+For maintainer of this project, please follow:
+Before these action, change version in setup.py
+
+```bash
+python3 setup.py sdist
+
+twine upload dist/*
+
+```
+
+

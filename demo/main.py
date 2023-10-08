@@ -13,6 +13,12 @@ def get_app() -> FastAPI:
 
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
 
+    def hive_pre_setup():
+        logger.info("------ call pre setup -------")
+
+    def hive_post_setup():
+        logger.info("------ call post setup -------")
+
     ioc_framework = IoCFramework(fast_app)
     ioc_framework.config.API_PREFIX = API_PREFIX
     ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1", "./demo/package2"]
@@ -21,6 +27,9 @@ def get_app() -> FastAPI:
     # logger.info(dir(ioc_framework.config))
     ioc_framework.config.HIDE_PACKAGE_IN_URL = False
     ioc_framework.config.HIDE_MODULE_IN_URL = False
+    ioc_framework.config.PRE_SETUP = hive_pre_setup
+    ioc_framework.config.POST_SETUP = hive_post_setup
+
     ioc_framework.init_modules()
 
     # ioc_framework.delete_modules_by_packages(["./demo/package1"])
