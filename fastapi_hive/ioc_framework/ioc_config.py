@@ -13,3 +13,8 @@ class IoCConfig(BaseModel):
     POST_SETUP: Callable = None
     PRE_TEARDOWN: Callable = None
     POST_TEARDOWN: Callable = None
+    ASYNC_PRE_SETUP: Callable = None
+    ASYNC_POST_SETUP: Callable = None
+    ASYNC_PRE_TEARDOWN: Callable = None
+    ASYNC_POST_TEARDOWN: Callable = None
+

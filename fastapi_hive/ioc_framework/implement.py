@@ -34,9 +34,22 @@ class IoCFramework:
         )
         self._module_container.resolve_modules()
 
+        self._add_sync_event_handler()
+        self._add_async_event_handler()
+
+    def _add_sync_event_handler(self):
+        logger.info("Register sync event handler.")
+
         app = self._app
-        app.add_event_handler("startup", self._start_ioc_handler())
-        app.add_event_handler("shutdown", self._stop_ioc_handler())
+        app.add_event_handler("startup", self._start_ioc_sync_handler())
+        app.add_event_handler("shutdown", self._stop_ioc_sync_handler())
+
+    def _add_async_event_handler(self):
+        logger.info("Register async event handler.")
+
+        app = self._app
+        app.add_event_handler("startup", self._start_ioc_async_handler())
+        app.add_event_handler("shutdown", self._stop_ioc_async_handler())
 
     def add_modules_by_packages(self, module_package_paths):
         self._module_container.register_module_package_paths(module_package_paths)
@@ -60,31 +73,37 @@ class IoCFramework:
         self._module_mounter.unmount()
         self._router_mounter.unmount(self._ioc_config.API_PREFIX)
 
-    def _start_ioc_handler(self) -> Callable:
+    async def _async_setup(self) -> None:
+        pass
+
+    async def _async_teardown(self) -> None:
+        pass
+
+    def _start_ioc_sync_handler(self) -> Callable:
         app = self._app
 
         def startup() -> None:
-            logger.info("Running container start handler.")
+            logger.info("Running container sync start handler.")
 
-            hive_pre_stetup = self._ioc_config.PRE_SETUP
-            if callable(hive_pre_stetup):
+            hive_pre_setup = self._ioc_config.PRE_SETUP
+            if callable(hive_pre_setup):
                 logger.info("call hive pre setup")
-                hive_pre_stetup()
+                hive_pre_setup()
 
             self._setup()
 
-            hive_post_stetup = self._ioc_config.POST_SETUP
-            if callable(hive_post_stetup):
+            hive_post_setup = self._ioc_config.POST_SETUP
+            if callable(hive_post_setup):
                 logger.info("call hive post setup")
-                hive_post_stetup()
+                hive_post_setup()
 
         return startup
 
-    def _stop_ioc_handler(self) -> Callable:
+    def _stop_ioc_sync_handler(self) -> Callable:
         app = self._app
 
         def shutdown() -> None:
-            logger.info("Running container shutdown handler.")
+            logger.info("Running container sync shutdown handler.")
 
             hive_pre_teardown = self._ioc_config.PRE_TEARDOWN
             if callable(hive_pre_teardown):
@@ -97,5 +116,45 @@ class IoCFramework:
             if callable(hive_post_teardown):
                 logger.info("call hive post teardown")
                 hive_post_teardown()
+
+        return shutdown
+
+    def _start_ioc_async_handler(self) -> Callable:
+        app = self._app
+
+        async def startup() -> None:
+            logger.info("Running container async start handler.")
+
+            hive_pre_setup = self._ioc_config.ASYNC_PRE_SETUP
+            if callable(hive_pre_setup):
+                logger.info("call hive pre setup")
+                await hive_pre_setup()
+
+            await self._async_setup()
+
+            hive_post_setup = self._ioc_config.ASYNC_POST_SETUP
+            if callable(hive_post_setup):
+                logger.info("call hive post setup")
+                await hive_post_setup()
+
+        return startup
+
+    def _stop_ioc_async_handler(self) -> Callable:
+        app = self._app
+
+        async def shutdown() -> None:
+            logger.info("Running container async shutdown handler.")
+
+            hive_pre_teardown = self._ioc_config.ASYNC_PRE_TEARDOWN
+            if callable(hive_pre_teardown):
+                logger.info("call hive pre teardown")
+                await hive_pre_teardown()
+
+            await self._async_teardown()
+
+            hive_post_teardown = self._ioc_config.ASYNC_POST_TEARDOWN
+            if callable(hive_post_teardown):
+                logger.info("call hive post teardown")
+                await hive_post_teardown()
 
         return shutdown
