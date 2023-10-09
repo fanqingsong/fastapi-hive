@@ -5,8 +5,9 @@ from typing import List, Callable
 
 
 class IoCConfig(BaseModel):
+    CORNERSTONE_PACKAGE_PATHS: List[str] = ["./cornerstone"]
     API_PREFIX: str = ""
-    MODULE_PACKAGE_PATHS: List[str] = ["./demo/package1"]
+    MODULE_PACKAGE_PATHS: List[str] = ["./demo/xxx_endpoint"]
     HIDE_PACKAGE_IN_URL: bool = False
     HIDE_MODULE_IN_URL: bool = False
     PRE_SETUP: Callable = None

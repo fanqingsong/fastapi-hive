@@ -2,8 +2,8 @@
 
 from fastapi import FastAPI
 from loguru import logger
-from demo.core.config import (APP_NAME, APP_VERSION, API_PREFIX,
-                                         IS_DEBUG)
+from demo.cornerstone.config import (APP_NAME, APP_VERSION, API_PREFIX,
+                                     IS_DEBUG)
 
 from fastapi_hive.ioc_framework import IoCFramework
 
@@ -26,8 +26,10 @@ def get_app() -> FastAPI:
         logger.info("------ call async post setup -------")
 
     ioc_framework = IoCFramework(fast_app)
+    ioc_framework.config.CORNERSTONE_PACKAGE_PATHS = ["./demo/cornerstone/"]
+
     ioc_framework.config.API_PREFIX = API_PREFIX
-    ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1", "./demo/package2"]
+    ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/xxx_endpoint", "./demo/yyy_endpoint"]
     # logger.info("-----------------------------------------------------")
     # logger.info(dir(ioc_framework))
     # logger.info(dir(ioc_framework.config))
@@ -40,8 +42,8 @@ def get_app() -> FastAPI:
 
     ioc_framework.init_modules()
 
-    # ioc_framework.delete_modules_by_packages(["./demo/package1"])
-    # ioc_framework.add_modules_by_packages(["./demo/package2"])
+    # ioc_framework.delete_modules_by_packages(["./demo/xxx_endpoint"])
+    # ioc_framework.add_modules_by_packages(["./demo/yyy_endpoint"])
 
     @fast_app.get("/")
     def get_root():

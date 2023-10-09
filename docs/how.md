@@ -41,8 +41,8 @@ Second, setup the init sentence of ioc_framework in main.py
 ```Python
 from fastapi import FastAPI
 from loguru import logger
-from demo.core.config import (APP_NAME, APP_VERSION, API_PREFIX,
-                              IS_DEBUG)
+from demo.cornerstone.config import (APP_NAME, APP_VERSION, API_PREFIX,
+                                     IS_DEBUG)
 
 from fastapi_hive.ioc_framework import IoCFramework
 
@@ -54,7 +54,7 @@ def get_app() -> FastAPI:
 
     ioc_framework = IoCFramework(fast_app)
     ioc_framework.config.API_PREFIX = API_PREFIX
-    ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/package1", "./demo/package2"]
+    ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/xxx_endpoint", "./demo/yyy_endpoint"]
     ioc_framework.config.HIDE_PACKAGE_IN_URL = False
     ioc_framework.config.HIDE_MODULE_IN_URL = False
     ioc_framework.init_modules()
