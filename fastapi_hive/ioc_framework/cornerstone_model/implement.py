@@ -12,7 +12,7 @@ class Cornerstone:
     In your cornerstone modules `__init__.py` create a subclass of `Cornerstone`
 
     ```python
-    from fastapi_hive.ioc_framework import Cornerstone
+    from fastapi_hive.ioc_framework.cornerstone_model import Cornerstone
 
 
     class CornerstoneImpl(Cornerstone):
@@ -47,7 +47,7 @@ class CornerstoneAsync:
     In your cornerstone modules `__init__.py` create a subclass of `CornerstoneAsync`
 
     ```python
-    from fastapi_hive.ioc_framework import CornerstoneAsync
+    from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneAsync
 
 
     class CornerstoneAsyncImpl(CornerstoneAsync):

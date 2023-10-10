@@ -7,6 +7,7 @@ from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContaine
 from fastapi_hive.ioc_framework.endpoint_router_mounter import EndpointRouterMounter
 from fastapi_hive.ioc_framework.endpoint_container_mounter import EndpointContainerMounter
 from fastapi_hive.ioc_framework.cornerstone_hook_caller import CornerstoneHookCaller, CornerstoneHookAsyncCaller
+from fastapi_hive.ioc_framework.endpoint_hook_caller import EndpointHookCaller, EndpointHookAsyncCaller
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
@@ -42,6 +43,10 @@ class IoCFramework:
         self._cornerstone_hook_caller = CornerstoneHookCaller(app)
 
         self._cornerstone_hook_async_caller = CornerstoneHookAsyncCaller(app)
+
+        self._endpoint_hook_caller = EndpointHookCaller(app)
+
+        self._endpoint_hook_async_caller = EndpointHookAsyncCaller(app)
 
         # print("------- IoCFramework init **** after call self._endpoint_container222 ------ ")
         # print(self._cornerstone_container)
@@ -85,18 +90,22 @@ class IoCFramework:
         app.add_event_handler("shutdown", self._stop_ioc_async_handler())
 
     def _sync_setup(self) -> None:
+        self._endpoint_hook_caller.run_setup_hook()
+
         self._endpoint_container_mounter.mount()
         self._endpoint_router_mounter.mount(self._ioc_config.API_PREFIX)
 
     def _sync_teardown(self) -> None:
+        self._endpoint_hook_caller.run_teardown_hook()
+
         self._endpoint_container_mounter.unmount()
         self._endpoint_router_mounter.unmount(self._ioc_config.API_PREFIX)
 
     async def _async_setup(self) -> None:
-        pass
+        await self._endpoint_hook_async_caller.run_setup_hook()
 
     async def _async_teardown(self) -> None:
-        pass
+        await self._endpoint_hook_async_caller.run_teardown_hook()
 
     def _start_ioc_sync_handler(self) -> Callable:
         app = self._app

@@ -1,9 +1,67 @@
 
-from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI
 from typing import Optional
 
 
 class Endpoint:
+    '''
+    Base class for Endpoint modules.
+
+    Usage
+    ===
+
+    In your Endpoint modules `__init__.py` create a subclass of `Endpoint`
+
+    ```python
+    from fastapi_hive.ioc_framework.endpoint_model import Endpoint
+
+
+    class EndpointImpl(Endpoint):
+        def setup(self):
+            pass
+    ```
+    '''
+
+    def __init__(self, app: FastAPI) -> None:
+        self._app = app
+
+    def setup(self):
+        pass
+
+    def teardown(self):
+        pass
+
+
+class EndpointAsync:
+    '''
+    Base class for Endpoint modules in async mode.
+
+    Usage
+    ===
+
+    In your Endpoint modules `__init__.py` create a subclass of `EndpointAsync`
+
+    ```python
+    from fastapi_hive.ioc_framework.endpoint_model import EndpointAsync
+
+
+    class EndpointAsyncImpl(EndpointAsync):
+        async def setup(self):
+            pass
+    ```
+    '''
+
+    def __init__(self, app: FastAPI) -> None:
+        self._app = app
+
+    async def setup(self):
+        pass
+
+    async def teardown(self):
+        pass
+
+
+class EndpointMeta:
     def __init__(self):
         self._name: Optional[str] = None
         self._package: Optional[str] = None

@@ -3,7 +3,7 @@ import os
 from loguru import logger
 # import sys
 # from .module_path import ModulePath
-from fastapi_hive.ioc_framework.endpoint_model import Endpoint
+from fastapi_hive.ioc_framework.endpoint_model import EndpointMeta
 
 
 class EndpointContainer:
@@ -46,7 +46,7 @@ class EndpointContainer:
 
                 one_module_entity = importlib.import_module(one_module_path)
 
-                module_instance = Endpoint()
+                module_instance = EndpointMeta()
                 module_instance.name = one_module
                 module_instance.package = package_name
                 module_instance.imported_module = one_module_entity

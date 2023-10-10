@@ -108,7 +108,7 @@ class CornerstoneHookAsyncCaller:
             one_entity: CornerstoneMeta = one_entity
             imported_module = one_entity.imported_module
 
-            if not hasattr(imported_module, 'CornerstoneImpl'):
+            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
                 continue
 
             cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
@@ -121,7 +121,7 @@ class CornerstoneHookAsyncCaller:
             one_entity: CornerstoneMeta = one_entity
             imported_module = one_entity.imported_module
 
-            if not hasattr(imported_module, 'CornerstoneImpl'):
+            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
                 continue
 
             cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
@@ -134,7 +134,7 @@ class CornerstoneHookAsyncCaller:
             one_entity: CornerstoneMeta = one_entity
             imported_module = one_entity.imported_module
 
-            if not hasattr(imported_module, 'CornerstoneImpl'):
+            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
                 continue
 
             cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
@@ -147,7 +147,7 @@ class CornerstoneHookAsyncCaller:
             one_entity: CornerstoneMeta = one_entity
             imported_module = one_entity.imported_module
 
-            if not hasattr(imported_module, 'CornerstoneImpl'):
+            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
                 continue
 
             cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)

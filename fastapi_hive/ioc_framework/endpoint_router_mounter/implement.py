@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from loguru import logger
 from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
-from fastapi_hive.ioc_framework.endpoint_model import Endpoint
+from fastapi_hive.ioc_framework.endpoint_model import EndpointMeta
 from fastapi import APIRouter
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
@@ -47,7 +47,7 @@ class EndpointRouterMounter:
         # print(dir(self._endpoint_container))
 
         for one_module, one_entity in modules.items():
-            one_entity: Endpoint = one_entity
+            one_entity: EndpointMeta = one_entity
             module_router = one_entity.router
             package_name = one_entity.package
 

@@ -23,7 +23,7 @@ class CornerstoneImpl(Cornerstone):
         print("call pre teardown from cornerstone!!!")
 
 
-class CornerstoneAsyncImpl(Cornerstone):
+class CornerstoneAsyncImpl(CornerstoneAsync):
 
     def __init__(self, app: FastAPI):
         super(CornerstoneAsyncImpl, self).__init__(app)

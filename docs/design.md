@@ -34,6 +34,6 @@
 
 ---
 
-FastAPI Hive Framework loads modules of packages, It extracts the abstraction Endpoint properties, including router and service, which will be mounted into app during app startup.
+FastAPI Hive Framework loads modules of packages, It extracts the abstraction EndpointMeta properties, including router and service, which will be mounted into app during app startup.
 
 ---
