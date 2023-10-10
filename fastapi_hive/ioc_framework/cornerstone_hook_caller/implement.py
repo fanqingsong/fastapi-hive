@@ -38,7 +38,7 @@ class CornerstoneHookCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl()
+            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
 
             cornerstone.pre_setup()
 
@@ -51,7 +51,7 @@ class CornerstoneHookCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl()
+            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
 
             cornerstone.post_setup()
 
@@ -64,7 +64,7 @@ class CornerstoneHookCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl()
+            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
 
             cornerstone.pre_teardown()
 
@@ -77,7 +77,7 @@ class CornerstoneHookCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl()
+            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
 
             cornerstone.post_teardown()
 
@@ -111,7 +111,7 @@ class CornerstoneHookAsyncCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl()
+            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
 
             await cornerstone.pre_setup()
 
@@ -124,7 +124,7 @@ class CornerstoneHookAsyncCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl()
+            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
 
             await cornerstone.post_setup()
 
@@ -137,7 +137,7 @@ class CornerstoneHookAsyncCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl()
+            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
 
             await cornerstone.pre_teardown()
 
@@ -150,7 +150,7 @@ class CornerstoneHookAsyncCaller:
             if not hasattr(imported_module, 'CornerstoneImpl'):
                 continue
 
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl()
+            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
 
             await cornerstone.post_teardown()
 

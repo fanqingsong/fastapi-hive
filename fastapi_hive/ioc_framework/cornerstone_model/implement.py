@@ -1,4 +1,6 @@
 
+from fastapi import FastAPI
+
 
 class Cornerstone:
     '''
@@ -19,8 +21,8 @@ class Cornerstone:
     ```
     '''
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, app: FastAPI) -> None:
+        self._app = app
 
     def pre_setup(self):
         pass
@@ -54,8 +56,8 @@ class CornerstoneAsync:
     ```
     '''
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, app: FastAPI) -> None:
+        self._app = app
 
     async def pre_setup(self):
         pass
