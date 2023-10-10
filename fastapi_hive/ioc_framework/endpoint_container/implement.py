@@ -50,7 +50,19 @@ class EndpointContainer:
                 module_instance.name = one_module
                 module_instance.package = package_name
                 module_instance.imported_module = one_module_entity
-                module_instance.router = one_module_entity.router
+
+                # cache regular submodule - db
+                if os.path.exists(f'{one_package_path}/{one_module}/db'):
+                    module_instance.imported_module_db = importlib.import_module(f'{one_module_path}.db')
+
+                # cache regular submodule - router
+                if os.path.exists(f'{one_package_path}/{one_module}/router'):
+                    module_instance.imported_module_router = importlib.import_module(f'{one_module_path}.router')
+
+                # cache regular submodule - service, such as ML model loading cost time
+                if os.path.exists(f'{one_package_path}/{one_module}/service'):
+                    module_instance.imported_module_service = importlib.import_module(f'{one_module_path}.service')
+
                 module_instance.service = one_module_entity.service
 
                 self._modules[one_module] = module_instance

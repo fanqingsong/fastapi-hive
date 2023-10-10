@@ -66,8 +66,11 @@ class EndpointMeta:
         self._name: Optional[str] = None
         self._package: Optional[str] = None
         self._imported_module = None
+        self._imported_module_db = None
+        self._imported_module_router = None
+        self._imported_module_service = None
+
         self._service = None
-        self._router: Optional[APIRouter] = None
 
     @property
     def name(self) -> str:
@@ -94,17 +97,33 @@ class EndpointMeta:
         self._imported_module = value
 
     @property
+    def imported_module_db(self):
+        return self._imported_module_db
+
+    @imported_module_db.setter
+    def imported_module_db(self, value):
+        self._imported_module_db = value
+
+    @property
+    def imported_module_router(self):
+        return self._imported_module_router
+
+    @imported_module_router.setter
+    def imported_module_router(self, value):
+        self._imported_module_router = value
+
+    @property
+    def imported_module_service(self):
+        return self._imported_module_service
+
+    @imported_module_service.setter
+    def imported_module_service(self, value):
+        self._imported_module_service = value
+
+    @property
     def service(self):
         return self._service
 
     @service.setter
     def service(self, value):
         self._service = value
-
-    @property
-    def router(self) -> APIRouter:
-        return self._router
-
-    @router.setter
-    def router(self, value: APIRouter):
-        self._router = value

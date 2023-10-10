@@ -9,7 +9,6 @@ __all__ = ["IoCFramework"]
 di_container: DIContainer = DIContainer()
 di_container.wire(
     modules=[
-        "fastapi_hive.ioc_framework.endpoint_container_mounter.implement",
         "fastapi_hive.ioc_framework.endpoint_router_mounter.implement",
         "fastapi_hive.ioc_framework.cornerstone_hook_caller.implement",
         "fastapi_hive.ioc_framework.endpoint_hook_caller.implement",

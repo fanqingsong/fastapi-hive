@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi_hive.ioc_framework.endpoint_model import Endpoint, EndpointAsync
-from demo.yyy_endpoint.house_price2.router import router
+# from demo.yyy_endpoint.house_price2.router import router
 from demo.yyy_endpoint.house_price2.service import service
 
 

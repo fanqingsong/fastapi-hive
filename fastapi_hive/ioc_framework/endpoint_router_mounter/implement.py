@@ -48,7 +48,12 @@ class EndpointRouterMounter:
 
         for one_module, one_entity in modules.items():
             one_entity: EndpointMeta = one_entity
-            module_router = one_entity.router
+
+            imported_module_router = one_entity.imported_module_router
+            if not hasattr(imported_module_router, 'router'):
+                continue
+
+            module_router = imported_module_router.router
             package_name = one_entity.package
 
             prefix = f"/{package_name}/{one_module}"
