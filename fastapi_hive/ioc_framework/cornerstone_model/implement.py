@@ -35,6 +35,41 @@ class Cornerstone:
         pass
 
 
+class CornerstoneAsync:
+    '''
+    Base class for cornerstone modules in async mode.
+
+    Usage
+    ===
+
+    In your cornerstone modules `__init__.py` create a subclass of `CornerstoneAsync`
+
+    ```python
+    from fastapi_hive.ioc_framework import CornerstoneAsync
+
+
+    class CornerstoneAsyncImpl(CornerstoneAsync):
+        async def pre_setup(self):
+            pass
+    ```
+    '''
+
+    def __init__(self) -> None:
+        pass
+
+    async def pre_setup(self):
+        pass
+
+    async def post_setup(self):
+        pass
+
+    async def pre_teardown(self):
+        pass
+
+    async def post_teardown(self):
+        pass
+
+
 class CornerstoneMeta:
     def __init__(self):
         self._name: Optional[str] = None

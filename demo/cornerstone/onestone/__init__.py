@@ -1,5 +1,5 @@
 
-from fastapi_hive.ioc_framework.cornerstone_model import Cornerstone, CornerstoneMeta
+from fastapi_hive.ioc_framework.cornerstone_model import Cornerstone, CornerstoneAsync
 
 
 class CornerstoneImpl(Cornerstone):
@@ -18,4 +18,22 @@ class CornerstoneImpl(Cornerstone):
 
     def post_teardown(self):
         print("call pre teardown from cornerstone!!!")
+
+
+class CornerstoneAsyncImpl(Cornerstone):
+
+    def __init__(self):
+        super(CornerstoneAsyncImpl, self).__init__()
+
+    async def pre_setup(self):
+        print("call pre setup from cornerstone async!!!")
+
+    async def post_setup(self):
+        print("call post setup from cornerstone async!!!")
+
+    async def pre_teardown(self):
+        print("call pre teardown from cornerstone async!!!")
+
+    async def post_teardown(self):
+        print("call pre teardown from cornerstone async!!!")
 

@@ -6,7 +6,7 @@ from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
 from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer
 from fastapi_hive.ioc_framework.endpoint_router_mounter import EndpointRouterMounter
 from fastapi_hive.ioc_framework.endpoint_container_mounter import EndpointContainerMounter
-from fastapi_hive.ioc_framework.cornerstone_hook_caller import CornerstoneHookCaller
+from fastapi_hive.ioc_framework.cornerstone_hook_caller import CornerstoneHookCaller, CornerstoneHookAsyncCaller
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
@@ -40,6 +40,8 @@ class IoCFramework:
         self._endpoint_container_mounter = EndpointContainerMounter(app)
 
         self._cornerstone_hook_caller = CornerstoneHookCaller(app)
+
+        self._cornerstone_hook_async_caller = CornerstoneHookAsyncCaller(app)
 
         # print("------- IoCFramework init **** after call self._endpoint_container222 ------ ")
         # print(self._cornerstone_container)
@@ -150,12 +152,16 @@ class IoCFramework:
         async def startup() -> None:
             logger.info("Running container async start handler.")
 
+            await self._cornerstone_hook_async_caller.run_pre_setup_hook()
+
             hive_pre_setup = self._ioc_config.ASYNC_PRE_SETUP
             if callable(hive_pre_setup):
                 logger.info("call hive pre setup")
                 await hive_pre_setup()
 
             await self._async_setup()
+
+            await self._cornerstone_hook_async_caller.run_post_setup_hook()
 
             hive_post_setup = self._ioc_config.ASYNC_POST_SETUP
             if callable(hive_post_setup):
@@ -170,12 +176,16 @@ class IoCFramework:
         async def shutdown() -> None:
             logger.info("Running container async shutdown handler.")
 
+            await self._cornerstone_hook_async_caller.run_pre_teardown_hook()
+
             hive_pre_teardown = self._ioc_config.ASYNC_PRE_TEARDOWN
             if callable(hive_pre_teardown):
                 logger.info("call hive pre teardown")
                 await hive_pre_teardown()
 
             await self._async_teardown()
+
+            await self._cornerstone_hook_async_caller.run_post_teardown_hook()
 
             hive_post_teardown = self._ioc_config.ASYNC_POST_TEARDOWN
             if callable(hive_post_teardown):
