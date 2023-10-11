@@ -1,4 +1,4 @@
-
+from typing import Callable
 
 from fastapi import FastAPI
 from loguru import logger
@@ -23,32 +23,42 @@ class EndpointHookCaller:
         self._endpoint_container = endpoint_container
         self._ioc_config = ioc_config
 
+    def _iterate_endpoints(self, callback: Callable):
+        endpoints = self._endpoint_container.endpoints
+        for _, one_endpoint in endpoints.items():
+            one_endpoint: EndpointMeta = one_endpoint
+
+            imported_module_db = one_endpoint.imported_module_db
+            self._exec_callback_if_possible(imported_module_db, callback)
+
+            imported_module_router = one_endpoint.imported_module_router
+            self._exec_callback_if_possible(imported_module_router, callback)
+
+            imported_module_service = one_endpoint.imported_module_service
+            self._exec_callback_if_possible(imported_module_service, callback)
+
+            imported_module = one_endpoint.imported_module
+            self._exec_callback_if_possible(imported_module, callback)
+
+    def _exec_callback_if_possible(self, imported_module, callback: Callable):
+        if not hasattr(imported_module, 'EndpointHooksImpl'):
+            return
+
+        endpoint: EndpointHooks = imported_module.EndpointHooksImpl(self._app)
+
+        callback(endpoint)
+
     def run_setup_hook(self):
-
-        modules = self._endpoint_container.endpoints
-        for one_module, one_entity in modules.items():
-            one_entity: EndpointMeta = one_entity
-            imported_module = one_entity.imported_module
-
-            if not hasattr(imported_module, 'EndpointHooksImpl'):
-                continue
-
-            endpoint: EndpointHooks = imported_module.EndpointHooksImpl(self._app)
-
+        def callback(endpoint: EndpointHooks):
             endpoint.setup()
 
+        self._iterate_endpoints(callback)
+
     def run_teardown_hook(self):
-        modules = self._endpoint_container.endpoints
-        for one_module, one_entity in modules.items():
-            one_entity: EndpointMeta = one_entity
-            imported_module = one_entity.imported_module
+        def callback(endpoint: EndpointHooks):
+            endpoint.teardown()
 
-            if not hasattr(imported_module, 'EndpointHooksImpl'):
-                continue
-
-            cornerstone: EndpointHooks = imported_module.EndpointHooksImpl(self._app)
-
-            cornerstone.teardown()
+        self._iterate_endpoints(callback)
 
 
 class EndpointHookAsyncCaller:
@@ -65,29 +75,41 @@ class EndpointHookAsyncCaller:
         self._endpoint_container = endpoint_container
         self._ioc_config = ioc_config
 
+    async def _iterate_endpoints(self, callback: Callable):
+        endpoints = self._endpoint_container.endpoints
+        for _, one_endpoint in endpoints.items():
+            one_endpoint: EndpointMeta = one_endpoint
+
+            imported_module_db = one_endpoint.imported_module_db
+            await self._exec_callback_if_possible(imported_module_db, callback)
+
+            imported_module_router = one_endpoint.imported_module_router
+            await self._exec_callback_if_possible(imported_module_router, callback)
+
+            imported_module_service = one_endpoint.imported_module_service
+            await self._exec_callback_if_possible(imported_module_service, callback)
+
+            imported_module = one_endpoint.imported_module
+            await self._exec_callback_if_possible(imported_module, callback)
+
+    async def _exec_callback_if_possible(self, imported_module, callback: Callable):
+        if not hasattr(imported_module, 'EndpointAsyncHooksImpl'):
+            return
+
+        endpoint: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl(self._app)
+
+        await callback(endpoint)
+
     async def run_setup_hook(self):
-        modules = self._endpoint_container.endpoints
-        for one_module, one_entity in modules.items():
-            one_entity: EndpointMeta = one_entity
-            imported_module = one_entity.imported_module
-
-            if not hasattr(imported_module, 'EndpointAsyncHooksImpl'):
-                continue
-
-            endpoint: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl(self._app)
-
+        async def callback(endpoint: EndpointHooks):
             await endpoint.setup()
 
+        await self._iterate_endpoints(callback)
+
     async def run_teardown_hook(self):
-        modules = self._endpoint_container.endpoints
-        for one_module, one_entity in modules.items():
-            one_entity: EndpointMeta = one_entity
-            imported_module = one_entity.imported_module
-
-            if not hasattr(imported_module, 'EndpointAsyncHooksImpl'):
-                continue
-
-            endpoint: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl(self._app)
-
+        async def callback(endpoint: EndpointHooks):
             await endpoint.teardown()
+
+        await self._iterate_endpoints(callback)
+
 
