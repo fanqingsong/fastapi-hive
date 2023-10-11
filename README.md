@@ -3,7 +3,7 @@
 ![architecture](docs/img/hive.jpg)
 
 <p align="center">
-    <em>FastAPI Hive Framework, packages&modules code structure, developer-friendly, easy to be integrated</em>
+    <em>FastAPI Hive Framework, packages&cornerstones code structure, developer-friendly, easy to be integrated</em>
 </p>
 
 [![build](https://github.com/fanqingsong/fastapi-hive/workflows/pytest_flake8/badge.svg)](https://github.com/fanqingsong/fastapi-hive/actions)
@@ -15,11 +15,11 @@
 
 Based on [fastapi-ml-skeleton](https://github.com/eightBEC/fastapi-ml-skeleton)
 
-Refactor code into module management, ie, every modules could be set in one folder.
+Refactor code into module management, ie, every cornerstones could be set in one folder.
 
 Go to detailed site for more information [FastAPI Hive](https://fanqingsong.github.io/fastapi-hive/)
 
-This repository contains a demo app and fastapi modules which can be used to speed-up your next machine learning project. The code is fully tested and provides a preconfigured `tox` to quickly expand this sample code.
+This repository contains a demo app and fastapi cornerstones which can be used to speed-up your next machine learning project. The code is fully tested and provides a preconfigured `tox` to quickly expand this sample code.
 
-To experiment and get a feeling on how to use this framework, two packages and two modules of each package are set in the demo folder. Follow the installation and setup instructions to run the demo app and serve it with RESTful API, go to [FastAPI Hive](https://fanqingsong.github.io/fastapi-hive/) for that.
+To experiment and get a feeling on how to use this framework, two packages and two cornerstones of each package are set in the demo folder. Follow the installation and setup instructions to run the demo app and serve it with RESTful API, go to [FastAPI Hive](https://fanqingsong.github.io/fastapi-hive/) for that.
 

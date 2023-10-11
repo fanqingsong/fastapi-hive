@@ -10,7 +10,7 @@
 
     DIP Definition
 
-    * High-level modules should not depend on low-level modules. 
+    * High-level cornerstones should not depend on low-level cornerstones. 
         Both should depend on the abstraction.
 
     * Abstractions should not depend on details. 
@@ -34,6 +34,6 @@
 
 ---
 
-FastAPI Hive Framework loads modules of packages, It extracts the abstraction EndpointMeta properties, including router and service, which will be mounted into app during app startup.
+FastAPI Hive Framework loads cornerstones of packages, It extracts the abstraction EndpointMeta properties, including router and service, which will be mounted into app during app startup.
 
 ---

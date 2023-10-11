@@ -1,6 +1,6 @@
 
-from fastapi_hive.ioc_framework.endpoint_model.implement import EndpointMeta, Endpoint, EndpointAsync
+from fastapi_hive.ioc_framework.endpoint_model.implement import EndpointMeta, EndpointHooks, EndpointAsyncHooks
 
 
-__all__ = ["EndpointMeta", "Endpoint", "EndpointAsync"]
+__all__ = ["EndpointMeta", "EndpointHooks", "EndpointAsyncHooks"]
 

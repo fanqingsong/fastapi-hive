@@ -22,7 +22,7 @@ def post_predict(
 ) -> HousePredictionResult:
 
     module_container: EndpointContainer = request.app.state.endpoint_container
-    model: HousePriceModel = module_container.get_module("house_price").service
+    model: HousePriceModel = module_container.get_endpoint("house_price").service
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction

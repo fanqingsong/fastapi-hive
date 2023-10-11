@@ -15,3 +15,4 @@ di_container.wire(
         "fastapi_hive.ioc_framework.implement",
     ]
 )
+

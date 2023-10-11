@@ -2,21 +2,21 @@
 from fastapi import FastAPI
 
 
-class Cornerstone:
+class CornerstoneHooks:
     '''
-    Base class for cornerstone modules.
+    Base class for cornerstone hooks.
 
     Usage
     ===
 
-    In your cornerstone modules `__init__.py` create a subclass of `Cornerstone`
+    In your cornerstone cornerstones `__init__.py` create a subclass of `CornerstoneHooks`
 
     ```python
-    from fastapi_hive.ioc_framework.cornerstone_model import Cornerstone
+    from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks
 
 
-    class CornerstoneImpl(Cornerstone):
-        def pre_setup(self):
+    class CornerstoneImpl(CornerstoneHooks):
+        def pre_endpoint_setup(self):
             pass
     ```
     '''
@@ -24,34 +24,34 @@ class Cornerstone:
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
-    def pre_setup(self):
+    def pre_endpoint_setup(self):
         pass
 
-    def post_setup(self):
+    def post_endpoint_setup(self):
         pass
 
-    def pre_teardown(self):
+    def pre_endpoint_teardown(self):
         pass
 
-    def post_teardown(self):
+    def post_endpoint_teardown(self):
         pass
 
 
-class CornerstoneAsync:
+class CornerstoneAsyncHooks:
     '''
-    Base class for cornerstone modules in async mode.
+    Base class for cornerstone cornerstones in async mode.
 
     Usage
     ===
 
-    In your cornerstone modules `__init__.py` create a subclass of `CornerstoneAsync`
+    In your cornerstone cornerstones `__init__.py` create a subclass of `CornerstoneAsyncHooks`
 
     ```python
-    from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneAsync
+    from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneAsyncHooks
 
 
-    class CornerstoneAsyncImpl(CornerstoneAsync):
-        async def pre_setup(self):
+    class CornerstoneAsyncImpl(CornerstoneAsyncHooks):
+        async def pre_endpoint_setup(self):
             pass
     ```
     '''
@@ -59,16 +59,16 @@ class CornerstoneAsync:
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
-    async def pre_setup(self):
+    async def pre_endpoint_setup(self):
         pass
 
-    async def post_setup(self):
+    async def post_endpoint_setup(self):
         pass
 
-    async def pre_teardown(self):
+    async def pre_endpoint_teardown(self):
         pass
 
-    async def post_teardown(self):
+    async def post_endpoint_teardown(self):
         pass
 
 

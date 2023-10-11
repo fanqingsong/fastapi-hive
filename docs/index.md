@@ -3,7 +3,7 @@
 ![architecture](img/hive.jpg)
 
 <p align="center">
-    <em>FastAPI Hive Framework, packages&modules code management, developer-friendly, easy to be integrated.</em>
+    <em>FastAPI Hive Framework, packages&cornerstones code management, developer-friendly, easy to be integrated.</em>
 </p>
 
 
@@ -38,7 +38,7 @@ FastAPI Hive is the container for all bees.
 
 ---
 
-FastAPI Hive Framework is a developer friendly and easy to be integrated framework for managing your code by packages&modules folder structure.
+FastAPI Hive Framework is a developer friendly and easy to be integrated framework for managing your code by packages&cornerstones folder structure.
 
 The key features are:
 
@@ -46,7 +46,7 @@ The key features are:
 * **Modules**: a sub-folder in packages, contains functional codes in service.
 * **Router Mounting Automatically**: the router defined by module will be mounted into app automatically.
 * **Service Mounting Automatically**: the service(such as ML model) defined by module will be mounted into app automatically, to reduce loading time during call.
-* **Developer-Friendly**: all one-module codes are put in one same folders, all modules are managed by different packages.
+* **Developer-Friendly**: all one-module codes are put in one same folders, all cornerstones are managed by different packages.
 * **Easy-to-be-Integrated**: Just several line codes to integrate it in your app.
 
 <small>estimation based on tests by author with this project[**](https://github.com/fanqingsong/machine_learning_system_fastapi), have a look at demo folder.</small>

@@ -41,7 +41,7 @@ class EndpointRouterMounter:
 
         hide_package = self._ioc_config.HIDE_PACKAGE_IN_URL
 
-        modules = self._endpoint_container.modules
+        modules = self._endpoint_container.endpoints
         #
         # print("-------------------------------")
         # print(dir(self._endpoint_container))

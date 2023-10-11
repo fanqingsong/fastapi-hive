@@ -17,9 +17,9 @@ pip3 install fastapi_hive
 
 Note: You can reference demo code to complete this part. 
 
-### Make packages and modules  
+### Make packages and cornerstones  
 
-First, create or refactor you code into packages&modules:
+First, create or refactor you code into packages&cornerstones:
 
 ![module folders](img/module_folders.png)
 
@@ -54,7 +54,7 @@ def get_app() -> FastAPI:
 
     ioc_framework = IoCFramework(fast_app)
     ioc_framework.config.API_PREFIX = API_PREFIX
-    ioc_framework.config.MODULE_PACKAGE_PATHS = ["./demo/xxx_endpoint", "./demo/yyy_endpoint"]
+    ioc_framework.config.ENDPOINT_PACKAGE_PATHS = ["./demo/xxx_endpoint", "./demo/yyy_endpoint"]
     ioc_framework.config.HIDE_PACKAGE_IN_URL = False
     ioc_framework.config.HIDE_MODULE_IN_URL = False
     ioc_framework.init_modules()
@@ -72,7 +72,7 @@ app = get_app()
 
 ## URL MAPPING
 
-As you know, this framework will discover and load all modules in all packages automatically.
+As you know, this framework will discover and load all cornerstones in all packages automatically.
 So the API URLs contain package folder name or module folder name, in order to avoid conflicts and be sensible.
 
 If the folder structure likes below

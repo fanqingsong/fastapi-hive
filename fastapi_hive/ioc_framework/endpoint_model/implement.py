@@ -3,20 +3,20 @@ from fastapi import APIRouter, FastAPI
 from typing import Optional
 
 
-class Endpoint:
+class EndpointHooks:
     '''
-    Base class for Endpoint modules.
+    Base class for EndpointHooks cornerstones.
 
     Usage
     ===
 
-    In your Endpoint modules `__init__.py` create a subclass of `Endpoint`
+    In your EndpointHooks cornerstones `__init__.py` create a subclass of `EndpointHooks`
 
     ```python
-    from fastapi_hive.ioc_framework.endpoint_model import Endpoint
+    from fastapi_hive.ioc_framework.endpoint_model import EndpointHooks
 
 
-    class EndpointImpl(Endpoint):
+    class EndpointHooksImpl(EndpointHooks):
         def setup(self):
             pass
     ```
@@ -32,20 +32,20 @@ class Endpoint:
         pass
 
 
-class EndpointAsync:
+class EndpointAsyncHooks:
     '''
-    Base class for Endpoint modules in async mode.
+    Base class for EndpointHooks cornerstones in async mode.
 
     Usage
     ===
 
-    In your Endpoint modules `__init__.py` create a subclass of `EndpointAsync`
+    In your EndpointHooks cornerstones `__init__.py` create a subclass of `EndpointAsyncHooks`
 
     ```python
-    from fastapi_hive.ioc_framework.endpoint_model import EndpointAsync
+    from fastapi_hive.ioc_framework.endpoint_model import EndpointAsyncHooks
 
 
-    class EndpointAsyncImpl(EndpointAsync):
+    class EndpointAsyncHooksImpl(EndpointAsyncHooks):
         async def setup(self):
             pass
     ```

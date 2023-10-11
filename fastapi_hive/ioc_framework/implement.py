@@ -40,15 +40,15 @@ class IoCFramework:
         return self._ioc_config
 
     def init_modules(self) -> None:
-        self._cornerstone_container.register_module_package_paths(
+        self._cornerstone_container.register_cornerstone_package_paths(
             self._ioc_config.CORNERSTONE_PACKAGE_PATHS
         )
-        self._cornerstone_container.resolve_modules()
+        self._cornerstone_container.load_cornerstones()
 
-        self._endpoint_container.register_module_package_paths(
-            self._ioc_config.MODULE_PACKAGE_PATHS
+        self._endpoint_container.register_endpoint_package_paths(
+            self._ioc_config.ENDPOINT_PACKAGE_PATHS
         )
-        self._endpoint_container.resolve_modules()
+        self._endpoint_container.load_endpoints()
 
         self._add_sync_event_handler()
         self._add_async_event_handler()
@@ -87,13 +87,13 @@ class IoCFramework:
         app = self._app
 
         def run_ioc_pre_setup():
-            hive_pre_setup = self._ioc_config.PRE_SETUP
+            hive_pre_setup = self._ioc_config.PRE_ENDPOINT_SETUP
             if callable(hive_pre_setup):
                 logger.info("call hive pre setup")
                 hive_pre_setup()
 
         def run_ioc_post_setup():
-            hive_post_setup = self._ioc_config.POST_SETUP
+            hive_post_setup = self._ioc_config.POST_ENDPOINT_SETUP
             if callable(hive_post_setup):
                 logger.info("call hive post setup")
                 hive_post_setup()
@@ -117,13 +117,13 @@ class IoCFramework:
         app = self._app
 
         def run_ioc_pre_teardown():
-            hive_pre_teardown = self._ioc_config.PRE_TEARDOWN
+            hive_pre_teardown = self._ioc_config.PRE_ENDPOINT_TEARDOWN
             if callable(hive_pre_teardown):
                 logger.info("call hive pre teardown")
                 hive_pre_teardown()
 
         def run_ioc_post_teardown():
-            hive_post_teardown = self._ioc_config.POST_TEARDOWN
+            hive_post_teardown = self._ioc_config.POST_ENDPOINT_TEARDOWN
             if callable(hive_post_teardown):
                 logger.info("call hive post teardown")
                 hive_post_teardown()
@@ -147,13 +147,13 @@ class IoCFramework:
         app = self._app
 
         async def run_ioc_pre_setup():
-            hive_pre_setup = self._ioc_config.ASYNC_PRE_SETUP
+            hive_pre_setup = self._ioc_config.ASYNC_PRE_ENDPOINT_SETUP
             if callable(hive_pre_setup):
                 logger.info("call hive pre setup")
                 await hive_pre_setup()
 
         async def run_ioc_post_setup():
-            hive_post_setup = self._ioc_config.ASYNC_POST_SETUP
+            hive_post_setup = self._ioc_config.ASYNC_POST_ENDPOINT_SETUP
             if callable(hive_post_setup):
                 logger.info("call hive post setup")
                 await hive_post_setup()
@@ -177,13 +177,13 @@ class IoCFramework:
         app = self._app
 
         async def run_ioc_pre_teardown():
-            hive_pre_teardown = self._ioc_config.ASYNC_PRE_TEARDOWN
+            hive_pre_teardown = self._ioc_config.ASYNC_PRE_ENDPOINT_TEARDOWN
             if callable(hive_pre_teardown):
                 logger.info("call hive pre teardown")
                 await hive_pre_teardown()
 
         async def run_ioc_post_teardown():
-            hive_post_teardown = self._ioc_config.ASYNC_POST_TEARDOWN
+            hive_post_teardown = self._ioc_config.ASYNC_POST_ENDPOINT_TEARDOWN
             if callable(hive_post_teardown):
                 logger.info("call hive post teardown")
                 await hive_post_teardown()

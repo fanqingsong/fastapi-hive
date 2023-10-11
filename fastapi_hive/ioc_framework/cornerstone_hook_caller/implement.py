@@ -1,9 +1,9 @@
-
+from typing import Callable
 
 from fastapi import FastAPI
 from loguru import logger
 from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer
-from fastapi_hive.ioc_framework.cornerstone_model import Cornerstone, CornerstoneAsync, CornerstoneMeta
+from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks, CornerstoneAsyncHooks, CornerstoneMeta
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
@@ -23,63 +23,42 @@ class CornerstoneHookCaller:
         self._cornerstone_container = cornerstone_container
         self._ioc_config = ioc_config
 
-        # print("-------------_cornerstone_container in  CornerstoneHookCaller------------------")
-        # print(dir(self._cornerstone_container))
+    def _iterate_cornerstones(self, callback: Callable):
+        cornerstones = self._cornerstone_container.cornerstones
+        for _, one_cornerstone in cornerstones.items():
+            one_cornerstone: CornerstoneMeta = one_cornerstone
+            imported_module = one_cornerstone.imported_module
+
+            if not hasattr(imported_module, 'CornerstoneHooksImpl'):
+                continue
+
+            cornerstone: CornerstoneHooks = imported_module.CornerstoneHooksImpl(self._app)
+
+            callback(cornerstone)
 
     def run_pre_setup_hook(self):
-        # print("-----------_cornerstone_container in  CornerstoneHookCaller run_pre_setup_hook --------------------")
-        # print(dir(self._cornerstone_container))
+        def callback(cornerstone: CornerstoneHooks):
+            cornerstone.pre_endpoint_setup()
 
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
-
-            if not hasattr(imported_module, 'CornerstoneImpl'):
-                continue
-
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
-
-            cornerstone.pre_setup()
+        self._iterate_cornerstones(callback)
 
     def run_post_setup_hook(self):
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
+        def callback(cornerstone: CornerstoneHooks):
+            cornerstone.post_endpoint_setup()
 
-            if not hasattr(imported_module, 'CornerstoneImpl'):
-                continue
-
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
-
-            cornerstone.post_setup()
+        self._iterate_cornerstones(callback)
 
     def run_pre_teardown_hook(self):
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
+        def callback(cornerstone: CornerstoneHooks):
+            cornerstone.pre_endpoint_teardown()
 
-            if not hasattr(imported_module, 'CornerstoneImpl'):
-                continue
-
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
-
-            cornerstone.pre_teardown()
+        self._iterate_cornerstones(callback)
 
     def run_post_teardown_hook(self):
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
+        def callback(cornerstone: CornerstoneHooks):
+            cornerstone.post_endpoint_teardown()
 
-            if not hasattr(imported_module, 'CornerstoneImpl'):
-                continue
-
-            cornerstone: Cornerstone = imported_module.CornerstoneImpl(self._app)
-
-            cornerstone.post_teardown()
+        self._iterate_cornerstones(callback)
 
 
 class CornerstoneHookAsyncCaller:
@@ -96,61 +75,41 @@ class CornerstoneHookAsyncCaller:
         self._cornerstone_container = cornerstone_container
         self._ioc_config = ioc_config
 
-        # print("-------------_cornerstone_container in  CornerstoneHookCaller------------------")
-        # print(dir(self._cornerstone_container))
+    async def _iterate_cornerstones(self, callback: Callable):
+        cornerstones = self._cornerstone_container.cornerstones
+        for _, one_cornerstone in cornerstones.items():
+            one_cornerstone: CornerstoneMeta = one_cornerstone
+            imported_module = one_cornerstone.imported_module
+
+            if not hasattr(imported_module, 'CornerstoneAsyncHooksImpl'):
+                continue
+
+            cornerstone: CornerstoneAsyncHooks = imported_module.CornerstoneAsyncHooksImpl(self._app)
+
+            await callback(cornerstone)
 
     async def run_pre_setup_hook(self):
-        # print("-----------_cornerstone_container in  CornerstoneHookCaller run_pre_setup_hook --------------------")
-        # print(dir(self._cornerstone_container))
+        async def callback(cornerstone: CornerstoneAsyncHooks):
+            await cornerstone.pre_endpoint_setup()
 
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
-
-            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
-                continue
-
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
-
-            await cornerstone.pre_setup()
+        await self._iterate_cornerstones(callback)
 
     async def run_post_setup_hook(self):
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
+        async def callback(cornerstone: CornerstoneAsyncHooks):
+            await cornerstone.post_endpoint_setup()
 
-            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
-                continue
-
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
-
-            await cornerstone.post_setup()
+        await self._iterate_cornerstones(callback)
 
     async def run_pre_teardown_hook(self):
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
+        async def callback(cornerstone: CornerstoneAsyncHooks):
+            await cornerstone.pre_endpoint_teardown()
 
-            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
-                continue
-
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
-
-            await cornerstone.pre_teardown()
+        await self._iterate_cornerstones(callback)
 
     async def run_post_teardown_hook(self):
-        modules = self._cornerstone_container.modules
-        for one_module, one_entity in modules.items():
-            one_entity: CornerstoneMeta = one_entity
-            imported_module = one_entity.imported_module
+        async def callback(cornerstone: CornerstoneAsyncHooks):
+            await cornerstone.post_endpoint_teardown()
 
-            if not hasattr(imported_module, 'CornerstoneAsyncImpl'):
-                continue
+        await self._iterate_cornerstones(callback)
 
-            cornerstone: CornerstoneAsync = imported_module.CornerstoneAsyncImpl(self._app)
-
-            await cornerstone.post_teardown()
 
