@@ -2,6 +2,8 @@
 
 ![architecture](img/hive.jpg)
 
+![startup_flow](img/startup_flow.png)
+
 <p align="center">
     <em>FastAPI Hive Framework, packages&cornerstones code management, developer-friendly, easy to be integrated.</em>
 </p>

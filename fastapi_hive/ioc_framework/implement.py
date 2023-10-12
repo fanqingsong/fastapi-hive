@@ -101,15 +101,15 @@ class IoCFramework:
         def startup() -> None:
             logger.info("Running container sync start handler.")
 
-            self._cornerstone_hook_caller.run_pre_setup_hook()
-
             run_ioc_pre_setup()
+
+            self._cornerstone_hook_caller.run_pre_setup_hook()
 
             self._sync_setup()
 
-            self._cornerstone_hook_caller.run_post_setup_hook()
-
             run_ioc_post_setup()
+
+            self._cornerstone_hook_caller.run_post_setup_hook()
 
         return startup
 
@@ -131,15 +131,15 @@ class IoCFramework:
         def shutdown() -> None:
             logger.info("Running container sync shutdown handler.")
 
-            self._cornerstone_hook_caller.run_pre_teardown_hook()
-
             run_ioc_pre_teardown()
+
+            self._cornerstone_hook_caller.run_pre_teardown_hook()
 
             self._sync_teardown()
 
-            self._cornerstone_hook_caller.run_post_teardown_hook()
-
             run_ioc_post_teardown()
+
+            self._cornerstone_hook_caller.run_post_teardown_hook()
 
         return shutdown
 
@@ -161,15 +161,15 @@ class IoCFramework:
         async def startup() -> None:
             logger.info("Running container async start handler.")
 
-            await self._cornerstone_hook_async_caller.run_pre_setup_hook()
-
             await run_ioc_pre_setup()
+
+            await self._cornerstone_hook_async_caller.run_pre_setup_hook()
 
             await self._async_setup()
 
-            await self._cornerstone_hook_async_caller.run_post_setup_hook()
-
             await run_ioc_post_setup()
+
+            await self._cornerstone_hook_async_caller.run_post_setup_hook()
 
         return startup
 
@@ -191,14 +191,14 @@ class IoCFramework:
         async def shutdown() -> None:
             logger.info("Running container async shutdown handler.")
 
-            await self._cornerstone_hook_async_caller.run_pre_teardown_hook()
-
             await run_ioc_pre_teardown()
+
+            await self._cornerstone_hook_async_caller.run_pre_teardown_hook()
 
             await self._async_teardown()
 
-            await self._cornerstone_hook_async_caller.run_post_teardown_hook()
-
             await run_ioc_post_teardown()
+
+            await self._cornerstone_hook_async_caller.run_post_teardown_hook()
 
         return shutdown
