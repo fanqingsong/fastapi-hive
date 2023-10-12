@@ -1,17 +1,17 @@
 
 
-from demo.cornerstone import messages
+from example.cornerstone import messages
 
 
 def test_auth_using_prediction_api_no_apikey_header(test_client) -> None:
-    response = test_client.post('/api/xxx_endpoint/house_price/predict')
+    response = test_client.post('/api/endpoints_package1/house_price/predict')
     assert response.status_code == 400
     assert response.json() == {"detail": messages.NO_API_KEY}
 
 
 def test_auth_using_prediction_api_wrong_apikey_header(test_client) -> None:
     response = test_client.post(
-        '/api/xxx_endpoint/house_price/predict',
+        '/api/endpoints_package1/house_price/predict',
         json={"image": "test"},
         headers={"token": "WRONG_TOKEN"}
     )

@@ -17,7 +17,7 @@ class EndpointHookCaller:
             endpoint_container: EndpointContainer = Provide[DIContainer.endpoint_container],
             ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
     ):
-        logger.info("endpoint hook caller is starting.")
+        logger.info("endpoint hook caller is initializing.")
 
         self._app = app
         self._endpoint_container = endpoint_container
@@ -69,7 +69,7 @@ class EndpointHookAsyncCaller:
             endpoint_container: EndpointContainer = Provide[DIContainer.endpoint_container],
             ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
     ):
-        logger.info("endpoint hook async caller is starting.")
+        logger.info("endpoint hook async caller is initializing.")
 
         self._app = app
         self._endpoint_container = endpoint_container

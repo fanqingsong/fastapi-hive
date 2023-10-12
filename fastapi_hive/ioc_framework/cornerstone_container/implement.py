@@ -1,7 +1,7 @@
 import importlib
 import os
 from loguru import logger
-from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks, CornerstoneMeta
+from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneMeta
 
 
 class CornerstoneContainer:
@@ -20,7 +20,7 @@ class CornerstoneContainer:
         self._cornerstone_package_paths = current_package_paths | cornerstone_package_paths
 
         logger.info(
-            f"after registering, module package paths = {self._cornerstone_package_paths}")
+            f"after registering, cornerstone package paths = {self._cornerstone_package_paths}")
 
     def unregister_cornerstone_package_paths(self, cornerstone_package_paths):
         cornerstone_package_paths = set(cornerstone_package_paths)
@@ -29,11 +29,11 @@ class CornerstoneContainer:
         self._cornerstone_package_paths = current_package_paths - cornerstone_package_paths
 
         logger.info(
-            f"after unregistering, module package paths = {self._cornerstone_package_paths}")
+            f"after unregistering, cornerstone package paths = {self._cornerstone_package_paths}")
 
     def load_cornerstones(self):
         module_package_paths = self._cornerstone_package_paths
-        logger.info(f"module package paths = {module_package_paths}")
+        logger.info(f"cornerstone package paths = {module_package_paths}")
 
         for one_package_path in module_package_paths:
             cornerstone_paths = self._get_cornerstone_paths(one_package_path)
@@ -70,7 +70,7 @@ class CornerstoneContainer:
             cornerstone_path = cornerstone_path.replace("./", "")
             cornerstone_path = cornerstone_path.replace(os.path.sep, ".")
 
-            logger.info(f"module path = {cornerstone_path}")
+            logger.info(f"cornerstone path = {cornerstone_path}")
 
             cornerstone_paths[one_cornerstone_name] = cornerstone_path
 
@@ -88,8 +88,6 @@ class CornerstoneContainer:
             file_path = os.path.join(package_path, file)
 
             if os.path.isdir(file_path):
-                # print("====================")
-                # print(file)
                 cornerstone_names.append(file)
 
         return cornerstone_names

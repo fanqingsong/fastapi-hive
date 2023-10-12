@@ -7,7 +7,7 @@ from typing import List, Callable
 class IoCConfig(BaseModel):
     CORNERSTONE_PACKAGE_PATHS: List[str] = ["./cornerstone"]
     API_PREFIX: str = ""
-    ENDPOINT_PACKAGE_PATHS: List[str] = ["./demo/xxx_endpoint"]
+    ENDPOINT_PACKAGE_PATHS: List[str] = ["./example/endpoints_package1"]
     HIDE_PACKAGE_IN_URL: bool = False
     HIDE_MODULE_IN_URL: bool = False
     PRE_ENDPOINT_SETUP: Callable = None

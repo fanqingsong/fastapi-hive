@@ -113,19 +113,19 @@ import uuid
 print(str(uuid.uuid4()))
 ```
 
-### Run demo app
+### Run  app
 
-1. Start demo app with: 
+1. Start example app with: 
 
 production running command:
 
 ```bash
-uvicorn demo.main:app
+uvicorn example.main:app
 ```
 
 developing running command:
 ```bash
-uvicorn demo.main:app --reload
+uvicorn example.main:app --reload
 ```
 
 2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).

@@ -20,7 +20,7 @@ class EndpointContainer:
         self._endpoint_package_paths = current_package_paths | endpoint_package_paths
 
         logger.info(
-            f"after registering, module package paths = {self._endpoint_package_paths}")
+            f"after registering, endpoint package paths = {self._endpoint_package_paths}")
 
     def unregister_endpoint_package_paths(self, endpoint_package_paths):
         endpoint_package_paths = set(endpoint_package_paths)
@@ -29,11 +29,11 @@ class EndpointContainer:
         self._endpoint_package_paths = current_package_paths - endpoint_package_paths
 
         logger.info(
-            f"after unregistering, module package paths = {self._endpoint_package_paths}")
+            f"after unregistering, endpoint package paths = {self._endpoint_package_paths}")
 
     def load_endpoints(self):
         endpoint_package_paths = self._endpoint_package_paths
-        logger.info(f"module package paths = {endpoint_package_paths}")
+        logger.info(f"endpoint package paths = {endpoint_package_paths}")
 
         for one_package_path in endpoint_package_paths:
             endpoint_paths = self._get_endpoint_paths(one_package_path)
@@ -84,7 +84,7 @@ class EndpointContainer:
             endpoint_path = endpoint_path.replace("./", "")
             endpoint_path = endpoint_path.replace(os.path.sep, ".")
 
-            logger.info(f"module path = {endpoint_path}")
+            logger.info(f"endpoint path = {endpoint_path}")
 
             endpoint_paths[one_name] = endpoint_path
 
@@ -102,8 +102,6 @@ class EndpointContainer:
             file_path = os.path.join(package_path, file)
 
             if os.path.isdir(file_path):
-                # print("====================")
-                # print(file)
                 endpoint_names.append(file)
 
         return endpoint_names

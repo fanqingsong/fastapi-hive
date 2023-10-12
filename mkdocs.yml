@@ -1,5 +1,5 @@
 site_name: FastAPI Hive
-site_description: FastAPI EndpointMeta Framework, packages&xxx_endpoint code structure, developer-friendly, easy to be integrated.
+site_description: FastAPI Hive Framework, cornerstones and endpoints_package code structure, developer-friendly, easy to be integrated.
 site_url: https://fanqingsong.github.io/fastapi-hive/
 theme:
   name: material

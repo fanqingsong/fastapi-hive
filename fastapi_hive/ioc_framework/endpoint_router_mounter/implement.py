@@ -21,14 +21,11 @@ class EndpointRouterMounter:
             endpoint_container: EndpointContainer = Provide[DIContainer.endpoint_container],
             ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
     ):
-        logger.info("endpoint router mounter is starting.")
+        logger.info("endpoint router mounter is initializing.")
 
         self._app = app
         self._endpoint_container = endpoint_container
         self._ioc_config = ioc_config
-
-        # print("-------------_endpoint_container in  EndpointRouterMounter init------------------")
-        # print(dir(self._endpoint_container))
 
     def mount(self, api_prefix: str) -> None:
         app: FastAPI = self._app
@@ -41,31 +38,28 @@ class EndpointRouterMounter:
 
         hide_package = self._ioc_config.HIDE_PACKAGE_IN_URL
 
-        modules = self._endpoint_container.endpoints
-        #
-        # print("-------------------------------")
-        # print(dir(self._endpoint_container))
+        endpoints = self._endpoint_container.endpoints
 
-        for one_module, one_entity in modules.items():
-            one_entity: EndpointMeta = one_entity
+        for endpoint_name, endpoint_instance in endpoints.items():
+            endpoint_instance: EndpointMeta = endpoint_instance
 
-            imported_module_router = one_entity.imported_module_router
+            imported_module_router = endpoint_instance.imported_module_router
             if not hasattr(imported_module_router, 'router'):
                 continue
 
             module_router = imported_module_router.router
-            package_name = one_entity.package
+            package_name = endpoint_instance.package
 
-            prefix = f"/{package_name}/{one_module}"
+            prefix = f"/{package_name}/{endpoint_name}"
             if hide_package:
-                prefix = f"/{one_module}"
+                prefix = f"/{endpoint_name}"
 
             '''
             set package in url
             '''
             api_router.include_router(
                 module_router,
-                tags=[f"{package_name}.{one_module}"],
+                tags=[f"{package_name}.{endpoint_name}"],
                 prefix=prefix)
 
         return api_router

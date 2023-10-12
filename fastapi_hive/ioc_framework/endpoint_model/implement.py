@@ -1,9 +1,10 @@
 
 from fastapi import APIRouter, FastAPI
 from typing import Optional
+from abc import ABC, abstractmethod
 
 
-class EndpointHooks:
+class EndpointHooks(ABC):
     '''
     Base class for EndpointHooks cornerstones.
 
@@ -25,14 +26,16 @@ class EndpointHooks:
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
+    @abstractmethod
     def setup(self):
         pass
 
+    @abstractmethod
     def teardown(self):
         pass
 
 
-class EndpointAsyncHooks:
+class EndpointAsyncHooks(ABC):
     '''
     Base class for EndpointHooks cornerstones in async mode.
 
@@ -54,9 +57,11 @@ class EndpointAsyncHooks:
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
+    @abstractmethod
     async def setup(self):
         pass
 
+    @abstractmethod
     async def teardown(self):
         pass
 
@@ -69,8 +74,6 @@ class EndpointMeta:
         self._imported_module_db = None
         self._imported_module_router = None
         self._imported_module_service = None
-
-        self._service = None
 
     @property
     def name(self) -> str:
@@ -119,11 +122,3 @@ class EndpointMeta:
     @imported_module_service.setter
     def imported_module_service(self, value):
         self._imported_module_service = value
-
-    @property
-    def service(self):
-        return self._service
-
-    @service.setter
-    def service(self, value):
-        self._service = value

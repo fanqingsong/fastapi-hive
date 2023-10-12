@@ -1,8 +1,9 @@
 
 from fastapi import FastAPI
+from abc import ABC,abstractmethod
 
 
-class CornerstoneHooks:
+class CornerstoneHooks(ABC):
     '''
     Base class for cornerstone hooks.
 
@@ -24,15 +25,19 @@ class CornerstoneHooks:
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
+    @abstractmethod
     def pre_endpoint_setup(self):
         pass
 
+    @abstractmethod
     def post_endpoint_setup(self):
         pass
 
+    @abstractmethod
     def pre_endpoint_teardown(self):
         pass
 
+    @abstractmethod
     def post_endpoint_teardown(self):
         pass
 
@@ -59,15 +64,19 @@ class CornerstoneAsyncHooks:
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
+    @abstractmethod
     async def pre_endpoint_setup(self):
         pass
 
+    @abstractmethod
     async def post_endpoint_setup(self):
         pass
 
+    @abstractmethod
     async def pre_endpoint_teardown(self):
         pass
 
+    @abstractmethod
     async def post_endpoint_teardown(self):
         pass
 
