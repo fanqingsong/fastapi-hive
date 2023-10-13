@@ -1,4 +1,4 @@
-# Design Idea
+# What Design Idea it abides by?
 
 ![architecture](img/dip.png)
 

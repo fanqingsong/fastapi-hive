@@ -17,21 +17,21 @@
 [![Downloads](https://pepy.tech/badge/fastapi-hive)](https://pepy.tech/project/fastapi-hive)
 
 
-Notes:
+Introduction:
+===================
 
-```text
-Regular fastapi project setups some folders for storing specific function codes, 
+> Regular fastapi project setups some folders for storing specific function codes, 
 such as router folder for api registering folder and model folder for defining db tables and pydantic data model.
-
-So one service codes have to be splitted and exist in several folders, the problem is the code-review issue of looking for them with jumpping different folders again and again.
-
-If you feel it is tiresome task like me, then FastAPI Hive is just for you.
-
-Every bee is thought as the entity of one service codes, defined as endpoints, including all function codes(router, model).
+> 
+> So one service codes have to be splitted and exist in several folders, the problem is the code-review issue of looking for them with jumpping different folders again and again.
+> 
+> If you feel it is tiresome task like me, then FastAPI Hive is just for you.
+> 
+>Every bee is thought as the entity of one service codes, defined as endpoints, including all function codes(router, model).
 FastAPI Hive is the container(bee's home) for all bees.  
+>
+> Also for these common function code, like database setup and authentication codes, they are defined as cornerstones, which are key to construct bee's hive, every function code are put into one cornerstone folder together.
 
-Also for these common function code, like database setup and authentication codes, they are defined as cornerstones, which are key to construct bee's hive, every function code are put into one cornerstone folder together.
-```
 
 
 ---
