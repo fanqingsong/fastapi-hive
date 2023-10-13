@@ -34,6 +34,11 @@
 
 ---
 
-FastAPI Hive Framework loads cornerstones of packages, It extracts the abstraction EndpointMeta properties, including router and service, which will be mounted into app during app startup.
+FastAPI Hive Framework loads packages of cornerstones and endpoints, It extracts the cornerstone and enpoint functions abstraction meta properties, and provide hooks mechanism to setup environment. As of router, it will be mounted into app during app startup automatically.
 
 ---
+
+startup running flow:
+
+![startup_flow](img/startup_flow.png)
+
