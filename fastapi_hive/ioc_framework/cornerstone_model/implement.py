@@ -42,7 +42,7 @@ class CornerstoneHooks(ABC):
         pass
 
 
-class CornerstoneAsyncHooks:
+class CornerstoneAsyncHooks(ABC):
     '''
     Base class for cornerstone cornerstones in async mode.
 
