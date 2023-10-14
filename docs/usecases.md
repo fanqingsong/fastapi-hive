@@ -156,9 +156,280 @@ def post_predict(
 ---
 
 
-## DB ORM definition and table creation.
+## 2. DB ORM definition and table creation && db instance for endpoints.
 
 ---
 
-TBA
+For db setting definition, sqlalchemy let user create a Base object.
 
+https://fastapi.tiangolo.com/tutorial/sql-databases/
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+```
+
+Then every service code which need db have to define ORM model inherited from Base object.
+
+```python
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
+from .database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
+
+    items = relationship("Item", back_populates="owner")
+
+
+class Item(Base):
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    description = Column(String, index=True)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+
+    owner = relationship("User", back_populates="items")
+
+```
+
+Then main.py call a sentance to create all tables in DB:
+
+this sentance:
+models.Base.metadata.create_all(bind=engine)
+
+
+```python
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy.orm import Session
+
+from . import crud, models, schemas
+from .database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@app.post("/users/", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
+
+
+@app.get("/users/", response_model=list[schemas.User])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
+
+
+@app.get("/users/{user_id}", response_model=schemas.User)
+def read_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+
+@app.post("/users/{user_id}/items/", response_model=schemas.Item)
+def create_item_for_user(
+    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
+):
+    return crud.create_user_item(db=db, item=item, user_id=user_id)
+
+
+@app.get("/items/", response_model=list[schemas.Item])
+def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_items(db, skip=skip, limit=limit)
+    return items
+
+```
+
+But there is an implicit import dependency to care during coding:
+in models.py file, import Base first, then define ORM model inherited from Base,
+in main.py file, call create_all function to create tables in DB.
+For large project, there are many ORM model to be defined, 
+It is not suitable to define all of them in one file(models.py),
+So it comes to fastapi-hive framework to decoupling db function module from endpoint service module.
+
+
+```python
+from . import crud, models, schemas
+from .database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
+```
+
+Let's see How to use fastapi-hive as of db part.
+
+First, create one db setting file: example/cornerstone/db/implement.py
+
+```python
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base
+from fastapi import FastAPI
+from example.cornerstone.config import DATABASE_URL
+from fastapi_sqlalchemy import DBSessionMiddleware  # middleware helper
+from fastapi_sqlalchemy import db  # an object to provide global access to a database session
+
+
+Base = declarative_base()
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+)
+
+
+def add_db_middleware(app: FastAPI):
+    app.add_middleware(DBSessionMiddleware, db_url=DATABASE_URL)
+
+    app.state.db = db
+
+
+def create_all_tables(app: FastAPI):
+    Base.metadata.create_all(engine)  # Create tables
+    print("-- call create all over ----")
+```
+
+Secondly, create db initial file, and implement hooks call.
+
+example/cornerstone/db/__init__.py
+
+```python
+import logging
+
+from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks, CornerstoneAsyncHooks
+from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
+from fastapi import FastAPI
+
+
+__all__ = ['Base', 'CornerstoneHooksImpl', 'CornerstoneAsyncHooksImpl']
+
+
+class CornerstoneHooksImpl(CornerstoneHooks):
+
+    def __init__(self, app: FastAPI):
+        super(CornerstoneHooksImpl, self).__init__(app)
+
+    def pre_endpoint_setup(self):
+        print("call pre setup from cornerstone db!!!")
+
+        add_db_middleware(self._app)
+
+    def post_endpoint_setup(self):
+        print("call post setup from cornerstone!!!")
+
+        create_all_tables(self._app)
+
+    def pre_endpoint_teardown(self):
+        print("call pre teardown from cornerstone!!!")
+
+    def post_endpoint_teardown(self):
+        print("call pre teardown from cornerstone!!!")
+
+
+class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
+
+    def __init__(self, app: FastAPI):
+        super(CornerstoneAsyncHooksImpl, self).__init__(app)
+
+    async def pre_endpoint_setup(self):
+        print("call pre setup from cornerstone async!!!")
+
+    async def post_endpoint_setup(self):
+        print("call post setup from cornerstone async!!!")
+
+    async def pre_endpoint_teardown(self):
+        print("call pre teardown from cornerstone async!!!")
+
+    async def post_endpoint_teardown(self):
+        print("call pre teardown from cornerstone async!!!")
+
+```
+
+
+Third, create one endpoint db models file:
+
+example/endpoints_package1/notes/db/implement.py
+
+```python
+
+from sqlalchemy import Column, Integer, String, Boolean
+
+from example.cornerstone.db import Base
+
+
+class Note(Base):
+    __tablename__ = "note"
+
+    id = Column(Integer, primary_key=True)
+    text = Column(String)
+    completed = Column(Boolean)
+
+```
+
+
+Lastly, create a router file to call db with ORM model:
+
+```python
+
+from fastapi import APIRouter
+from starlette.requests import Request
+from typing import List
+from example.endpoints_package1.notes import schemas
+from example.endpoints_package1.notes import db as dbmodel
+
+router = APIRouter()
+
+
+@router.get("/", response_model=List[schemas.Note], name="query notes.")
+def get_notes(req: Request, skip: int = 0, limit: int = 100):
+    db = req.app.state.db.session
+
+    notes = db.query(dbmodel.Note).offset(skip).limit(limit).all()
+    return notes
+
+
+@router.post("/", response_model=schemas.Note, name="create note")
+def create_note(note: schemas.NoteIn, req: Request):
+    db = req.app.state.db.session
+
+    db_note = dbmodel.Note(text=note.text, completed=note.completed)
+    db.add(db_note)
+    db.commit()
+    db.refresh(db_note)
+    return db_note
+
+```
