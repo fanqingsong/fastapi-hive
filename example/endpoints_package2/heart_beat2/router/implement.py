@@ -6,7 +6,7 @@ from example.endpoints_package2.heart_beat2.schema.heartbeat import HearbeatResu
 router = APIRouter()
 
 
-@router.get("/heartbeat", response_model=HearbeatResult, name="heartbeat")
+@router.get("/heartbeat", response_model=HearbeatResult, name="heartbeat2")
 def get_hearbeat() -> HearbeatResult:
     heartbeat = HearbeatResult(is_alive=True)
     return heartbeat

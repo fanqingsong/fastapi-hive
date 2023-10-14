@@ -13,7 +13,7 @@ from example.endpoints_package2.house_price2.service import HousePriceModel, get
 router = APIRouter()
 
 
-@router.post("/predict", response_model=HousePredictionResult, name="predict")
+@router.post("/predict", response_model=HousePredictionResult, name="predict2")
 def post_predict(
     request: Request,
     authenticated: bool = Depends(auth.validate_request),

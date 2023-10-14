@@ -27,45 +27,56 @@ class EndpointRouterMounter:
         self._endpoint_container = endpoint_container
         self._ioc_config = ioc_config
 
-    def mount(self, api_prefix: str) -> None:
+    def mount(self) -> None:
+        logger.info("running endpoint router mounter.")
+
         app: FastAPI = self._app
+        api_prefix = self._ioc_config.API_PREFIX
 
-        api_router = self._collect_router()
-        app.include_router(api_router, prefix=api_prefix)
-
-    def _collect_router(self) -> APIRouter:
-        api_router = APIRouter()
-
-        hide_package = self._ioc_config.HIDE_PACKAGE_IN_URL
+        hide_endpoint_container_in_api = self._ioc_config.HIDE_ENDPOINT_CONTAINER_IN_API
+        hide_endpoint_in_api = self._ioc_config.HIDE_ENDPOINT_IN_API
+        hide_endpoint_in_tag = self._ioc_config.HIDE_ENDPOINT_IN_TAG
 
         endpoints = self._endpoint_container.endpoints
 
         for endpoint_name, endpoint_instance in endpoints.items():
+            logger.info(f"router mounting, endpoint name = {endpoint_name}")
+
             endpoint_instance: EndpointMeta = endpoint_instance
 
             imported_module_router = endpoint_instance.imported_module_router
             if not hasattr(imported_module_router, 'router'):
+                logger.info("no router, cannot be mounted.")
                 continue
 
             module_router = imported_module_router.router
-            package_name = endpoint_instance.package
+            logger.info(module_router)
+            container_name = endpoint_instance.package
 
-            prefix = f"/{package_name}/{endpoint_name}"
-            if hide_package:
-                prefix = f"/{endpoint_name}"
+            prefix = f"{api_prefix}"
+
+            if not hide_endpoint_container_in_api:
+                prefix = f"{prefix}/{container_name}"
+
+            if not hide_endpoint_in_api:
+                prefix = f"{prefix}/{endpoint_name}"
+
+            tag = f"{container_name}"
+            if not hide_endpoint_in_tag:
+                tag = f"{tag}.{endpoint_name}"
 
             '''
             set package in url
             '''
-            api_router.include_router(
+            app.include_router(
                 module_router,
-                tags=[f"{package_name}.{endpoint_name}"],
+                tags=[tag],
                 prefix=prefix)
 
-        return api_router
-
-    def unmount(self, api_prefix: str) -> None:
+    def unmount(self) -> None:
         pass
+
+        # api_prefix = self._ioc_config.API_PREFIX
         # app: FastAPI = self._app
 
         '''

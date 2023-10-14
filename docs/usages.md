@@ -178,8 +178,8 @@ def get_app() -> FastAPI:
     # logger.info("-----------------------------------------------------")
     # logger.info(dir(ioc_framework))
     # logger.info(dir(ioc_framework.config))
-    ioc_framework.config.HIDE_PACKAGE_IN_URL = False
-    ioc_framework.config.HIDE_MODULE_IN_URL = False
+    ioc_framework.config.HIDE_ENDPOINT_CONTAINER_IN_API = False
+    ioc_framework.config.HIDE_ENDPOINT_IN_API = False
     ioc_framework.config.PRE_ENDPOINT_SETUP = hive_pre_setup
     ioc_framework.config.POST_ENDPOINT_SETUP = hive_post_setup
     ioc_framework.config.ASYNC_PRE_ENDPOINT_SETUP = hive_async_pre_setup

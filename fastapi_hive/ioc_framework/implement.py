@@ -216,13 +216,13 @@ class IoCFramework:
         logger.info("running sync endpoint setup...")
 
         self._endpoint_hook_caller.run_setup_hook()
-        self._endpoint_router_mounter.mount(self._ioc_config.API_PREFIX)
+        self._endpoint_router_mounter.mount()
 
     def _sync_teardown(self) -> None:
         logger.info("running sync endpoint teardown...")
 
         self._endpoint_hook_caller.run_teardown_hook()
-        self._endpoint_router_mounter.unmount(self._ioc_config.API_PREFIX)
+        self._endpoint_router_mounter.unmount()
 
     async def _async_setup(self) -> None:
         logger.info("running async endpoint setup...")
