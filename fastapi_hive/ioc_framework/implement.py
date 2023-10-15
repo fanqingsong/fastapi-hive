@@ -5,8 +5,8 @@ from loguru import logger
 from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
 from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer
 from fastapi_hive.ioc_framework.endpoint_router_mounter import EndpointRouterMounter
-from fastapi_hive.ioc_framework.cornerstone_hook_caller import CornerstoneHookCaller, CornerstoneHookAsyncCaller
-from fastapi_hive.ioc_framework.endpoint_hook_caller import EndpointHookCaller, EndpointHookAsyncCaller
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHookCaller, CornerstoneHookAsyncCaller
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHookCaller, EndpointHookAsyncCaller
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer

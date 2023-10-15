@@ -1,6 +1,6 @@
 import logging
 
-from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi import FastAPI
 

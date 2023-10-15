@@ -19,7 +19,7 @@ The classical code structure is compliant with function components view with the
 
 But from the system design view, the system is divided into serveral sub-service, such as "heartbeat" service and "house_price" service in the above example, each of two services contains "api" and "model" function components.
 
-With the help of fastapi-hive package, you can layout code structure by service style. For each service, it is defined as one endpoint, the codes are gathered in one endpoint folder, Also for the common functions, like db, auth, etc..., they are defined as cornerstones which are for constructing the hive(bee's home), and every bee are endpoints to go to hive.
+With the help of fastapi-hive container_name, you can layout code structure by service style. For each service, it is defined as one endpoint, the codes are gathered in one endpoint folder, Also for the common functions, like db, auth, etc..., they are defined as cornerstones which are for constructing the hive(bee's home), and every bee are endpoints to go to hive.
 
 Go to detailed site for more information [FastAPI Hive](https://fanqingsong.github.io/fastapi-hive/)
 

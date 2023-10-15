@@ -91,7 +91,7 @@ First, git clone this repo.
 git clone git@github.com:fanqingsong/fastapi-hive.git
 ```
 
-Second, install ioc framework library of this package<br/>
+Second, install ioc framework library of this container_name<br/>
 <small>Note: If you just treat it as a library, and want to integrate it into your app, you can just run this command. </small>
 
 ```bash

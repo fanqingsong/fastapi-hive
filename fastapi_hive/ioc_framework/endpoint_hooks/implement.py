@@ -1,12 +1,75 @@
 from typing import Callable
-
 from fastapi import FastAPI
 from loguru import logger
-from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
-from fastapi_hive.ioc_framework.endpoint_model import EndpointHooks, EndpointAsyncHooks, EndpointMeta
+from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer, EndpointMeta
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
+from fastapi import APIRouter, FastAPI
+from typing import Optional
+from abc import ABC, abstractmethod
+
+
+class EndpointHooks(ABC):
+    '''
+    Base class for EndpointHooks cornerstones.
+
+    Usage
+    ===
+
+    In your EndpointHooks cornerstones `__init__.py` create a subclass of `EndpointHooks`
+
+    ```python
+    from fastapi_hive.ioc_framework.endpoint_model import EndpointHooks
+
+
+    class EndpointHooksImpl(EndpointHooks):
+        def setup(self):
+            pass
+    ```
+    '''
+
+    def __init__(self, app: FastAPI) -> None:
+        self._app = app
+
+    @abstractmethod
+    def setup(self):
+        pass
+
+    @abstractmethod
+    def teardown(self):
+        pass
+
+
+class EndpointAsyncHooks(ABC):
+    '''
+    Base class for EndpointHooks cornerstones in async mode.
+
+    Usage
+    ===
+
+    In your EndpointHooks cornerstones `__init__.py` create a subclass of `EndpointAsyncHooks`
+
+    ```python
+    from fastapi_hive.ioc_framework.endpoint_model import EndpointAsyncHooks
+
+
+    class EndpointAsyncHooksImpl(EndpointAsyncHooks):
+        async def setup(self):
+            pass
+    ```
+    '''
+
+    def __init__(self, app: FastAPI) -> None:
+        self._app = app
+
+    @abstractmethod
+    async def setup(self):
+        pass
+
+    @abstractmethod
+    async def teardown(self):
+        pass
 
 
 class EndpointHookCaller:
@@ -24,10 +87,7 @@ class EndpointHookCaller:
         self._ioc_config = ioc_config
 
     def _iterate_endpoints(self, callback: Callable):
-        endpoints = self._endpoint_container.endpoints
-        for _, one_endpoint in endpoints.items():
-            one_endpoint: EndpointMeta = one_endpoint
-
+        def callback_iter(one_endpoint: EndpointMeta):
             imported_module_db = one_endpoint.imported_module_db
             self._exec_callback_if_possible(imported_module_db, callback)
 
@@ -39,6 +99,8 @@ class EndpointHookCaller:
 
             imported_module = one_endpoint.imported_module
             self._exec_callback_if_possible(imported_module, callback)
+
+        self._endpoint_container.iterate_endpoints(callback_iter)
 
     def _exec_callback_if_possible(self, imported_module, callback: Callable):
         if not hasattr(imported_module, 'EndpointHooksImpl'):
@@ -76,10 +138,7 @@ class EndpointHookAsyncCaller:
         self._ioc_config = ioc_config
 
     async def _iterate_endpoints(self, callback: Callable):
-        endpoints = self._endpoint_container.endpoints
-        for _, one_endpoint in endpoints.items():
-            one_endpoint: EndpointMeta = one_endpoint
-
+        async def callback_iter(one_endpoint: EndpointMeta):
             imported_module_db = one_endpoint.imported_module_db
             await self._exec_callback_if_possible(imported_module_db, callback)
 
@@ -91,6 +150,8 @@ class EndpointHookAsyncCaller:
 
             imported_module = one_endpoint.imported_module
             await self._exec_callback_if_possible(imported_module, callback)
+
+        await self._endpoint_container.async_iterate_endpoints(callback_iter)
 
     async def _exec_callback_if_possible(self, imported_module, callback: Callable):
         if not hasattr(imported_module, 'EndpointAsyncHooksImpl'):

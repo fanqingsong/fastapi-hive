@@ -4,7 +4,7 @@ from example.endpoints_package2.house_price2.service.implement import HousePrice
 from example.endpoints_package2.house_price2.config import DEFAULT_MODEL_PATH
 
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.endpoint_model import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
 
 service = None
 

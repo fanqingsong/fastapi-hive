@@ -14,7 +14,7 @@ because those services' code files are existent in different folders, hard to re
 
 Beyond the problem, developer also need to register some functions in main.py, such as router registering.
 
-So it is ideal for developer to maintain each related functional code files in one package folder, and register all service and function codes into app automatically.
+So it is ideal for developer to maintain each related functional code files in one container_name folder, and register all service and function codes into app automatically.
 
 For the classical code layout:
 
@@ -44,7 +44,7 @@ For the classical code layout:
 ---
 
 Here is the ideal folder structure layout from developers' perspective.
-For each of service package(heartbeat and prediction), there is one module folder for containing all functional code files.
+For each of service container_name(heartbeat and prediction), there is one module folder for containing all functional code files.
 
 Furthermore, developers do not have to register function into app, such as router.
 

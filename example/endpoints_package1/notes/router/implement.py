@@ -8,7 +8,7 @@ from example.endpoints_package1.notes import db as dbmodel
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.Note], name="query notes.")
+@router.get("", response_model=List[schemas.Note], name="query notes.")
 def get_notes(req: Request, skip: int = 0, limit: int = 100):
     db = req.app.state.db.session
 
@@ -16,7 +16,7 @@ def get_notes(req: Request, skip: int = 0, limit: int = 100):
     return notes
 
 
-@router.post("/", response_model=schemas.Note, name="create note")
+@router.post("", response_model=schemas.Note, name="create note")
 def create_note(note: schemas.NoteIn, req: Request):
     db = req.app.state.db.session
 

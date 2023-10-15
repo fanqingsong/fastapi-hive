@@ -233,7 +233,7 @@ Note:
 1. xxx url path is defined in endpoint_packages/heartbeat/router.py
 2. yyy url path is defined in endpoint_packages/prediction/router.py
 
-if your app don't want to display package name in URL, you can turn on HIDE_PACKAGE_IN_URL of configuration,
+if your app don't want to display container_name name in URL, you can turn on HIDE_PACKAGE_IN_URL of configuration,
 After turnning off, the endpoint URLs will be like:
 
 ```text

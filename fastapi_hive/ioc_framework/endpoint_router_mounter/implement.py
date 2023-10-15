@@ -2,15 +2,10 @@
 
 from fastapi import FastAPI
 from loguru import logger
-from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
-from fastapi_hive.ioc_framework.endpoint_model import EndpointMeta
-from fastapi import APIRouter
+from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer, EndpointMeta
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
-
-
-__all__ = ["EndpointRouterMounter"]
 
 
 class EndpointRouterMounter:
@@ -38,9 +33,8 @@ class EndpointRouterMounter:
         hide_endpoint_in_tag = self._ioc_config.HIDE_ENDPOINT_IN_TAG
 
         endpoints = self._endpoint_container.endpoints
-
-        for endpoint_name, endpoint_instance in endpoints.items():
-            logger.info(f"router mounting, endpoint name = {endpoint_name}")
+        for one_endpoint_pkg_path, endpoint_instance in endpoints.items():
+            logger.info(f"router mounting, endpoint name = {one_endpoint_pkg_path}")
 
             endpoint_instance: EndpointMeta = endpoint_instance
 
@@ -51,12 +45,14 @@ class EndpointRouterMounter:
 
             module_router = imported_module_router.router
             logger.info(module_router)
-            container_name = endpoint_instance.package
+            container_name = endpoint_instance.container_name
 
             prefix = f"{api_prefix}"
 
             if not hide_endpoint_container_in_api:
                 prefix = f"{prefix}/{container_name}"
+
+            endpoint_name = one_endpoint_pkg_path.split('.')[-1]
 
             if not hide_endpoint_in_api:
                 prefix = f"{prefix}/{endpoint_name}"
@@ -66,7 +62,7 @@ class EndpointRouterMounter:
                 tag = f"{tag}.{endpoint_name}"
 
             '''
-            set package in url
+            set container_name in url
             '''
             app.include_router(
                 module_router,

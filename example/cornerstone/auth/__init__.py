@@ -1,6 +1,6 @@
 
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
 from example.cornerstone.auth.implement import validate_request
 
 

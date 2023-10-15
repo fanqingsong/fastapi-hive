@@ -1,6 +1,6 @@
 
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.endpoint_model import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
 
 
 class EndpointHooksImpl(EndpointHooks):
