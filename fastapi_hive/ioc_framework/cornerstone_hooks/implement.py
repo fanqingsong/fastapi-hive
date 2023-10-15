@@ -6,7 +6,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from fastapi import FastAPI
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
 
 
 class CornerstoneHooks(ABC):
@@ -31,19 +31,15 @@ class CornerstoneHooks(ABC):
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
-    @abstractmethod
     def pre_endpoint_setup(self):
         pass
 
-    @abstractmethod
     def post_endpoint_setup(self):
         pass
 
-    @abstractmethod
     def pre_endpoint_teardown(self):
         pass
 
-    @abstractmethod
     def post_endpoint_teardown(self):
         pass
 
@@ -70,19 +66,15 @@ class CornerstoneAsyncHooks(ABC):
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
-    @abstractmethod
     async def pre_endpoint_setup(self):
         pass
 
-    @abstractmethod
     async def post_endpoint_setup(self):
         pass
 
-    @abstractmethod
     async def pre_endpoint_teardown(self):
         pass
 
-    @abstractmethod
     async def post_endpoint_teardown(self):
         pass
 

@@ -32,11 +32,9 @@ class EndpointHooks(ABC):
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
-    @abstractmethod
     def setup(self):
         pass
 
-    @abstractmethod
     def teardown(self):
         pass
 
@@ -63,11 +61,9 @@ class EndpointAsyncHooks(ABC):
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
-    @abstractmethod
     async def setup(self):
         pass
 
-    @abstractmethod
     async def teardown(self):
         pass
 
