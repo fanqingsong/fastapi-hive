@@ -10,8 +10,8 @@ from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsy
 
 class EndpointHooksImpl(EndpointHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointHooksImpl, self).__init__()
 
     def setup(self):
         print("call pre setup from EndpointHooksImpl (service)!!!")
@@ -26,8 +26,8 @@ class EndpointHooksImpl(EndpointHooks):
 
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointAsyncHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointAsyncHooksImpl, self).__init__()
 
     async def setup(self):
         print("call pre setup from EndpointAsyncHooksImpl (service)!!!")

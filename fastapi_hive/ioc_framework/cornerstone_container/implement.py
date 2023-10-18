@@ -1,5 +1,7 @@
 import importlib
 import os
+import re
+from collections import defaultdict
 from typing import Callable
 
 from loguru import logger
@@ -11,6 +13,7 @@ class CornerstoneMeta:
         self._container_name: Optional[str] = None
         self._package_path: Optional[str] = None
         self._imported_module = None
+        self._state = defaultdict(lambda: None)
 
     @property
     def name(self) -> str:
@@ -44,11 +47,19 @@ class CornerstoneMeta:
     def imported_module(self, value):
         self._imported_module = value
 
+    @property
+    def state(self):
+        return self._state
+
 
 class CornerstoneContainer:
     def __init__(self):
         self._cornerstones = {}
         self._cornerstone_package_paths = set([])
+
+    @property
+    def cornerstones(self):
+        return self._cornerstones
 
     def iterate_cornerstones(self, callback: Callable):
         cornerstones = self._cornerstones
@@ -88,7 +99,8 @@ class CornerstoneContainer:
 
         for one_package_path in module_package_paths:
             cornerstone_paths = self._get_cornerstone_paths(one_package_path)
-            package_name = os.path.basename(one_package_path)
+            one_package_path = re.sub(r'/$', "", one_package_path)
+            container_name = os.path.basename(one_package_path)
 
             for one_cornerstone_name in cornerstone_paths:
                 one_cornerstone_pkg_path = cornerstone_paths[one_cornerstone_name]
@@ -97,11 +109,12 @@ class CornerstoneContainer:
 
                 cornerstone_instance = CornerstoneMeta()
                 cornerstone_instance.name = one_cornerstone_name
-                cornerstone_instance.container_name = package_name
+                cornerstone_instance.container_name = container_name
                 cornerstone_instance.package_path = one_cornerstone_pkg_path
                 cornerstone_instance.imported_module = one_module_entity
 
-                self._cornerstones[one_cornerstone_pkg_path] = cornerstone_instance
+                logger.info(f'{container_name}.{one_cornerstone_name}!!!!!!!!!!!!!!!!!!!')
+                self._cornerstones[f'{container_name}.{one_cornerstone_name}'] = cornerstone_instance
 
     def get_cornerstone(self, module_name: str):
         module_name = module_name.upper()

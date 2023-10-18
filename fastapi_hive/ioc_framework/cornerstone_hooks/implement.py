@@ -1,5 +1,4 @@
-from typing import Callable
-
+from typing import Callable, Optional
 from loguru import logger
 from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer, CornerstoneMeta
 from dependency_injector.wiring import Provide, inject
@@ -28,8 +27,25 @@ class CornerstoneHooks(ABC):
     ```
     '''
 
-    def __init__(self, app: FastAPI) -> None:
-        self._app = app
+    def __init__(self) -> None:
+        self._app: Optional[FastAPI] = None
+        self._cornerstone: Optional[CornerstoneMeta] = None
+
+    @property
+    def app(self):
+        return self._app
+
+    @app.setter
+    def app(self, value: FastAPI):
+        self._app = value
+
+    @property
+    def cornerstone(self):
+        return self._cornerstone
+
+    @cornerstone.setter
+    def cornerstone(self, value: CornerstoneMeta):
+        self._cornerstone = value
 
     def pre_endpoint_setup(self):
         pass
@@ -63,8 +79,25 @@ class CornerstoneAsyncHooks(ABC):
     ```
     '''
 
-    def __init__(self, app: FastAPI) -> None:
-        self._app = app
+    def __init__(self) -> None:
+        self._app: Optional[FastAPI] = None
+        self._cornerstone: Optional[CornerstoneMeta] = None
+
+    @property
+    def app(self):
+        return self._app
+
+    @app.setter
+    def app(self, value: FastAPI):
+        self._app = value
+
+    @property
+    def cornerstone(self):
+        return self._cornerstone
+
+    @cornerstone.setter
+    def cornerstone(self, value: CornerstoneMeta):
+        self._cornerstone = value
 
     async def pre_endpoint_setup(self):
         pass
@@ -100,7 +133,9 @@ class CornerstoneHookCaller:
             if not hasattr(imported_module, 'CornerstoneHooksImpl'):
                 return
 
-            cornerstone_hooks: CornerstoneHooks = imported_module.CornerstoneHooksImpl(self._app)
+            cornerstone_hooks: CornerstoneHooks = imported_module.CornerstoneHooksImpl()
+            cornerstone_hooks.app = self._app
+            cornerstone_hooks.cornerstone = cornerstone_meta
 
             callback(cornerstone_hooks)
 
@@ -160,7 +195,9 @@ class CornerstoneHookAsyncCaller:
             if not hasattr(imported_module, 'CornerstoneAsyncHooksImpl'):
                 return
 
-            cornerstone_hooks: CornerstoneAsyncHooks = imported_module.CornerstoneAsyncHooksImpl(self._app)
+            cornerstone_hooks: CornerstoneAsyncHooks = imported_module.CornerstoneAsyncHooksImpl()
+            cornerstone_hooks.app = self._app
+            cornerstone_hooks.cornerstone = cornerstone_meta
 
             await callback(cornerstone_hooks)
 

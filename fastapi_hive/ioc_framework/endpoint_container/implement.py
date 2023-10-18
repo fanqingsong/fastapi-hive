@@ -119,7 +119,7 @@ class EndpointContainer:
 
         for one_package_path in endpoint_package_paths:
             endpoint_paths = self._get_endpoint_paths(one_package_path)
-            package_name = os.path.basename(one_package_path)
+            container_name = os.path.basename(one_package_path)
 
             for one_endpoint_name in endpoint_paths:
                 one_endpoint_path = endpoint_paths[one_endpoint_name]
@@ -128,7 +128,7 @@ class EndpointContainer:
 
                 endpoint_instance = EndpointMeta()
                 endpoint_instance.name = one_endpoint_name
-                endpoint_instance.container_name = package_name
+                endpoint_instance.container_name = container_name
                 endpoint_instance.package_path = one_package_path
                 endpoint_instance.imported_module = one_endpoint_entity
 
@@ -146,7 +146,7 @@ class EndpointContainer:
 
                 endpoint_instance.service = one_endpoint_entity.service
 
-                self._endpoints[one_endpoint_path] = endpoint_instance
+                self._endpoints[f'{container_name}.{one_endpoint_name}'] = endpoint_instance
 
     def get_endpoint(self, endpoint_name: str):
         endpoint_name = endpoint_name.upper()

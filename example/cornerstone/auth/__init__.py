@@ -6,13 +6,13 @@ from example.cornerstone.auth.implement import validate_request
 
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def __init__(self, app: FastAPI):
-        super(CornerstoneHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(CornerstoneHooksImpl, self).__init__()
 
     def pre_endpoint_setup(self):
         print("call pre setup from CornerstoneHooksImpl!!!")
         print("---- get fastapi app ------")
-        print(self._app)
+        print(self.app)
 
     def post_endpoint_setup(self):
         print("call post setup from CornerstoneHooksImpl!!!")
@@ -26,8 +26,8 @@ class CornerstoneHooksImpl(CornerstoneHooks):
 
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    def __init__(self, app: FastAPI):
-        super(CornerstoneAsyncHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(CornerstoneAsyncHooksImpl, self).__init__()
 
     async def pre_endpoint_setup(self):
         print("call pre setup from CornerstoneAsyncHooksImpl!!!")

@@ -15,13 +15,13 @@ def get_service():
 
 class EndpointHooksImpl(EndpointHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointHooksImpl, self).__init__()
 
     def setup(self):
         print("call pre setup from EndpointHooksImpl (service)!!!")
         print("---- get fastapi app ------")
-        print(self._app)
+        print(self.app)
 
         globals()['service'] = HousePriceModel(DEFAULT_MODEL_PATH)
 
@@ -31,8 +31,8 @@ class EndpointHooksImpl(EndpointHooks):
 
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointAsyncHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointAsyncHooksImpl, self).__init__()
 
     async def setup(self):
         print("call pre setup from EndpointAsyncHooksImpl (service)!!!")

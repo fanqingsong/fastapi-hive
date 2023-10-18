@@ -29,8 +29,16 @@ class EndpointHooks(ABC):
     ```
     '''
 
-    def __init__(self, app: FastAPI) -> None:
-        self._app = app
+    def __init__(self) -> None:
+        self._app: Optional[FastAPI] = None
+
+    @property
+    def app(self):
+        return self._app
+
+    @app.setter
+    def app(self, value: FastAPI):
+        self._app = value
 
     def setup(self):
         pass
@@ -58,8 +66,16 @@ class EndpointAsyncHooks(ABC):
     ```
     '''
 
-    def __init__(self, app: FastAPI) -> None:
-        self._app = app
+    def __init__(self) -> None:
+        self._app: Optional[FastAPI] = None
+
+    @property
+    def app(self):
+        return self._app
+
+    @app.setter
+    def app(self, value: FastAPI):
+        self._app = value
 
     async def setup(self):
         pass
@@ -102,7 +118,8 @@ class EndpointHookCaller:
         if not hasattr(imported_module, 'EndpointHooksImpl'):
             return
 
-        endpoint: EndpointHooks = imported_module.EndpointHooksImpl(self._app)
+        endpoint: EndpointHooks = imported_module.EndpointHooksImpl()
+        endpoint.app = self._app
 
         callback(endpoint)
 
@@ -153,18 +170,19 @@ class EndpointHookAsyncCaller:
         if not hasattr(imported_module, 'EndpointAsyncHooksImpl'):
             return
 
-        endpoint: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl(self._app)
+        endpoint: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl()
+        endpoint.app = self._app
 
         await callback(endpoint)
 
     async def run_setup_hook(self):
-        async def callback(endpoint: EndpointHooks):
+        async def callback(endpoint: EndpointAsyncHooks):
             await endpoint.setup()
 
         await self._iterate_endpoints(callback)
 
     async def run_teardown_hook(self):
-        async def callback(endpoint: EndpointHooks):
+        async def callback(endpoint: EndpointAsyncHooks):
             await endpoint.teardown()
 
         await self._iterate_endpoints(callback)

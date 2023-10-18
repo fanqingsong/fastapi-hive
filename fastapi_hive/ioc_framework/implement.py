@@ -42,6 +42,9 @@ class IoCFramework:
     def init_modules(self) -> None:
         self._load_cornerstones()
 
+        # set cornerstones as app state to expose for endpoint access, such as db instance
+        self._app.state.cornerstones = self._cornerstone_container.cornerstones
+
         self._load_endpoints()
 
         self._add_event_handler()
