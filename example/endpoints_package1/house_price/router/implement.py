@@ -20,7 +20,7 @@ def post_predict(
     block_data: HousePredictionPayload = None
 ) -> HousePredictionResult:
 
-    model: HousePriceModel = request.app.state.house_price_model
+    model: HousePriceModel = request.app.state.endpoints['endpoints_package1.house_price']['house_price_model']
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction

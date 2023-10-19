@@ -69,14 +69,3 @@ class EndpointRouterMounter:
                 tags=[tag],
                 prefix=prefix)
 
-    def unmount(self) -> None:
-        pass
-
-        # api_prefix = self._ioc_config.API_PREFIX
-        # app: FastAPI = self._app
-
-        '''
-        fastapi don't support unmount router now.
-        '''
-        # api_router = APIRouter()
-        # app.include_router(api_router, prefix=api_prefix)

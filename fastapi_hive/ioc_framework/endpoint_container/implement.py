@@ -83,17 +83,19 @@ class EndpointContainer:
 
     def iterate_endpoints(self, callback: Callable):
         endpoints = self._endpoints
-        for _, one_endpoints in endpoints.items():
-            one_endpoints: EndpointMeta = one_endpoints
+        
+        for _, one_endpoint in endpoints.items():
+            one_endpoint: EndpointMeta = one_endpoint
 
-            callback(one_endpoints)
+            callback(one_endpoint)
 
     async def async_iterate_endpoints(self, callback: Callable):
         endpoints = self._endpoints
-        for _, one_endpoints in endpoints.items():
-            one_endpoints: EndpointMeta = one_endpoints
+        
+        for _, one_endpoint in endpoints.items():
+            one_endpoint: EndpointMeta = one_endpoint
 
-            await callback(one_endpoints)
+            await callback(one_endpoint)
 
     def register_endpoint_package_paths(self, endpoint_package_paths):
         endpoint_package_paths = set(endpoint_package_paths)
@@ -103,15 +105,6 @@ class EndpointContainer:
 
         logger.info(
             f"after registering, endpoint container_name paths = {self._endpoint_package_paths}")
-
-    def unregister_endpoint_package_paths(self, endpoint_package_paths):
-        endpoint_package_paths = set(endpoint_package_paths)
-        current_package_paths = self._endpoint_package_paths
-
-        self._endpoint_package_paths = current_package_paths - endpoint_package_paths
-
-        logger.info(
-            f"after unregistering, endpoint container_name paths = {self._endpoint_package_paths}")
 
     def load_endpoints(self):
         endpoint_package_paths = self._endpoint_package_paths

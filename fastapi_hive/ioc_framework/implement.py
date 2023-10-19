@@ -1,7 +1,10 @@
+import time
+from collections import defaultdict
 
 from fastapi import FastAPI
 from typing import Callable
 from loguru import logger
+from starlette.requests import Request
 from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
 from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer
 from fastapi_hive.ioc_framework.endpoint_router_mounter import EndpointRouterMounter
@@ -41,19 +44,69 @@ class IoCFramework:
 
     def init_modules(self) -> None:
         self._load_cornerstones()
-
-        # set cornerstones as app state to expose for endpoint access, such as db instance
-        self._app.state.cornerstones = self._cornerstone_container.cornerstones
-
         self._load_endpoints()
 
+        # set cornerstone state as app state to expose for endpoint access, such as db instance
+        self._app.state.cornerstones = self._get_initial_cornerstone_state()
+
+        # set endpoint state as app state to expose for endpoint access, such as ML model instance
+        self._app.state.endpoints = self._get_initial_endpoint_state()
+
         self._add_event_handler()
+
+        self._add_http_middleware()
+
+    def _get_initial_cornerstone_state(self):
+        cornerstones = self._cornerstone_container.cornerstones
+
+        state = defaultdict(dict)
+        for pkg_path, cornerstone in cornerstones.items():
+            state[pkg_path] = {}
+            state[pkg_path]['__cornerstone__'] = cornerstone
+
+        return state
+
+    def _get_initial_endpoint_state(self):
+        endpoints = self._endpoint_container.endpoints
+
+        state = defaultdict(dict)
+        for pkg_path, endpoint in endpoints.items():
+            state[pkg_path] = {}
+            state[pkg_path]['__endpoint__'] = endpoint
+
+        return state
+
+    def _add_http_middleware(self):
+        app = self._app
+
+        @app.middleware("http")
+        async def add_process_time_header(request: Request, call_next):
+            start_time = time.time()
+
+            request.state.cornerstones = self._get_initial_cornerstone_state()
+
+            self._cornerstone_hook_caller.run_pre_call_hook(request)
+
+            await self._cornerstone_hook_async_caller.run_pre_call_hook(request)
+
+            response = await call_next(request)
+
+            self._cornerstone_hook_caller.run_post_call_hook(request)
+
+            await self._cornerstone_hook_async_caller.run_post_call_hook(request)
+
+            process_time = time.time() - start_time
+
+            response.headers["X-Process-Time"] = str(process_time)
+            logger.info(f'process_time = {process_time}')
+
+            return response
 
     def _load_cornerstones(self):
         logger.info("loading all cornerstones...")
 
-        self._cornerstone_container.register_cornerstone_package_paths(
-            self._ioc_config.CORNERSTONE_PACKAGE_PATHS
+        self._cornerstone_container.register_cornerstone_package_path(
+            self._ioc_config.CORNERSTONE_PACKAGE_PATH
         )
         self._cornerstone_container.load_cornerstones()
 
@@ -219,13 +272,14 @@ class IoCFramework:
         logger.info("running sync endpoint setup...")
 
         self._endpoint_hook_caller.run_setup_hook()
-        self._endpoint_router_mounter.mount()
+
+        if self._ioc_config.ROUTER_MOUNT_AUTOMATED:
+            self._endpoint_router_mounter.mount()
 
     def _sync_teardown(self) -> None:
         logger.info("running sync endpoint teardown...")
 
         self._endpoint_hook_caller.run_teardown_hook()
-        self._endpoint_router_mounter.unmount()
 
     async def _async_setup(self) -> None:
         logger.info("running async endpoint setup...")

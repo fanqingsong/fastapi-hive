@@ -171,7 +171,7 @@ def get_app() -> FastAPI:
         logger.info("------ call async post setup -------")
 
     ioc_framework = IoCFramework(fast_app)
-    ioc_framework.config.CORNERSTONE_PACKAGE_PATHS = ["./example/cornerstone/"]
+    ioc_framework.config.CORNERSTONE_PACKAGE_PATH = ["./example/cornerstone/"]
 
     ioc_framework.config.API_PREFIX = API_PREFIX
     ioc_framework.config.ENDPOINT_PACKAGE_PATHS = ["./example/endpoints_package1", "./example/endpoints_package2"]

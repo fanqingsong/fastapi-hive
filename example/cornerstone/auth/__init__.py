@@ -23,6 +23,12 @@ class CornerstoneHooksImpl(CornerstoneHooks):
     def post_endpoint_teardown(self):
         print("call pre teardown from CornerstoneHooksImpl!!!")
 
+    def pre_endpoint_call(self):
+        pass
+
+    def post_endpoint_call(self):
+        pass
+
 
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
@@ -41,3 +47,8 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
     async def post_endpoint_teardown(self):
         print("call pre teardown from CornerstoneAsyncHooksImpl!!!")
 
+    async def pre_endpoint_call(self):
+        pass
+
+    async def post_endpoint_call(self):
+        pass

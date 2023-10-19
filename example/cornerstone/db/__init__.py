@@ -18,30 +18,28 @@ class CornerstoneHooksImpl(CornerstoneHooks):
     def pre_endpoint_setup(self):
         print("call pre setup from cornerstone db!!!")
 
-        add_db_middleware(self._app, self.cornerstone)
+        add_db_middleware(self.app, self.cornerstone)
+
+        self.app_state['db'] = db
 
     def post_endpoint_setup(self):
         print("call post setup from cornerstone!!!")
 
-        create_all_tables(self._app)
-
-        app = self.app
-
-        @app.middleware("http")
-        async def add_process_time_header(request: Request, call_next):
-            start_time = time.time()
-            request.state.db = db
-            response = await call_next(request)
-            process_time = time.time() - start_time
-            response.headers["X-Process-Time"] = str(process_time)
-            print(f'process_time = {process_time}')
-            return response
+        create_all_tables(self.app)
 
     def pre_endpoint_teardown(self):
         print("call pre teardown from cornerstone!!!")
 
     def post_endpoint_teardown(self):
         print("call pre teardown from cornerstone!!!")
+
+    def pre_endpoint_call(self):
+        print("call pre endpoint call from cornerstone!!!")
+
+        self.request_state['db'] = db
+
+    def post_endpoint_call(self):
+        print("call post endpoint call from cornerstone!!!")
 
 
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
@@ -61,3 +59,8 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
     async def post_endpoint_teardown(self):
         print("call pre teardown from cornerstone async!!!")
 
+    async def pre_endpoint_call(self):
+        print("call pre endpoint call from cornerstone async!!!")
+
+    async def post_endpoint_call(self):
+        print("call post endpoint call from cornerstone async!!!")

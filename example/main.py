@@ -26,13 +26,11 @@ def get_app() -> FastAPI:
         logger.info("------ call async post setup -------")
 
     ioc_framework = IoCFramework(fast_app)
-    ioc_framework.config.CORNERSTONE_PACKAGE_PATHS = ["./example/cornerstone/"]
+    ioc_framework.config.CORNERSTONE_PACKAGE_PATH = "./example/cornerstone/"
 
     ioc_framework.config.API_PREFIX = API_PREFIX
     ioc_framework.config.ENDPOINT_PACKAGE_PATHS = ["./example/endpoints_package1", "./example/endpoints_package2"]
-    # logger.info("-----------------------------------------------------")
-    # logger.info(dir(ioc_framework))
-    # logger.info(dir(ioc_framework.config))
+    ioc_framework.config.ROUTER_MOUNT_AUTOMATED = True
     ioc_framework.config.HIDE_ENDPOINT_CONTAINER_IN_API = True
     ioc_framework.config.HIDE_ENDPOINT_IN_API = False
     ioc_framework.config.HIDE_ENDPOINT_IN_TAG = True
@@ -42,9 +40,6 @@ def get_app() -> FastAPI:
     ioc_framework.config.ASYNC_POST_ENDPOINT_SETUP = hive_async_post_setup
 
     ioc_framework.init_modules()
-
-    # ioc_framework.delete_modules_by_packages(["./example/endpoints_package1"])
-    # ioc_framework.add_modules_by_packages(["./example/endpoints_package2"])
 
     @fast_app.get("/")
     def get_root():

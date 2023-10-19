@@ -5,9 +5,10 @@ from typing import List, Callable
 
 
 class IoCConfig(BaseModel):
-    CORNERSTONE_PACKAGE_PATHS: List[str] = ["./cornerstone"]
+    CORNERSTONE_PACKAGE_PATH: str = "./cornerstone"
     API_PREFIX: str = ""
     ENDPOINT_PACKAGE_PATHS: List[str] = ["./example/endpoints_package1"]
+    ROUTER_MOUNT_AUTOMATED: bool = True
     HIDE_ENDPOINT_CONTAINER_IN_API: bool = False
     HIDE_ENDPOINT_IN_API: bool = False
     HIDE_ENDPOINT_IN_TAG: bool = False

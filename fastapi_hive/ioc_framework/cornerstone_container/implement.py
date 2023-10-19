@@ -13,7 +13,6 @@ class CornerstoneMeta:
         self._container_name: Optional[str] = None
         self._package_path: Optional[str] = None
         self._imported_module = None
-        self._state = defaultdict(lambda: None)
 
     @property
     def name(self) -> str:
@@ -47,15 +46,11 @@ class CornerstoneMeta:
     def imported_module(self, value):
         self._imported_module = value
 
-    @property
-    def state(self):
-        return self._state
-
 
 class CornerstoneContainer:
     def __init__(self):
         self._cornerstones = {}
-        self._cornerstone_package_paths = set([])
+        self._cornerstone_package_path = None
 
     @property
     def cornerstones(self):
@@ -75,46 +70,33 @@ class CornerstoneContainer:
 
             await callback(one_cornerstone)
 
-    def register_cornerstone_package_paths(self, cornerstone_package_paths):
-        cornerstone_package_paths = set(cornerstone_package_paths)
-        current_package_paths = self._cornerstone_package_paths
-
-        self._cornerstone_package_paths = current_package_paths | cornerstone_package_paths
+    def register_cornerstone_package_path(self, cornerstone_package_path):
+        self._cornerstone_package_path = cornerstone_package_path
 
         logger.info(
-            f"after registering, cornerstone container_name paths = {self._cornerstone_package_paths}")
-
-    def unregister_cornerstone_package_paths(self, cornerstone_package_paths):
-        cornerstone_package_paths = set(cornerstone_package_paths)
-        current_package_paths = self._cornerstone_package_paths
-
-        self._cornerstone_package_paths = current_package_paths - cornerstone_package_paths
-
-        logger.info(
-            f"after unregistering, cornerstone container_name paths = {self._cornerstone_package_paths}")
+            f"after registering, cornerstone container_name path = {self._cornerstone_package_path}")
 
     def load_cornerstones(self):
-        module_package_paths = self._cornerstone_package_paths
-        logger.info(f"cornerstone container_name paths = {module_package_paths}")
+        cornerstone_package_path: str = self._cornerstone_package_path
+        logger.info(f"cornerstone container_name path = {cornerstone_package_path}")
 
-        for one_package_path in module_package_paths:
-            cornerstone_paths = self._get_cornerstone_paths(one_package_path)
-            one_package_path = re.sub(r'/$', "", one_package_path)
-            container_name = os.path.basename(one_package_path)
+        cornerstone_paths = self._get_cornerstone_paths(cornerstone_package_path)
+        cornerstone_package_path = re.sub(r'/$', "", cornerstone_package_path)
+        container_name = os.path.basename(cornerstone_package_path)
 
-            for one_cornerstone_name in cornerstone_paths:
-                one_cornerstone_pkg_path = cornerstone_paths[one_cornerstone_name]
+        for one_cornerstone_name in cornerstone_paths:
+            one_cornerstone_pkg_path = cornerstone_paths[one_cornerstone_name]
 
-                one_module_entity = importlib.import_module(one_cornerstone_pkg_path)
+            one_module_entity = importlib.import_module(one_cornerstone_pkg_path)
 
-                cornerstone_instance = CornerstoneMeta()
-                cornerstone_instance.name = one_cornerstone_name
-                cornerstone_instance.container_name = container_name
-                cornerstone_instance.package_path = one_cornerstone_pkg_path
-                cornerstone_instance.imported_module = one_module_entity
+            cornerstone_instance = CornerstoneMeta()
+            cornerstone_instance.name = one_cornerstone_name
+            cornerstone_instance.container_name = container_name
+            cornerstone_instance.package_path = one_cornerstone_pkg_path
+            cornerstone_instance.imported_module = one_module_entity
 
-                logger.info(f'{container_name}.{one_cornerstone_name}!!!!!!!!!!!!!!!!!!!')
-                self._cornerstones[f'{container_name}.{one_cornerstone_name}'] = cornerstone_instance
+            # logger.debug(f'{container_name}.{one_cornerstone_name}')
+            self._cornerstones[f'{container_name}.{one_cornerstone_name}'] = cornerstone_instance
 
     def get_cornerstone(self, module_name: str):
         module_name = module_name.upper()
@@ -142,6 +124,7 @@ class CornerstoneContainer:
         return cornerstone_paths
 
     def _get_cornerstone_names(self, package_path):
+        logger.debug(package_path)
         folder_names = os.listdir(package_path)
 
         cornerstone_names = []

@@ -6,6 +6,7 @@ from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from fastapi import FastAPI
 from abc import ABC, abstractmethod
+from starlette.requests import Request
 
 
 class CornerstoneHooks(ABC):
@@ -30,6 +31,9 @@ class CornerstoneHooks(ABC):
     def __init__(self) -> None:
         self._app: Optional[FastAPI] = None
         self._cornerstone: Optional[CornerstoneMeta] = None
+        self._request: Optional[Request] = None
+        self._app_state: Optional[dict] = None
+        self._request_state: Optional[dict] = None
 
     @property
     def app(self):
@@ -47,6 +51,30 @@ class CornerstoneHooks(ABC):
     def cornerstone(self, value: CornerstoneMeta):
         self._cornerstone = value
 
+    @property
+    def request(self):
+        return self._request
+
+    @request.setter
+    def request(self, value: Request):
+        self._request = value
+
+    @property
+    def app_state(self):
+        return self._app_state
+
+    @app_state.setter
+    def app_state(self, value: dict):
+        self._app_state = value
+
+    @property
+    def request_state(self):
+        return self._request_state
+
+    @request_state.setter
+    def request_state(self, value: dict):
+        self._request_state = value
+
     def pre_endpoint_setup(self):
         pass
 
@@ -57,6 +85,12 @@ class CornerstoneHooks(ABC):
         pass
 
     def post_endpoint_teardown(self):
+        pass
+
+    def pre_endpoint_call(self):
+        pass
+
+    def post_endpoint_call(self):
         pass
 
 
@@ -82,6 +116,9 @@ class CornerstoneAsyncHooks(ABC):
     def __init__(self) -> None:
         self._app: Optional[FastAPI] = None
         self._cornerstone: Optional[CornerstoneMeta] = None
+        self._request: Optional[Request] = None
+        self._app_state: Optional[dict] = None
+        self._req_state: Optional[dict] = None
 
     @property
     def app(self):
@@ -99,6 +136,30 @@ class CornerstoneAsyncHooks(ABC):
     def cornerstone(self, value: CornerstoneMeta):
         self._cornerstone = value
 
+    @property
+    def request(self):
+        return self._request
+
+    @request.setter
+    def request(self, value: Request):
+        self._request = value
+
+    @property
+    def app_state(self):
+        return self._app_state
+
+    @app_state.setter
+    def app_state(self, value: dict):
+        self._app_state = value
+
+    @property
+    def req_state(self):
+        return self._req_state
+
+    @req_state.setter
+    def req_state(self, value: dict):
+        self._req_state = value
+
     async def pre_endpoint_setup(self):
         pass
 
@@ -109,6 +170,12 @@ class CornerstoneAsyncHooks(ABC):
         pass
 
     async def post_endpoint_teardown(self):
+        pass
+
+    async def pre_endpoint_call(self):
+        pass
+
+    async def post_endpoint_call(self):
         pass
 
 
@@ -133,9 +200,14 @@ class CornerstoneHookCaller:
             if not hasattr(imported_module, 'CornerstoneHooksImpl'):
                 return
 
+            app: FastAPI = self._app
+
             cornerstone_hooks: CornerstoneHooks = imported_module.CornerstoneHooksImpl()
-            cornerstone_hooks.app = self._app
+            cornerstone_hooks.app = app
             cornerstone_hooks.cornerstone = cornerstone_meta
+
+            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
+            cornerstone_hooks.app_state = app.state.cornerstones[pkg_path]
 
             callback(cornerstone_hooks)
 
@@ -173,6 +245,34 @@ class CornerstoneHookCaller:
 
         self._iterate_cornerstones(callback)
 
+    def run_pre_call_hook(self, request: Request):
+        logger.info("running cornerstone_hooks sync pre endpoint call...")
+
+        def callback(cornerstone_hooks: CornerstoneHooks):
+            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
+
+            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
+            cornerstone_hooks.request_state = request.state.cornerstones[pkg_path]
+
+            cornerstone_hooks.request = request
+            cornerstone_hooks.pre_endpoint_call()
+
+        self._iterate_cornerstones(callback)
+
+    def run_post_call_hook(self, request: Request):
+        logger.info("running cornerstone_hooks sync post endpoint call...")
+
+        def callback(cornerstone_hooks: CornerstoneHooks):
+            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
+
+            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
+            cornerstone_hooks.request_state = request.state.cornerstones[pkg_path]
+
+            cornerstone_hooks.request = request
+            cornerstone_hooks.post_endpoint_call()
+
+        self._iterate_cornerstones(callback)
+
 
 class CornerstoneHookAsyncCaller:
     @inject
@@ -195,9 +295,14 @@ class CornerstoneHookAsyncCaller:
             if not hasattr(imported_module, 'CornerstoneAsyncHooksImpl'):
                 return
 
+            app: FastAPI = self._app
+
             cornerstone_hooks: CornerstoneAsyncHooks = imported_module.CornerstoneAsyncHooksImpl()
-            cornerstone_hooks.app = self._app
+            cornerstone_hooks.app = app
             cornerstone_hooks.cornerstone = cornerstone_meta
+
+            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
+            cornerstone_hooks.app_state = app.state.cornerstones[pkg_path]
 
             await callback(cornerstone_hooks)
 
@@ -235,4 +340,30 @@ class CornerstoneHookAsyncCaller:
 
         await self._iterate_cornerstones(callback)
 
+    async def run_pre_call_hook(self, request: Request):
+        logger.info("running cornerstone_hooks async pre endpoint call...")
 
+        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
+            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
+
+            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
+            cornerstone_hooks.req_state = request.state.cornerstones[pkg_path]
+
+            cornerstone_hooks.request = request
+            await cornerstone_hooks.pre_endpoint_call()
+
+        await self._iterate_cornerstones(callback)
+
+    async def run_post_call_hook(self, request: Request):
+        logger.info("running cornerstone_hooks async post endpoint call...")
+
+        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
+            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
+
+            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
+            cornerstone_hooks.req_state = request.state.cornerstones[pkg_path]
+
+            cornerstone_hooks.request = request
+            await cornerstone_hooks.post_endpoint_call()
+
+        await self._iterate_cornerstones(callback)

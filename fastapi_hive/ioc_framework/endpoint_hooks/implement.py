@@ -31,6 +31,8 @@ class EndpointHooks(ABC):
 
     def __init__(self) -> None:
         self._app: Optional[FastAPI] = None
+        self._endpoint: Optional[EndpointMeta] = None
+        self._app_state: Optional[dict] = None
 
     @property
     def app(self):
@@ -39,6 +41,22 @@ class EndpointHooks(ABC):
     @app.setter
     def app(self, value: FastAPI):
         self._app = value
+
+    @property
+    def endpoint(self):
+        return self._endpoint
+
+    @endpoint.setter
+    def endpoint(self, value: EndpointMeta):
+        self._endpoint = value
+
+    @property
+    def app_state(self):
+        return self._app_state
+
+    @app_state.setter
+    def app_state(self, value: dict):
+        self._app_state = value
 
     def setup(self):
         pass
@@ -68,6 +86,8 @@ class EndpointAsyncHooks(ABC):
 
     def __init__(self) -> None:
         self._app: Optional[FastAPI] = None
+        self._endpoint: Optional[EndpointMeta] = None
+        self._app_state: Optional[dict] = None
 
     @property
     def app(self):
@@ -76,6 +96,22 @@ class EndpointAsyncHooks(ABC):
     @app.setter
     def app(self, value: FastAPI):
         self._app = value
+
+    @property
+    def endpoint(self):
+        return self._endpoint
+
+    @endpoint.setter
+    def endpoint(self, value: EndpointMeta):
+        self._endpoint = value
+
+    @property
+    def app_state(self):
+        return self._app_state
+
+    @app_state.setter
+    def app_state(self, value: dict):
+        self._app_state = value
 
     async def setup(self):
         pass
@@ -101,27 +137,34 @@ class EndpointHookCaller:
     def _iterate_endpoints(self, callback: Callable):
         def callback_iter(one_endpoint: EndpointMeta):
             imported_module_db = one_endpoint.imported_module_db
-            self._exec_callback_if_possible(imported_module_db, callback)
+            self._exec_callback_if_possible(imported_module_db, callback, one_endpoint)
 
             imported_module_router = one_endpoint.imported_module_router
-            self._exec_callback_if_possible(imported_module_router, callback)
+            self._exec_callback_if_possible(imported_module_router, callback, one_endpoint)
 
             imported_module_service = one_endpoint.imported_module_service
-            self._exec_callback_if_possible(imported_module_service, callback)
+            self._exec_callback_if_possible(imported_module_service, callback, one_endpoint)
 
             imported_module = one_endpoint.imported_module
-            self._exec_callback_if_possible(imported_module, callback)
+            self._exec_callback_if_possible(imported_module, callback, one_endpoint)
 
         self._endpoint_container.iterate_endpoints(callback_iter)
 
-    def _exec_callback_if_possible(self, imported_module, callback: Callable):
+    def _exec_callback_if_possible(self, imported_module, callback: Callable, one_endpoint: EndpointMeta):
         if not hasattr(imported_module, 'EndpointHooksImpl'):
             return
 
-        endpoint: EndpointHooks = imported_module.EndpointHooksImpl()
-        endpoint.app = self._app
+        app: FastAPI = self._app
 
-        callback(endpoint)
+        endpoint_hooks: EndpointHooks = imported_module.EndpointHooksImpl()
+
+        endpoint_hooks.app = app
+        endpoint_hooks.endpoint = one_endpoint
+
+        pkg_path = f'{one_endpoint.container_name}.{one_endpoint.name}'
+        endpoint_hooks.app_state = app.state.endpoints[pkg_path]
+
+        callback(endpoint_hooks)
 
     def run_setup_hook(self):
         def callback(endpoint: EndpointHooks):
@@ -153,27 +196,34 @@ class EndpointHookAsyncCaller:
     async def _iterate_endpoints(self, callback: Callable):
         async def callback_iter(one_endpoint: EndpointMeta):
             imported_module_db = one_endpoint.imported_module_db
-            await self._exec_callback_if_possible(imported_module_db, callback)
+            await self._exec_callback_if_possible(imported_module_db, callback, one_endpoint)
 
             imported_module_router = one_endpoint.imported_module_router
-            await self._exec_callback_if_possible(imported_module_router, callback)
+            await self._exec_callback_if_possible(imported_module_router, callback, one_endpoint)
 
             imported_module_service = one_endpoint.imported_module_service
-            await self._exec_callback_if_possible(imported_module_service, callback)
+            await self._exec_callback_if_possible(imported_module_service, callback, one_endpoint)
 
             imported_module = one_endpoint.imported_module
-            await self._exec_callback_if_possible(imported_module, callback)
+            await self._exec_callback_if_possible(imported_module, callback, one_endpoint)
 
         await self._endpoint_container.async_iterate_endpoints(callback_iter)
 
-    async def _exec_callback_if_possible(self, imported_module, callback: Callable):
+    async def _exec_callback_if_possible(self, imported_module, callback: Callable, one_endpoint: EndpointMeta):
         if not hasattr(imported_module, 'EndpointAsyncHooksImpl'):
             return
 
-        endpoint: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl()
-        endpoint.app = self._app
+        app = self._app
 
-        await callback(endpoint)
+        endpoint_hooks: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl()
+
+        endpoint_hooks.app = app
+        endpoint_hooks.endpoint = one_endpoint
+
+        pkg_path = f'{one_endpoint.container_name}.{one_endpoint.name}'
+        endpoint_hooks.app_state = app.state.endpoints[pkg_path]
+
+        await callback(endpoint_hooks)
 
     async def run_setup_hook(self):
         async def callback(endpoint: EndpointAsyncHooks):

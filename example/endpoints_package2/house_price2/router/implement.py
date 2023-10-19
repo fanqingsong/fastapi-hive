@@ -7,7 +7,7 @@ from example.endpoints_package2.house_price2.schema.payload import (
     HousePredictionPayload)
 from example.endpoints_package2.house_price2.schema.prediction import HousePredictionResult
 
-from example.endpoints_package2.house_price2.service import HousePriceModel, get_service
+from example.endpoints_package2.house_price2.service import HousePriceModel
 
 
 router = APIRouter()
@@ -20,8 +20,7 @@ def post_predict(
     block_data: HousePredictionPayload = None
 ) -> HousePredictionResult:
 
-    service = get_service()
-    model: HousePriceModel = service
+    model: HousePriceModel = request.app.state.endpoints['endpoints_package2.house_price2']['service']
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction
