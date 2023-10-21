@@ -5,7 +5,9 @@
 
 ---
 
-For machine learning model, it is not suitable to load model during request, because the time of model loading may be too long, so the proposed method is to load model before request, i.e. during app startup.
+For machine learning model, it is not suitable to load model during request, because the time cost of model loading may be too long, so the proposed method is to load model before request stage, i.e. during app startup stage.
+
+### classical disadvantages
 
 For the classical code layout example, it defines loading model logic func(start_app_handler) in core.event_handler.py file.
 
@@ -72,6 +74,8 @@ app = get_app()
 ```
 
 But for the ideal code structure, we take assumption that all codes of one service should be put in one folder together. 
+
+### fastapi-hive advantages
 
 FastAPI hive really support this code structure, and meet the preloading requirement which is implemented by regiser startup event.
 
@@ -157,6 +161,9 @@ def post_predict(
 ## 2. DB ORM definition and table creation && db instance for endpoints.
 
 ---
+
+### classical disadvantages
+
 
 For db setting definition, sqlalchemy let user create a Base object.
 
@@ -288,6 +295,8 @@ from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 ```
+
+### fastapi-hive advantages
 
 Let's see How to use fastapi-hive as of db part.
 
