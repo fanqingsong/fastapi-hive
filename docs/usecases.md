@@ -1,4 +1,4 @@
-# use cases.
+# Use Cases
 
 
 ## 1. Machine Learning model preloading during app startup.

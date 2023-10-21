@@ -6,7 +6,7 @@ theme:
 repo_name: fanqingsong/fastapi-hive
 repo_url: https://github.com/fanqingsong/fastapi-hive
 nav:
-- index.md
+- what.md
 - why.md
 - how.md
 - design.md

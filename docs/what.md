@@ -1,4 +1,4 @@
-# FastAPI Hive
+# What
 
 ![architecture](img/hive.jpg)
 
