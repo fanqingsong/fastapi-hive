@@ -1,4 +1,4 @@
-# Why you should use Fastapi Hive?
+# Why
 
 
 ## Regular project layout & its cons.

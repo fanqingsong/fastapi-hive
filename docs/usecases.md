@@ -1,4 +1,4 @@
-# Some frequent use cases.
+# use cases.
 
 
 ## 1. Machine Learning model preloading during app startup.

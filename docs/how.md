@@ -1,4 +1,4 @@
-# How to integrate it in you project?
+# How
 
 FastAPI Hive Framework is the solution to the problems in "why" chapter.
 In this chapter, let see how to apply it in project.
