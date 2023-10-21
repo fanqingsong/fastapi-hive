@@ -8,9 +8,9 @@ repo_url: https://github.com/fanqingsong/fastapi-hive
 nav:
 - index.md
 - why.md
-- usages.md
-- usecases.md
+- how.md
 - design.md
+- usecases.md
 - reference.md
 - model_description.md
 
