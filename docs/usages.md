@@ -54,18 +54,19 @@ For cornerstone
 ```Python
 
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from example.cornerstone.auth.implement import validate_request
 
 
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def __init__(self, app: FastAPI):
-        super(CornerstoneHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(CornerstoneHooksImpl, self).__init__()
 
     def pre_endpoint_setup(self):
         print("call pre setup from CornerstoneHooksImpl!!!")
         print("---- get fastapi app ------")
-        print(self._app)
+        print(self.app)
 
     def post_endpoint_setup(self):
         print("call post setup from CornerstoneHooksImpl!!!")
@@ -76,11 +77,17 @@ class CornerstoneHooksImpl(CornerstoneHooks):
     def post_endpoint_teardown(self):
         print("call pre teardown from CornerstoneHooksImpl!!!")
 
+    def pre_endpoint_call(self):
+        pass
+
+    def post_endpoint_call(self):
+        pass
+
 
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    def __init__(self, app: FastAPI):
-        super(CornerstoneAsyncHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(CornerstoneAsyncHooksImpl, self).__init__()
 
     async def pre_endpoint_setup(self):
         print("call pre setup from CornerstoneAsyncHooksImpl!!!")
@@ -94,6 +101,12 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
     async def post_endpoint_teardown(self):
         print("call pre teardown from CornerstoneAsyncHooksImpl!!!")
 
+    async def pre_endpoint_call(self):
+        pass
+
+    async def post_endpoint_call(self):
+        pass
+
 ```
 
 
@@ -102,18 +115,18 @@ For endpoint
 ```Python
 
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.endpoint_model import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
 
 
 class EndpointHooksImpl(EndpointHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointHooksImpl, self).__init__()
 
     def setup(self):
         print("call pre setup from EndpointHooksImpl!!!")
         print("---- get fastapi app ------")
-        print(self._app)
+        print(self.app)
 
     def teardown(self):
         print("call pre teardown from EndpointHooksImpl!!!")
@@ -121,8 +134,8 @@ class EndpointHooksImpl(EndpointHooks):
 
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointAsyncHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointAsyncHooksImpl, self).__init__()
 
     async def setup(self):
         print("call pre setup from EndpointAsyncHooksImpl!!!")
@@ -144,6 +157,7 @@ Note: it only depict the startup flow, it is same as shutdown flow.
 Second, setup the initial code snippet of ioc_framework in main.py
 
 ```Python
+
 
 from fastapi import FastAPI
 from loguru import logger
@@ -171,24 +185,20 @@ def get_app() -> FastAPI:
         logger.info("------ call async post setup -------")
 
     ioc_framework = IoCFramework(fast_app)
-    ioc_framework.config.CORNERSTONE_PACKAGE_PATH = ["./example/cornerstone/"]
+    ioc_framework.config.CORNERSTONE_PACKAGE_PATH = "./example/cornerstone/"
 
     ioc_framework.config.API_PREFIX = API_PREFIX
     ioc_framework.config.ENDPOINT_PACKAGE_PATHS = ["./example/endpoints_package1", "./example/endpoints_package2"]
-    # logger.info("-----------------------------------------------------")
-    # logger.info(dir(ioc_framework))
-    # logger.info(dir(ioc_framework.config))
-    ioc_framework.config.HIDE_ENDPOINT_CONTAINER_IN_API = False
+    ioc_framework.config.ROUTER_MOUNT_AUTOMATED = True
+    ioc_framework.config.HIDE_ENDPOINT_CONTAINER_IN_API = True
     ioc_framework.config.HIDE_ENDPOINT_IN_API = False
+    ioc_framework.config.HIDE_ENDPOINT_IN_TAG = True
     ioc_framework.config.PRE_ENDPOINT_SETUP = hive_pre_setup
     ioc_framework.config.POST_ENDPOINT_SETUP = hive_post_setup
     ioc_framework.config.ASYNC_PRE_ENDPOINT_SETUP = hive_async_pre_setup
     ioc_framework.config.ASYNC_POST_ENDPOINT_SETUP = hive_async_post_setup
 
     ioc_framework.init_modules()
-
-    # ioc_framework.delete_modules_by_packages(["./example/endpoints_package1"])
-    # ioc_framework.add_modules_by_packages(["./example/endpoints_package2"])
 
     @fast_app.get("/")
     def get_root():
@@ -198,6 +208,7 @@ def get_app() -> FastAPI:
 
 
 app = get_app()
+
 ```
 
 ## URL MAPPING

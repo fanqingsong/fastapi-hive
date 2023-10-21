@@ -81,25 +81,24 @@ example/endpoints_package1/house_price/service/__init__.py
 
 
 ```python
+
+
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
-
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.endpoint_model import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
 
 
 class EndpointHooksImpl(EndpointHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointHooksImpl, self).__init__()
 
     def setup(self):
         print("call pre setup from EndpointHooksImpl (service)!!!")
-        print("---- get fastapi app ------")
-        print(self._app)
 
-        self._app.state.house_price_model = HousePriceModel(DEFAULT_MODEL_PATH)
+        app_state = self.app_state
+        app_state['house_price_model'] = HousePriceModel(DEFAULT_MODEL_PATH)
 
     def teardown(self):
         print("call pre teardown from EndpointHooksImpl (service)!!!")
@@ -107,15 +106,14 @@ class EndpointHooksImpl(EndpointHooks):
 
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    def __init__(self, app: FastAPI):
-        super(EndpointAsyncHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(EndpointAsyncHooksImpl, self).__init__()
 
     async def setup(self):
         print("call pre setup from EndpointAsyncHooksImpl (service)!!!")
 
     async def teardown(self):
         print("call pre teardown from EndpointAsyncHooksImpl (service)!!!")
-
 
 ```
 
@@ -146,7 +144,7 @@ def post_predict(
     block_data: HousePredictionPayload = None
 ) -> HousePredictionResult:
 
-    model: HousePriceModel = request.app.state.house_price_model
+    model: HousePriceModel = request.app.state.endpoints['endpoints_package1.house_price']['house_price_model']
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction
@@ -297,6 +295,7 @@ First, create one db setting file: example/cornerstone/db/implement.py
 
 ```python
 
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from fastapi import FastAPI
@@ -304,6 +303,7 @@ from example.cornerstone.config import DATABASE_URL
 from fastapi_sqlalchemy import DBSessionMiddleware  # middleware helper
 from fastapi_sqlalchemy import db  # an object to provide global access to a database session
 
+from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneMeta
 
 Base = declarative_base()
 engine = create_engine(
@@ -312,15 +312,16 @@ engine = create_engine(
 )
 
 
-def add_db_middleware(app: FastAPI):
+def add_db_middleware(app: FastAPI, cornerstone: CornerstoneMeta):
     app.add_middleware(DBSessionMiddleware, db_url=DATABASE_URL)
 
-    app.state.db = db
+    # cornerstone.state['db'] = db
 
 
 def create_all_tables(app: FastAPI):
     Base.metadata.create_all(engine)  # Create tables
     print("-- call create all over ----")
+
 ```
 
 Secondly, create db initial file, and implement hooks call.
@@ -329,29 +330,33 @@ example/cornerstone/db/__init__.py
 
 ```python
 import logging
-
-from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks, CornerstoneAsyncHooks
+import time
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi import FastAPI
+from starlette.requests import Request
+from fastapi_sqlalchemy import db
 
 
-__all__ = ['Base', 'CornerstoneHooksImpl', 'CornerstoneAsyncHooksImpl']
+__all__ = ['Base']
 
 
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def __init__(self, app: FastAPI):
-        super(CornerstoneHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(CornerstoneHooksImpl, self).__init__()
 
     def pre_endpoint_setup(self):
         print("call pre setup from cornerstone db!!!")
 
-        add_db_middleware(self._app)
+        add_db_middleware(self.app, self.cornerstone)
+
+        self.app_state['db'] = db
 
     def post_endpoint_setup(self):
         print("call post setup from cornerstone!!!")
 
-        create_all_tables(self._app)
+        create_all_tables(self.app)
 
     def pre_endpoint_teardown(self):
         print("call pre teardown from cornerstone!!!")
@@ -359,11 +364,19 @@ class CornerstoneHooksImpl(CornerstoneHooks):
     def post_endpoint_teardown(self):
         print("call pre teardown from cornerstone!!!")
 
+    def pre_endpoint_call(self):
+        print("call pre endpoint call from cornerstone!!!")
+
+        self.request_state['db'] = db
+
+    def post_endpoint_call(self):
+        print("call post endpoint call from cornerstone!!!")
+
 
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    def __init__(self, app: FastAPI):
-        super(CornerstoneAsyncHooksImpl, self).__init__(app)
+    def __init__(self):
+        super(CornerstoneAsyncHooksImpl, self).__init__()
 
     async def pre_endpoint_setup(self):
         print("call pre setup from cornerstone async!!!")
@@ -376,6 +389,12 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
     async def post_endpoint_teardown(self):
         print("call pre teardown from cornerstone async!!!")
+
+    async def pre_endpoint_call(self):
+        print("call pre endpoint call from cornerstone async!!!")
+
+    async def post_endpoint_call(self):
+        print("call post endpoint call from cornerstone async!!!")
 
 ```
 
@@ -414,17 +433,18 @@ from example.endpoints_package1.notes import db as dbmodel
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.Note], name="query notes.")
+@router.get("", response_model=List[schemas.Note], name="query notes.")
 def get_notes(req: Request, skip: int = 0, limit: int = 100):
-    db = req.app.state.db.session
+    # db = req.app.state.cornerstones['cornerstone.db']["db"].session
 
+    db = req.state.cornerstones['cornerstone.db']["db"].session
     notes = db.query(dbmodel.Note).offset(skip).limit(limit).all()
     return notes
 
 
-@router.post("/", response_model=schemas.Note, name="create note")
+@router.post("", response_model=schemas.Note, name="create note")
 def create_note(note: schemas.NoteIn, req: Request):
-    db = req.app.state.db.session
+    db = req.app.state.cornerstones['cornerstone.db']["db"].session
 
     db_note = dbmodel.Note(text=note.text, completed=note.completed)
     db.add(db_note)
