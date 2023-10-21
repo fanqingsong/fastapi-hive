@@ -235,8 +235,8 @@ If the folder structure likes below
 Then, the API URLs will be like below:
 
 ```text
-{API_PREFIX}/packages/heartbeat/xxx
-{API_PREFIX}/packages/prediction/yyy
+{API_PREFIX}/endpoint_packages/heartbeat/xxx
+{API_PREFIX}/endpoint_packages/prediction/yyy
 ```
 
 Note:
@@ -250,4 +250,31 @@ After turnning off, the endpoint URLs will be like:
 ```text
 {API_PREFIX}/heartbeat/xxx
 {API_PREFIX}/prediction/yyy
+```
+
+Also if you want to disabled the router automated mount function, you can set config with ROUTER_MOUNT_AUTOMATED = False, then you can set hooks to register router by yourself.
+
+example\endpoints_package1\house_price\router\__init__.py
+
+
+```python
+
+from example.endpoints_package1.house_price.router.implement import router
+
+from fastapi import FastAPI
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
+
+
+class EndpointHooksImpl(EndpointHooks):
+
+    def __init__(self):
+        super(EndpointHooksImpl, self).__init__()
+
+    def setup(self):
+        print("call pre setup from EndpointHooksImpl (service)!!!")
+
+        app: FastAPI = self.app
+
+        app.include_router(router, tags=["house price"], prefix=f"/v1/house_price1")
+
 ```
