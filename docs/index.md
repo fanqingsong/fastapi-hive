@@ -5,7 +5,7 @@
 ![startup_flow](img/startup_flow.png)
 
 <p align="center">
-    <em>FastAPI Hive Framework, modulization code layout tools, decoupling codes into cornerstones and endpoints, developer-friendly, easy to be integrated</em>
+    <em>FastAPI Hive Framework, modulization of code layout, decoupling codes into cornerstones and endpoints, developer-friendly, easy to be integrated</em>
 </p>
 
 
