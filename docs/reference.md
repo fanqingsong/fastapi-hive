@@ -83,7 +83,34 @@ app = get_app()
 
 ----
 
-please check in the code
+The framework provides abstract parent classes (CornerstoneHooks & CornerstoneAsyncHooks), every cornerstone instance must setup hook instace inherited from the parent classes, and can use dependency objects of parent classes.
+
+the following is the visibility of dependency objects regarding to each hook.
+
+| hook name | app | cornerstone | request | app_state  | request_state |
+| --- | --- | --- | --- | --- | --- |
+| pre_endpoint_setup | Yes | Yes | No | Yes | No |
+| post_endpoint_setup | Yes | Yes | No | Yes | No |
+| pre_endpoint_teardown | Yes | Yes | No | Yes | No |
+| post_endpoint_teardown | Yes | Yes | No | Yes |  No |
+| pre_endpoint_call | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| post_endpoint_call | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+
+If the visibility of one dependency object is Yes to one hook, i.e. this dependency can be used in the hook.
+
+dependency objects are injected by framework, each object has its meaning like below:
+
+| name | meaning |
+| --- | --- |
+| app | the instance of FastAPI |
+| cornerstone | the meta data of the cornerstone that hook belong to |
+| request | the incoming http request object |
+| app_state | this cornerstone's state in app.state, hook can set key with value in this dict, and it can be accessed by request.app.state.cornerstones['cornerstone.xxx']['key'] in router implementation. |
+| request_state | this cornerstone's state in request.state，hook can set key with value in this dict, and it can be accessed by request.state.cornerstones['cornerstone.xxx']['key'] in router implementation. |
+
+
+
+please check in the code for usages.
 
 either of sync or async mode can be used.
 
@@ -165,8 +192,27 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
 ----
 
+The framework provides abstract parent classes (EndpointHooks & EndpointAsyncHooks), every endpoint instance can setup hook instace inherited from the parent classes, and can use dependency objects of parent classes.
 
-please check in the code
+the following is the visibility of dependency objects regarding to each hook.
+
+| hook name | app | endpoint | app_state |
+| --- | --- | --- | --- |
+| setup | Yes | Yes | Yes |
+| teardown | Yes | Yes | Yes |
+
+If the visibility of one dependency object is Yes to one hook, i.e. this dependency can be used in the hook.
+
+dependency objects are injected by framework, each object has its meaning like below:
+
+| name | meaning |
+| --- | --- |
+| app | the instance of FastAPI |
+| endpoint | the meta data of the endpoint that hook belong to |
+| app_state | this endpoint's state in app.state, hook can set key with value in this dict, and it can be accessed by request.app.state.endpoints['xxx_endpoints.xxx']['key'] in router implementation. |
+
+
+please check in the code for usages.
 
 either of sync or async mode can be used.
 
