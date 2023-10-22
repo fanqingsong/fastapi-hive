@@ -5,6 +5,9 @@
 
 ---
 
+All configuarable parameters are listed below.
+
+
 | name | description | default |
 | ----- | ---- | ---- |
 | CORNERSTONE_PACKAGE_PATH | cornerstone path | "./cornerstone" |
@@ -12,7 +15,7 @@
 | ROUTER_MOUNT_AUTOMATED | if router mounted automatically | True |
 | HIDE_ENDPOINT_CONTAINER_IN_API | if endpoint container folder name showed in API | False |
 | HIDE_ENDPOINT_IN_API | if endpoint name showed in API | Flase |
-| HIDE_ENDPOINT_IN_TAG | if endpoint name showed in tag |
+| HIDE_ENDPOINT_IN_TAG | if endpoint name showed in tag | False |
 | PRE_ENDPOINT_SETUP | external pre endpoint setup | None |
 | POST_ENDPOINT_SETUP | external post endpoint setup | None |
 | PRE_ENDPOINT_TEARDOWN | external pre endpoint teardown | None |
