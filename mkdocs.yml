@@ -1,6 +1,6 @@
 site_name: FastAPI Hive
 site_description: FastAPI Hive Framework, modulization code layout tools, decoupling codes into cornerstones and endpoints, developer-friendly, easy to be integrated.
-site_url: https://fanqingsong.github.io/fastapi-hive/what/
+site_url: https://fanqingsong.github.io/fastapi-hive
 theme:
   name: material
 repo_name: fanqingsong/fastapi-hive
