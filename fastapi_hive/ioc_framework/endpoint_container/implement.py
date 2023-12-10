@@ -1,6 +1,6 @@
 import importlib
 import os
-from typing import Callable
+from typing import Callable, Optional
 
 from loguru import logger
 

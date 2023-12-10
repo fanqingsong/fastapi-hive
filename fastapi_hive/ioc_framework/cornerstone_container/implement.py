@@ -2,7 +2,7 @@ import importlib
 import os
 import re
 from collections import defaultdict
-from typing import Callable
+from typing import Callable, Optional
 
 from loguru import logger
 
