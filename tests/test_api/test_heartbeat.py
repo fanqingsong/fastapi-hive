@@ -6,7 +6,7 @@ app = get_app()
 
 
 def test_heartbeat(test_client) -> None:
-    response = test_client.get('/api/endpoints_package1/heart_beat/heartbeat')
+    response = test_client.get('/api/heart_beat/heartbeat')
     assert response.status_code == 200
     assert response.json() == {"is_alive": True}
 

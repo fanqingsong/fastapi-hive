@@ -24,10 +24,7 @@ uninstall:
 
 test:
 	# Unit tests with coverage report
-	coverage erase
-	coverage run --rcfile=./.coveragerc -m pytest -c tests
-	coverage report --rcfile=./.coveragerc
-	coverage html --rcfile=./.coveragerc
+	pytest --cov=./tests
 
 check:
 	flake8 fastapi_hive/ --select=E9,F63,F7,F82

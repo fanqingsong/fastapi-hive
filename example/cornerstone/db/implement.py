@@ -1,7 +1,7 @@
 
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
 from fastapi import FastAPI
 from example.cornerstone.config import DATABASE_URL
 from fastapi_sqlalchemy import DBSessionMiddleware  # middleware helper

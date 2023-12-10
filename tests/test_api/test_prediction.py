@@ -5,7 +5,7 @@ from example.cornerstone import config
 
 def test_prediction(test_client) -> None:
     response = test_client.post(
-        "/api/endpoints_package1/house_price/predict",
+        "/api/house_price/predict",
         json={
             "median_income_in_block": 8.3252,
             "median_house_age_in_block": 41,
@@ -25,7 +25,7 @@ def test_prediction(test_client) -> None:
 
 def test_prediction_nopayload(test_client) -> None:
     response = test_client.post(
-        "/api/endpoints_package1/house_price/predict",
+        "/api/house_price/predict",
         json={},
         headers={"token": str(config.API_KEY)}
     )
