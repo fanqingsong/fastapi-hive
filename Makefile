@@ -17,7 +17,8 @@ docs-live:
 	sphinx-autobuild docs docs/_build/html
 
 install: uninstall clean
-	pip install -ve .
+    
+	uv pip install -ve .
 
 uninstall:
 	- pip uninstall -y -q fastapi_hive 2> /dev/null
