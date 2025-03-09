@@ -25,5 +25,4 @@ Go to detailed site for more information [FastAPI Hive](https://fanqingsong.gith
 
 This repository contains a example app with cornerstones and endpoints folder which can be used to speed-up your next machine learning project. The code is fully tested and provides a preconfigured `tox` to quickly expand this sample code.
 
-To experiment and get a feeling on how to use this framework, follow the installation and setup instructions to run the example app and serve it with RESTful API, go to [FastAPI Hive](https://fanqingsong.github.io/fastapi-hive/) for that.
-
+To experiment and get a feeling on how to use this framework, follow the installation and setup instructions to run the example app and serve it with RESTful API, go to [FastAPI Hive](https://fanqingsong.github.io/fastapi-hive/) for guide.
