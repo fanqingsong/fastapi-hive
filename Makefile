@@ -17,7 +17,7 @@ docs-live:
 	sphinx-autobuild docs docs/_build/html
 
 install: uninstall clean
-    
+
 	uv pip install -ve .
 
 uninstall:
