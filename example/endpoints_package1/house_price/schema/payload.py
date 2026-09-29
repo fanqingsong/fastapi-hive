@@ -6,10 +6,10 @@ from pydantic import BaseModel
 class HousePredictionPayload(BaseModel):
     median_income_in_block: float
     median_house_age_in_block: int
-    average_rooms: int
-    average_bedrooms: int
+    average_rooms: float
+    average_bedrooms: float
     population_per_block: int
-    average_house_occupancy: int
+    average_house_occupancy: float
     block_latitude: float
     block_longitude: float
 

@@ -104,7 +104,7 @@ that must be attached to each request.
 pip install fastapi-hive
 ```
 
-FastAPI Hive requires Python 3.7 or later.
+FastAPI Hive supports Python 3.8 through Python 3.13.
 
 ### 2. Organize the application
 

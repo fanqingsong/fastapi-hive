@@ -67,7 +67,7 @@ Folders are set in such layout, urls are mapped by folder structure automaticall
 
 ## Requirements
 
-Python 3.7+
+Python 3.8–3.13
 
 FastAPI Hive Framework stands on the shoulders of giants:
 
@@ -154,7 +154,7 @@ Run your tests with:
 tox
 ```
 
-This runs tests and coverage for Python 3.6 and Flake8, Autopep8, Bandit.
+This runs the configured test, coverage, and code-quality environments.
 
 ## Package and Upload
 

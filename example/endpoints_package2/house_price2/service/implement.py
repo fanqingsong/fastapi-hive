@@ -23,6 +23,10 @@ class HousePriceModel(object):
 
     def _load_local_model(self):
         self.model = joblib.load(self.path)
+        # Models created by scikit-learn 0.22 predate this attribute. Newer
+        # scikit-learn releases read it while predicting.
+        if not hasattr(self.model, "positive"):
+            self.model.positive = False
 
     def _pre_process(self, payload: HousePredictionPayload) -> List:
         logger.debug("Pre-processing payload.")

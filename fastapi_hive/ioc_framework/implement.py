@@ -52,6 +52,11 @@ class IoCFramework:
         # set endpoint state as app state to expose for endpoint access, such as ML model instance
         self._app.state.endpoints = self._get_initial_endpoint_state()
 
+        # Starlette requires middleware to be registered before the application
+        # starts. Cornerstone pre-setup commonly installs shared middleware, so
+        # synchronous preparation must happen while the app is being assembled.
+        self._cornerstone_hook_caller.run_pre_setup_hook()
+
         self._add_event_handler()
 
         self._add_http_middleware()
@@ -129,16 +134,16 @@ class IoCFramework:
 
         app = self._app
 
-        app.add_event_handler("startup", self._get_sync_startup_handler())
-        app.add_event_handler("startup", self._get_async_startup_handler())
+        app.router.add_event_handler("startup", self._get_sync_startup_handler())
+        app.router.add_event_handler("startup", self._get_async_startup_handler())
 
     def _register_shutdown_event_handler(self):
         logger.info("Register shutdown event handler.")
 
         app = self._app
 
-        app.add_event_handler("shutdown", self._get_sync_shutdown_handler())
-        app.add_event_handler("shutdown", self._get_async_shutdown_handler())
+        app.router.add_event_handler("shutdown", self._get_sync_shutdown_handler())
+        app.router.add_event_handler("shutdown", self._get_async_shutdown_handler())
 
     def _get_sync_startup_handler(self) -> Callable:
         app = self._app
@@ -161,8 +166,6 @@ class IoCFramework:
             logger.info("running all sync setup handlers...")
 
             run_external_pre_endpoint_setup()
-
-            self._cornerstone_hook_caller.run_pre_setup_hook()
 
             self._sync_setup()
 
