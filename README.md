@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/fanqingsong/fastapi-hive/actions"><img alt="Build status" src="https://github.com/fanqingsong/fastapi-hive/workflows/pytest_flake8/badge.svg"></a>
   <a href="https://codecov.io/gh/fanqingsong/fastapi-hive"><img alt="Coverage" src="https://codecov.io/gh/fanqingsong/fastapi-hive/branch/master/graph/badge.svg"></a>
-  <a href="https://pypi.org/project/fastapi-hive/"><img alt="Supported Python versions" src="https://img.shields.io/pypi/pyversions/fastapi-hive.svg"></a>
+  <a href="https://www.python.org/"><img alt="Supported Python versions: 3.8–3.13" src="https://img.shields.io/badge/python-3.8--3.13-blue.svg"></a>
   <a href="https://pypi.org/project/fastapi-hive/"><img alt="PyPI version" src="https://badge.fury.io/py/fastapi-hive.svg"></a>
   <a href="https://github.com/fanqingsong/fastapi-hive/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/github/license/fanqingsong/fastapi-hive.svg"></a>
   <a href="https://pepy.tech/project/fastapi-hive"><img alt="Downloads" src="https://pepy.tech/badge/fastapi-hive"></a>
