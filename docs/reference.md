@@ -11,7 +11,7 @@ All configuarable parameters are listed below.
 | name | description | default |
 | ----- | ---- | ---- |
 | CORNERSTONE_PACKAGE_PATH | cornerstone path | "./cornerstone" |
-| ENDPOINT_PACKAGE_PATHS | endpoint package paths | ["./example/endpoints_package1"] |
+| ENDPOINT_PACKAGE_PATHS | endpoint package paths | ["./endpoints"] |
 | API_PREFIX | all api prefix, usual for version, such as "v1" | "" |
 | ACTIVE_PROFILES | profiles that enable a decorated module | [] |
 | FEATURES | feature flags read by enabled_when | {} |
@@ -29,60 +29,44 @@ All configuarable parameters are listed below.
 | ASYNC_POST_ENDPOINT_TEARDOWN | external async post endpoint POST_ENDPOINT_TEARDOWN | None |
 
 
-These configs are set before ioc framework initialization.
+These configs are loaded automatically from convention, `hive.yaml` /
+`hive.yml` / `hive.json` (beside the module that calls `bootstrap`, or in the
+working directory), `.env` keys with a `HIVE_` prefix, and process
+environment variables. Package paths in the file are relative to that file.
+Precedence is:
+
+defaults / folder convention < config file < `.env` < process env <
+`settings=` / `hive.config.*`
+
+`IoCFramework.bootstrap(app)` constructs the container and calls
+`init_modules()`. Pass `settings={...}` or `config_path=` when you do not want
+the working-directory file. Lifecycle callbacks stay code-only.
 
 ```python
-
 from fastapi import FastAPI
-from loguru import logger
-from example.cornerstone.config import (APP_NAME, APP_VERSION, API_PREFIX,
-                                        IS_DEBUG)
-
 from fastapi_hive.ioc_framework import IoCFramework
 
+app = FastAPI()
+IoCFramework.bootstrap(app)
+```
 
-def get_app() -> FastAPI:
-    logger.info("app is starting.")
+```yaml
+# example/hive.yaml
+hive:
+  api_prefix: /api
+  cornerstone_package_path: ./cornerstone
+  endpoint_package_paths:
+    - ./endpoints_package1
+    - ./endpoints_package2
+  hide_endpoint_container_in_api: true
+  hide_endpoint_in_tag: true
+```
 
-    fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
-
-    def hive_pre_setup():
-        logger.info("------ call pre setup -------")
-
-    def hive_post_setup():
-        logger.info("------ call post setup -------")
-
-    async def hive_async_pre_setup():
-        logger.info("------ call async pre setup -------")
-
-    async def hive_async_post_setup():
-        logger.info("------ call async post setup -------")
-
-    ioc_framework = IoCFramework(fast_app)
-    ioc_framework.config.CORNERSTONE_PACKAGE_PATH = "./example/cornerstone/"
-
-    ioc_framework.config.API_PREFIX = API_PREFIX
-    ioc_framework.config.ENDPOINT_PACKAGE_PATHS = ["./example/endpoints_package1", "./example/endpoints_package2"]
-    ioc_framework.config.ROUTER_MOUNT_AUTOMATED = True
-    ioc_framework.config.HIDE_ENDPOINT_CONTAINER_IN_API = True
-    ioc_framework.config.HIDE_ENDPOINT_IN_API = False
-    ioc_framework.config.HIDE_ENDPOINT_IN_TAG = True
-    ioc_framework.config.PRE_ENDPOINT_SETUP = hive_pre_setup
-    ioc_framework.config.POST_ENDPOINT_SETUP = hive_post_setup
-    ioc_framework.config.ASYNC_PRE_ENDPOINT_SETUP = hive_async_pre_setup
-    ioc_framework.config.ASYNC_POST_ENDPOINT_SETUP = hive_async_post_setup
-
-    ioc_framework.init_modules()
-
-    @fast_app.get("/")
-    def get_root():
-        return "Go to docs URL to look up API: http://localhost:8000/docs"
-
-    return fast_app
-
-
-app = get_app()
-
+```python
+# optional code override, still supported
+hive = IoCFramework(app, settings={"API_PREFIX": "/api"})
+hive.config.PRE_ENDPOINT_SETUP = hive_pre_setup
+hive.init_modules()
 ```
 
 ## module decorators

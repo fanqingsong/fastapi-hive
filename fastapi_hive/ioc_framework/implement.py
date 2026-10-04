@@ -1,8 +1,9 @@
+import os
 import time
 from collections import defaultdict
+from typing import Any, Callable, Dict, Optional, Union
 
 from fastapi import FastAPI
-from typing import Callable
 from loguru import logger
 from starlette.requests import Request
 from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
@@ -14,6 +15,10 @@ from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.registry import HiveRegistry
+from fastapi_hive.ioc_framework.hive_settings import (
+    apply_hive_settings,
+    dump_config,
+)
 
 
 class IoCFramework:
@@ -21,12 +26,26 @@ class IoCFramework:
     def __init__(
         self,
         app: FastAPI,
+        settings: Optional[Union[IoCConfig, Dict[str, Any]]] = None,
+        config_path: Optional[str] = None,
         ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
-        endpoint_container: EndpointContainer = Provide[DIContainer.endpoint_container],
-        cornerstone_container: CornerstoneContainer = Provide[DIContainer.cornerstone_container],
+        endpoint_container: EndpointContainer = Provide[
+            DIContainer.endpoint_container
+        ],
+        cornerstone_container: CornerstoneContainer = Provide[
+            DIContainer.cornerstone_container
+        ],
     ):
         self._app = app
         self._ioc_config: IoCConfig = ioc_config
+        overrides = (
+            dump_config(settings) if isinstance(settings, IoCConfig) else settings
+        )
+        apply_hive_settings(
+            self._ioc_config,
+            config_path=config_path,
+            overrides=overrides,
+        )
 
         self._endpoint_container = endpoint_container
         self._cornerstone_container = cornerstone_container
@@ -38,6 +57,17 @@ class IoCFramework:
 
         self._endpoint_hook_caller = EndpointHookCaller(app)
         self._endpoint_hook_async_caller = EndpointHookAsyncCaller(app)
+
+    @classmethod
+    def bootstrap(
+        cls,
+        app: FastAPI,
+        settings: Optional[Union[IoCConfig, Dict[str, Any]]] = None,
+        config_path: Optional[str] = None,
+    ) -> "IoCFramework":
+        hive = cls(app, settings=settings, config_path=config_path)
+        hive.init_modules()
+        return hive
 
     @property
     def config(self):
@@ -113,17 +143,26 @@ class IoCFramework:
     def _load_cornerstones(self):
         logger.info("loading all cornerstones...")
 
-        self._cornerstone_container.register_cornerstone_package_path(
-            self._ioc_config.CORNERSTONE_PACKAGE_PATH
-        )
+        package_path = self._ioc_config.CORNERSTONE_PACKAGE_PATH
+        if not package_path or not os.path.isdir(package_path):
+            logger.info("no cornerstone package directory, skip loading.")
+            return
+
+        self._cornerstone_container.register_cornerstone_package_path(package_path)
         self._cornerstone_container.load_cornerstones()
 
     def _load_endpoints(self):
         logger.info("loading all endpoints...")
 
-        self._endpoint_container.register_endpoint_package_paths(
-            self._ioc_config.ENDPOINT_PACKAGE_PATHS
-        )
+        package_paths = [
+            path for path in self._ioc_config.ENDPOINT_PACKAGE_PATHS
+            if path and os.path.isdir(path)
+        ]
+        if not package_paths:
+            logger.info("no endpoint package directory, skip loading.")
+            return
+
+        self._endpoint_container.register_endpoint_package_paths(package_paths)
         self._endpoint_container.load_endpoints()
 
     def _add_event_handler(self):

@@ -139,19 +139,38 @@ from .implement import router
 
 ### 3. Initialize the hive
 
+If `cornerstone`/`cornerstones` and `endpoints` sit next to `main.py`, the
+container picks them up by convention:
+
 ```python
 from fastapi import FastAPI
 from fastapi_hive.ioc_framework import IoCFramework
 
 app = FastAPI(title="My API")
-
-hive = IoCFramework(app)
-hive.config.CORNERSTONE_PACKAGE_PATH = "./my_app/cornerstones"
-hive.config.ENDPOINT_PACKAGE_PATHS = ["./my_app/endpoints"]
-hive.config.API_PREFIX = "/api/v1"
-hive.config.ROUTER_MOUNT_AUTOMATED = True
-hive.init_modules()
+IoCFramework.bootstrap(app)
 ```
+
+Override convention with `hive.yaml` beside the module that calls `bootstrap`
+(the example keeps it at `example/hive.yaml`) or in the working directory.
+`HIVE_*` environment variables override the file:
+
+```yaml
+# hive.yaml
+hive:
+  api_prefix: /api/v1
+  hide_endpoint_container_in_api: true
+  endpoint_package_paths:
+    - ./my_app/endpoints
+```
+
+```bash
+export HIVE_API_PREFIX=/api/v1
+export HIVE_ENDPOINT_PACKAGE_PATHS=./pkg1,./pkg2
+```
+
+You can still assign `hive.config.*` in code, or pass `settings={...}` to
+`IoCFramework` / `bootstrap`. Code overrides win over env, which wins over the
+file.
 
 Given an endpoint at `my_app/endpoints/heartbeat`, its router is mounted at:
 
@@ -219,12 +238,12 @@ The included application demonstrates:
 git clone https://github.com/fanqingsong/fastapi-hive.git
 cd fastapi-hive
 pip install -r requirements.txt
-cp .env.example .env
+cp example/.env.example example/.env
 uvicorn example.main:app --reload
 ```
 
 Open [http://localhost:8000/docs](http://localhost:8000/docs) to explore the
-generated OpenAPI interface. Configure `API_KEY` in `.env` before trying
+generated OpenAPI interface. Configure `API_KEY` in `example/.env` before trying
 authenticated endpoints; `docs/sample_payload.json` contains a prediction
 request example.
 

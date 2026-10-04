@@ -140,62 +140,44 @@ Note: it only depict the startup flow, it is same as shutdown flow.
 
 ### Setup hive framework init codes 
 
-Second, setup the initial code snippet of ioc_framework in main.py
+Second, bootstrap the container. Convention looks for `cornerstone(s)/` and
+`endpoints/` beside the caller or the working directory. Put the rest in
+`hive.yaml` (beside that caller, or in the working directory) or in `HIVE_*`
+environment variables. The sample file is `example/hive.yaml`.
 
 ```Python
-
-
 from fastapi import FastAPI
 from loguru import logger
-from example.cornerstone.config import (APP_NAME, APP_VERSION, API_PREFIX,
-                                        IS_DEBUG)
+from example.cornerstone.config import APP_NAME, APP_VERSION, IS_DEBUG
 
 from fastapi_hive.ioc_framework import IoCFramework
 
 
 def get_app() -> FastAPI:
     logger.info("app is starting.")
-
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
-
-    def hive_pre_setup():
-        logger.info("------ call pre setup -------")
-
-    def hive_post_setup():
-        logger.info("------ call post setup -------")
-
-    async def hive_async_pre_setup():
-        logger.info("------ call async pre setup -------")
-
-    async def hive_async_post_setup():
-        logger.info("------ call async post setup -------")
-
-    ioc_framework = IoCFramework(fast_app)
-    ioc_framework.config.CORNERSTONE_PACKAGE_PATH = "./example/cornerstone/"
-
-    ioc_framework.config.API_PREFIX = API_PREFIX
-    ioc_framework.config.ENDPOINT_PACKAGE_PATHS = ["./example/endpoints_package1", "./example/endpoints_package2"]
-    ioc_framework.config.ROUTER_MOUNT_AUTOMATED = True
-    ioc_framework.config.HIDE_ENDPOINT_CONTAINER_IN_API = True
-    ioc_framework.config.HIDE_ENDPOINT_IN_API = False
-    ioc_framework.config.HIDE_ENDPOINT_IN_TAG = True
-    ioc_framework.config.PRE_ENDPOINT_SETUP = hive_pre_setup
-    ioc_framework.config.POST_ENDPOINT_SETUP = hive_post_setup
-    ioc_framework.config.ASYNC_PRE_ENDPOINT_SETUP = hive_async_pre_setup
-    ioc_framework.config.ASYNC_POST_ENDPOINT_SETUP = hive_async_post_setup
-
-    ioc_framework.init_modules()
-
-    @fast_app.get("/")
-    def get_root():
-        return "Go to docs URL to look up API: http://localhost:8000/docs"
-
+    IoCFramework.bootstrap(fast_app)
     return fast_app
 
 
 app = get_app()
-
 ```
+
+```yaml
+# example/hive.yaml — paths are relative to this file
+hive:
+  api_prefix: /api
+  cornerstone_package_path: ./cornerstone
+  endpoint_package_paths:
+    - ./endpoints_package1
+    - ./endpoints_package2
+  hide_endpoint_container_in_api: true
+  hide_endpoint_in_tag: true
+```
+
+Programmatic assignment (`hive.config.API_PREFIX = ...`) still works and wins
+over env and file. Lifecycle callbacks such as `PRE_ENDPOINT_SETUP` remain
+code-only.
 
 ## URL MAPPING
 

@@ -7,7 +7,7 @@ from typing import List, Callable, Dict
 class IoCConfig(BaseModel):
     CORNERSTONE_PACKAGE_PATH: str = "./cornerstone"
     API_PREFIX: str = ""
-    ENDPOINT_PACKAGE_PATHS: List[str] = ["./example/endpoints_package1"]
+    ENDPOINT_PACKAGE_PATHS: List[str] = ["./endpoints"]
     ACTIVE_PROFILES: List[str] = Field(default_factory=list)
     FEATURES: Dict = Field(default_factory=dict)
     ROUTER_MOUNT_AUTOMATED: bool = True

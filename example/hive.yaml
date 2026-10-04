@@ -1,0 +1,15 @@
+# Example application settings. Paths are relative to this file.
+# Environment variables with the HIVE_ prefix override this file.
+# Paths next to main.py named cornerstone(s)/ and endpoints/ are discovered
+# automatically when these keys are omitted.
+
+hive:
+  api_prefix: /api
+  cornerstone_package_path: ./cornerstone
+  endpoint_package_paths:
+    - ./endpoints_package1
+    - ./endpoints_package2
+  router_mount_automated: true
+  hide_endpoint_container_in_api: true
+  hide_endpoint_in_api: false
+  hide_endpoint_in_tag: true

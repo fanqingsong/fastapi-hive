@@ -109,10 +109,10 @@ pip3 install -r requirements.txt
 
 
 ### Setup
-1. Duplicate the `.env.example` file and rename it to `.env` 
+1. Duplicate the `example/.env.example` file and rename it to `example/.env` 
 
 
-2. In the `.env` file configure the `API_KEY` entry. The key is used for authenticating our API. <br>
+2. In the `example/.env` file configure the `API_KEY` entry. The key is used for authenticating our API. <br>
    A sample API key can be generated using Python REPL:
 ```python
 import uuid
