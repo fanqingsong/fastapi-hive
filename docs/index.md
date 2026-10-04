@@ -77,21 +77,16 @@ FastAPI Hive Framework stands on the shoulders of giants:
 
 ### Installation 
 
-#### install hive from pypi
-
-```bash
-pip3 install fastapi_hive
-```
-
-#### install hive from source code
+Install from the local checkout. The package published on PyPI can lag behind this repository.
 
 First, git clone this repo.
 
 ```bash
 git clone git@github.com:fanqingsong/fastapi-hive.git
+cd fastapi-hive
 ```
 
-Second, install ioc framework library of this container_name<br/>
+Second, install the library from the local source.<br/>
 <small>Note: If you just treat it as a library, and want to integrate it into your app, you can just run this command. </small>
 
 ```bash
@@ -121,17 +116,20 @@ print(str(uuid.uuid4()))
 
 ### Run  app
 
-1. Start example app with: 
+Start the example from this repository so it uses the local checkout, not the PyPI release.
+
+```bash
+pip3 install -e .
+pip3 install -r requirements.txt
+uvicorn example.main:app --reload
+```
+
+The same local install and startup sequence is `make run-example`.
 
 production running command:
 
 ```bash
 uvicorn example.main:app
-```
-
-developing running command:
-```bash
-uvicorn example.main:app --reload
 ```
 
 2. Go to [http://localhost:8000/docs](http://localhost:8000/docs).

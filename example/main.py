@@ -1,4 +1,14 @@
 
+import sys
+from pathlib import Path
+
+# Prefer this repository over a previously installed PyPI copy.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_repo_root = str(_REPO_ROOT)
+if _repo_root in sys.path:
+    sys.path.remove(_repo_root)
+sys.path.insert(0, _repo_root)
+
 from fastapi import FastAPI
 from loguru import logger
 from example.cornerstone.config import (APP_NAME, APP_VERSION, IS_DEBUG)

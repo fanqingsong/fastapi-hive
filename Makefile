@@ -20,6 +20,12 @@ install: uninstall clean
 
 	uv pip install -ve .
 
+run-example:
+	pip3 install -e .
+	pip3 install -r requirements.txt
+	test -f example/.env || cp example/.env.example example/.env
+	uvicorn example.main:app --reload
+
 uninstall:
 	- pip uninstall -y -q fastapi_hive 2> /dev/null
 

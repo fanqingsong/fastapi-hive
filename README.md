@@ -101,8 +101,12 @@ that must be attached to each request.
 
 ### 1. Install
 
+The package published on PyPI can lag behind this repository. Install from the local source:
+
 ```bash
-pip install fastapi-hive
+git clone https://github.com/fanqingsong/fastapi-hive.git
+cd fastapi-hive
+pip3 install .
 ```
 
 FastAPI Hive supports Python 3.8 through Python 3.13.
@@ -237,10 +241,13 @@ The included application demonstrates:
 ```bash
 git clone https://github.com/fanqingsong/fastapi-hive.git
 cd fastapi-hive
+pip3 install -e .
 pip install -r requirements.txt
 cp example/.env.example example/.env
 uvicorn example.main:app --reload
 ```
+
+`pip3 install -e .` installs this checkout in editable mode, so the example imports the local `fastapi_hive` package. `make run-example` runs that install and then starts the app.
 
 Open [http://localhost:8000/docs](http://localhost:8000/docs) to explore the
 generated OpenAPI interface. Configure `API_KEY` in `example/.env` before trying

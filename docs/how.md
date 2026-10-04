@@ -7,8 +7,12 @@ In this chapter, let see how to apply it in project.
 
 ## Install it.
 
+The package published on PyPI can lag behind this repository. Install from the local source instead.
+
 ```bash
-pip3 install fastapi_hive
+git clone git@github.com:fanqingsong/fastapi-hive.git
+cd fastapi-hive
+pip3 install .
 ```
 
 
