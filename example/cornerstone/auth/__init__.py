@@ -1,18 +1,21 @@
 
-from fastapi import FastAPI
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.decorators import cornerstone, provides
 from example.cornerstone.auth.implement import validate_request
 
 
+@cornerstone(name="auth", order=100)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
     def __init__(self):
         super(CornerstoneHooksImpl, self).__init__()
 
+    @provides("auth.validate_request")
     def pre_endpoint_setup(self):
         print("call pre setup from CornerstoneHooksImpl!!!")
         print("---- get fastapi app ------")
         print(self.app)
+        return validate_request
 
     def post_endpoint_setup(self):
         print("call post setup from CornerstoneHooksImpl!!!")
@@ -30,6 +33,7 @@ class CornerstoneHooksImpl(CornerstoneHooks):
         pass
 
 
+@cornerstone(name="auth", order=100)
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
     def __init__(self):

@@ -1,13 +1,12 @@
-from typing import Callable
 from fastapi import FastAPI
 from loguru import logger
 from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer, EndpointMeta
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
-from fastapi import APIRouter, FastAPI
 from typing import Optional
-from abc import ABC, abstractmethod
+from abc import ABC
+from fastapi_hive.ioc_framework.decorators import bind_endpoint, create_hook, invoke, invoke_async, select_hooks
 
 
 class EndpointHooks(ABC):
@@ -134,49 +133,25 @@ class EndpointHookCaller:
         self._endpoint_container = endpoint_container
         self._ioc_config = ioc_config
 
-    def _iterate_endpoints(self, callback: Callable):
-        def callback_iter(one_endpoint: EndpointMeta):
-            imported_module_db = one_endpoint.imported_module_db
-            self._exec_callback_if_possible(imported_module_db, callback, one_endpoint)
+    def _pairs(self):
+        pairs = []
+        for meta in self._endpoint_container.endpoints.values():
+            for cls in meta.sync_hooks:
+                pairs.append((cls, meta))
+        return select_hooks(pairs, self._ioc_config)
 
-            imported_module_router = one_endpoint.imported_module_router
-            self._exec_callback_if_possible(imported_module_router, callback, one_endpoint)
-
-            imported_module_service = one_endpoint.imported_module_service
-            self._exec_callback_if_possible(imported_module_service, callback, one_endpoint)
-
-            imported_module = one_endpoint.imported_module
-            self._exec_callback_if_possible(imported_module, callback, one_endpoint)
-
-        self._endpoint_container.iterate_endpoints(callback_iter)
-
-    def _exec_callback_if_possible(self, imported_module, callback: Callable, one_endpoint: EndpointMeta):
-        if not hasattr(imported_module, 'EndpointHooksImpl'):
-            return
-
-        app: FastAPI = self._app
-
-        endpoint_hooks: EndpointHooks = imported_module.EndpointHooksImpl()
-
-        endpoint_hooks.app = app
-        endpoint_hooks.endpoint = one_endpoint
-
-        pkg_path = f'{one_endpoint.container_name}.{one_endpoint.name}'
-        endpoint_hooks.app_state = app.state.endpoints[pkg_path]
-
-        callback(endpoint_hooks)
+    def _run(self, method_name: str):
+        app_registry = getattr(self._app.state, "hive", None)
+        for cls, meta in self._pairs():
+            instance = create_hook(cls, app_registry)
+            bind_endpoint(instance, self._app, meta)
+            invoke(instance, method_name, app_registry)
 
     def run_setup_hook(self):
-        def callback(endpoint: EndpointHooks):
-            endpoint.setup()
-
-        self._iterate_endpoints(callback)
+        self._run("setup")
 
     def run_teardown_hook(self):
-        def callback(endpoint: EndpointHooks):
-            endpoint.teardown()
-
-        self._iterate_endpoints(callback)
+        self._run("teardown")
 
 
 class EndpointHookAsyncCaller:
@@ -193,48 +168,24 @@ class EndpointHookAsyncCaller:
         self._endpoint_container = endpoint_container
         self._ioc_config = ioc_config
 
-    async def _iterate_endpoints(self, callback: Callable):
-        async def callback_iter(one_endpoint: EndpointMeta):
-            imported_module_db = one_endpoint.imported_module_db
-            await self._exec_callback_if_possible(imported_module_db, callback, one_endpoint)
+    def _pairs(self):
+        pairs = []
+        for meta in self._endpoint_container.endpoints.values():
+            for cls in meta.async_hooks:
+                pairs.append((cls, meta))
+        return select_hooks(pairs, self._ioc_config)
 
-            imported_module_router = one_endpoint.imported_module_router
-            await self._exec_callback_if_possible(imported_module_router, callback, one_endpoint)
-
-            imported_module_service = one_endpoint.imported_module_service
-            await self._exec_callback_if_possible(imported_module_service, callback, one_endpoint)
-
-            imported_module = one_endpoint.imported_module
-            await self._exec_callback_if_possible(imported_module, callback, one_endpoint)
-
-        await self._endpoint_container.async_iterate_endpoints(callback_iter)
-
-    async def _exec_callback_if_possible(self, imported_module, callback: Callable, one_endpoint: EndpointMeta):
-        if not hasattr(imported_module, 'EndpointAsyncHooksImpl'):
-            return
-
-        app = self._app
-
-        endpoint_hooks: EndpointAsyncHooks = imported_module.EndpointAsyncHooksImpl()
-
-        endpoint_hooks.app = app
-        endpoint_hooks.endpoint = one_endpoint
-
-        pkg_path = f'{one_endpoint.container_name}.{one_endpoint.name}'
-        endpoint_hooks.app_state = app.state.endpoints[pkg_path]
-
-        await callback(endpoint_hooks)
+    async def _run(self, method_name: str):
+        app_registry = getattr(self._app.state, "hive", None)
+        for cls, meta in self._pairs():
+            instance = create_hook(cls, app_registry)
+            bind_endpoint(instance, self._app, meta)
+            await invoke_async(instance, method_name, app_registry)
 
     async def run_setup_hook(self):
-        async def callback(endpoint: EndpointAsyncHooks):
-            await endpoint.setup()
-
-        await self._iterate_endpoints(callback)
+        await self._run("setup")
 
     async def run_teardown_hook(self):
-        async def callback(endpoint: EndpointAsyncHooks):
-            await endpoint.teardown()
-
-        await self._iterate_endpoints(callback)
+        await self._run("teardown")
 
 

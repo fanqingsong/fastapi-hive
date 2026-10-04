@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
-from starlette.requests import Request
 
 from example.cornerstone import auth
+from fastapi_hive.ioc_framework.registry import DependsHive
 
 from example.endpoints_package1.house_price.schema.payload import (
     HousePredictionPayload)
@@ -15,12 +15,11 @@ router = APIRouter()
 
 @router.post("/predict", response_model=HousePredictionResult, name="predict")
 def post_predict(
-    request: Request,
     authenticated: bool = Depends(auth.validate_request),
-    block_data: HousePredictionPayload = None
+    block_data: HousePredictionPayload = None,
+    model: HousePriceModel = DependsHive(HousePriceModel),
 ) -> HousePredictionResult:
 
-    model: HousePriceModel = request.app.state.endpoints['endpoints_package1.house_price']['house_price_model']
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction

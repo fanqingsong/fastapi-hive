@@ -1,12 +1,13 @@
-from typing import Callable, Optional
+from typing import Optional
 from loguru import logger
 from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer, CornerstoneMeta
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from fastapi import FastAPI
-from abc import ABC, abstractmethod
+from abc import ABC
 from starlette.requests import Request
+from fastapi_hive.ioc_framework.decorators import bind_cornerstone, create_hook, invoke, invoke_async, select_hooks
 
 
 class CornerstoneHooks(ABC):
@@ -193,85 +194,44 @@ class CornerstoneHookCaller:
         self._cornerstone_container = cornerstone_container
         self._ioc_config = ioc_config
 
-    def _iterate_cornerstones(self, callback: Callable):
-        def callback_iter(cornerstone_meta: CornerstoneMeta):
-            imported_module = cornerstone_meta.imported_module
+    def _pairs(self):
+        pairs = []
+        for meta in self._cornerstone_container.cornerstones.values():
+            for cls in meta.sync_hooks:
+                pairs.append((cls, meta))
+        return select_hooks(pairs, self._ioc_config)
 
-            if not hasattr(imported_module, 'CornerstoneHooksImpl'):
-                return
-
-            app: FastAPI = self._app
-
-            cornerstone_hooks: CornerstoneHooks = imported_module.CornerstoneHooksImpl()
-            cornerstone_hooks.app = app
-            cornerstone_hooks.cornerstone = cornerstone_meta
-
-            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
-            cornerstone_hooks.app_state = app.state.cornerstones[pkg_path]
-
-            callback(cornerstone_hooks)
-
-        self._cornerstone_container.iterate_cornerstones(callback_iter)
+    def _run(self, method_name: str, request: Request = None):
+        app_registry = getattr(self._app.state, "hive", None)
+        request_registry = getattr(request.state, "hive", None) if request is not None else None
+        for cls, meta in self._pairs():
+            instance = create_hook(cls, app_registry)
+            bind_cornerstone(instance, self._app, meta, request)
+            invoke(instance, method_name, app_registry, request_registry)
 
     def run_pre_setup_hook(self):
         logger.info("running cornerstone_hooks sync pre endpoint setup...")
-
-        def callback(cornerstone_hooks: CornerstoneHooks):
-            cornerstone_hooks.pre_endpoint_setup()
-
-        self._iterate_cornerstones(callback)
+        self._run("pre_endpoint_setup")
 
     def run_post_setup_hook(self):
         logger.info("running cornerstone_hooks sync post endpoint setup...")
-
-        def callback(cornerstone_hooks: CornerstoneHooks):
-            cornerstone_hooks.post_endpoint_setup()
-
-        self._iterate_cornerstones(callback)
+        self._run("post_endpoint_setup")
 
     def run_pre_teardown_hook(self):
         logger.info("running cornerstone_hooks sync pre endpoint teardown...")
-
-        def callback(cornerstone_hooks: CornerstoneHooks):
-            cornerstone_hooks.pre_endpoint_teardown()
-
-        self._iterate_cornerstones(callback)
+        self._run("pre_endpoint_teardown")
 
     def run_post_teardown_hook(self):
         logger.info("running cornerstone_hooks sync post endpoint teardown...")
-
-        def callback(cornerstone_hooks: CornerstoneHooks):
-            cornerstone_hooks.post_endpoint_teardown()
-
-        self._iterate_cornerstones(callback)
+        self._run("post_endpoint_teardown")
 
     def run_pre_call_hook(self, request: Request):
         logger.info("running cornerstone_hooks sync pre endpoint call...")
-
-        def callback(cornerstone_hooks: CornerstoneHooks):
-            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
-
-            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
-            cornerstone_hooks.request_state = request.state.cornerstones[pkg_path]
-
-            cornerstone_hooks.request = request
-            cornerstone_hooks.pre_endpoint_call()
-
-        self._iterate_cornerstones(callback)
+        self._run("pre_endpoint_call", request)
 
     def run_post_call_hook(self, request: Request):
         logger.info("running cornerstone_hooks sync post endpoint call...")
-
-        def callback(cornerstone_hooks: CornerstoneHooks):
-            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
-
-            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
-            cornerstone_hooks.request_state = request.state.cornerstones[pkg_path]
-
-            cornerstone_hooks.request = request
-            cornerstone_hooks.post_endpoint_call()
-
-        self._iterate_cornerstones(callback)
+        self._run("post_endpoint_call", request)
 
 
 class CornerstoneHookAsyncCaller:
@@ -288,82 +248,41 @@ class CornerstoneHookAsyncCaller:
         self._cornerstone_container = cornerstone_container
         self._ioc_config = ioc_config
 
-    async def _iterate_cornerstones(self, callback: Callable):
-        async def callback_iter(cornerstone_meta: CornerstoneMeta):
-            imported_module = cornerstone_meta.imported_module
+    def _pairs(self):
+        pairs = []
+        for meta in self._cornerstone_container.cornerstones.values():
+            for cls in meta.async_hooks:
+                pairs.append((cls, meta))
+        return select_hooks(pairs, self._ioc_config)
 
-            if not hasattr(imported_module, 'CornerstoneAsyncHooksImpl'):
-                return
-
-            app: FastAPI = self._app
-
-            cornerstone_hooks: CornerstoneAsyncHooks = imported_module.CornerstoneAsyncHooksImpl()
-            cornerstone_hooks.app = app
-            cornerstone_hooks.cornerstone = cornerstone_meta
-
-            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
-            cornerstone_hooks.app_state = app.state.cornerstones[pkg_path]
-
-            await callback(cornerstone_hooks)
-
-        await self._cornerstone_container.async_iterate_cornerstones(callback_iter)
+    async def _run(self, method_name: str, request: Request = None):
+        app_registry = getattr(self._app.state, "hive", None)
+        request_registry = getattr(request.state, "hive", None) if request is not None else None
+        for cls, meta in self._pairs():
+            instance = create_hook(cls, app_registry)
+            bind_cornerstone(instance, self._app, meta, request)
+            await invoke_async(instance, method_name, app_registry, request_registry)
 
     async def run_pre_setup_hook(self):
         logger.info("running cornerstone_hooks async pre endpoint setup...")
-
-        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
-            await cornerstone_hooks.pre_endpoint_setup()
-
-        await self._iterate_cornerstones(callback)
+        await self._run("pre_endpoint_setup")
 
     async def run_post_setup_hook(self):
         logger.info("running cornerstone_hooks async post endpoint setup...")
-
-        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
-            await cornerstone_hooks.post_endpoint_setup()
-
-        await self._iterate_cornerstones(callback)
+        await self._run("post_endpoint_setup")
 
     async def run_pre_teardown_hook(self):
         logger.info("running cornerstone_hooks async pre endpoint teardown...")
-
-        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
-            await cornerstone_hooks.pre_endpoint_teardown()
-
-        await self._iterate_cornerstones(callback)
+        await self._run("pre_endpoint_teardown")
 
     async def run_post_teardown_hook(self):
         logger.info("running cornerstone_hooks async post endpoint teardown...")
-
-        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
-            await cornerstone_hooks.post_endpoint_teardown()
-
-        await self._iterate_cornerstones(callback)
+        await self._run("post_endpoint_teardown")
 
     async def run_pre_call_hook(self, request: Request):
         logger.info("running cornerstone_hooks async pre endpoint call...")
-
-        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
-            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
-
-            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
-            cornerstone_hooks.req_state = request.state.cornerstones[pkg_path]
-
-            cornerstone_hooks.request = request
-            await cornerstone_hooks.pre_endpoint_call()
-
-        await self._iterate_cornerstones(callback)
+        await self._run("pre_endpoint_call", request)
 
     async def run_post_call_hook(self, request: Request):
         logger.info("running cornerstone_hooks async post endpoint call...")
-
-        async def callback(cornerstone_hooks: CornerstoneAsyncHooks):
-            cornerstone_meta: CornerstoneMeta = cornerstone_hooks.cornerstone
-
-            pkg_path = f'{cornerstone_meta.container_name}.{cornerstone_meta.name}'
-            cornerstone_hooks.req_state = request.state.cornerstones[pkg_path]
-
-            cornerstone_hooks.request = request
-            await cornerstone_hooks.post_endpoint_call()
-
-        await self._iterate_cornerstones(callback)
+        await self._run("post_endpoint_call", request)

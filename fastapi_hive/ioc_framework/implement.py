@@ -13,6 +13,7 @@ from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHookCaller, Endpoi
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
+from fastapi_hive.ioc_framework.registry import HiveRegistry
 
 
 class IoCFramework:
@@ -51,6 +52,7 @@ class IoCFramework:
 
         # set endpoint state as app state to expose for endpoint access, such as ML model instance
         self._app.state.endpoints = self._get_initial_endpoint_state()
+        self._app.state.hive = HiveRegistry()
 
         # Starlette requires middleware to be registered before the application
         # starts. Cornerstone pre-setup commonly installs shared middleware, so
@@ -89,6 +91,7 @@ class IoCFramework:
             start_time = time.time()
 
             request.state.cornerstones = self._get_initial_cornerstone_state()
+            request.state.hive = HiveRegistry()
 
             self._cornerstone_hook_caller.run_pre_call_hook(request)
 

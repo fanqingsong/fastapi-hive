@@ -1,26 +1,21 @@
 
 from fastapi import APIRouter
-from starlette.requests import Request
 from typing import List
 from example.endpoints_package1.notes import schemas
 from example.endpoints_package1.notes import db as dbmodel
+from fastapi_hive.ioc_framework.registry import DependsHive
 
 router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Note], name="query notes.")
-def get_notes(req: Request, skip: int = 0, limit: int = 100):
-    # db = req.app.state.cornerstones['cornerstone.db']["db"].session
-
-    db = req.state.cornerstones['cornerstone.db']["db"].session
+def get_notes(skip: int = 0, limit: int = 100, db=DependsHive("db.session")):
     notes = db.query(dbmodel.Note).offset(skip).limit(limit).all()
     return notes
 
 
 @router.post("", response_model=schemas.Note, name="create note")
-def create_note(note: schemas.NoteIn, req: Request):
-    db = req.app.state.cornerstones['cornerstone.db']["db"].session
-
+def create_note(note: schemas.NoteIn, db=DependsHive("db.session")):
     db_note = dbmodel.Note(text=note.text, completed=note.completed)
     db.add(db_note)
     db.commit()

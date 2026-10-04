@@ -1,13 +1,15 @@
 
 
-from pydantic import BaseModel
-from typing import List, Callable
+from pydantic import BaseModel, Field
+from typing import List, Callable, Dict
 
 
 class IoCConfig(BaseModel):
     CORNERSTONE_PACKAGE_PATH: str = "./cornerstone"
     API_PREFIX: str = ""
     ENDPOINT_PACKAGE_PATHS: List[str] = ["./example/endpoints_package1"]
+    ACTIVE_PROFILES: List[str] = Field(default_factory=list)
+    FEATURES: Dict = Field(default_factory=dict)
     ROUTER_MOUNT_AUTOMATED: bool = True
     HIDE_ENDPOINT_CONTAINER_IN_API: bool = False
     HIDE_ENDPOINT_IN_API: bool = False

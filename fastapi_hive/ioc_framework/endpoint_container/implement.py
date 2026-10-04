@@ -3,6 +3,7 @@ import os
 from typing import Callable, Optional
 
 from loguru import logger
+from fastapi_hive.ioc_framework.decorators import collect_hooks, resolve_mount
 
 
 class EndpointMeta:
@@ -14,6 +15,9 @@ class EndpointMeta:
         self._imported_module_db = None
         self._imported_module_router = None
         self._imported_module_service = None
+        self.sync_hooks = []
+        self.async_hooks = []
+        self.mount_spec = resolve_mount([])
 
     @property
     def name(self) -> str:
@@ -137,7 +141,26 @@ class EndpointContainer:
                 if os.path.exists(f'{one_package_path}/{one_endpoint_name}/service'):
                     endpoint_instance.imported_module_service = importlib.import_module(f'{one_endpoint_path}.service')
 
-                endpoint_instance.service = one_endpoint_entity.service
+                sync_hooks = []
+                async_hooks = []
+                for module in (
+                    endpoint_instance.imported_module_db,
+                    endpoint_instance.imported_module_router,
+                    endpoint_instance.imported_module_service,
+                    one_endpoint_entity,
+                ):
+                    module_sync, module_async = collect_hooks(
+                        module,
+                        role="endpoint",
+                        legacy_sync="EndpointHooksImpl",
+                        legacy_async="EndpointAsyncHooksImpl",
+                        default_name=one_endpoint_name,
+                    )
+                    sync_hooks.extend(module_sync)
+                    async_hooks.extend(module_async)
+                endpoint_instance.sync_hooks = sync_hooks
+                endpoint_instance.async_hooks = async_hooks
+                endpoint_instance.mount_spec = resolve_mount(sync_hooks)
 
                 self._endpoints[f'{container_name}.{one_endpoint_name}'] = endpoint_instance
 

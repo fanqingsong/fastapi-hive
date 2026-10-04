@@ -49,63 +49,40 @@ Code Folder Structure
 
 From code view, the setup or teardown hooks should be set in __init__.py if needed.
 
+Decorate the hook class. `order` decides who runs first in the same phase. `profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` reads a dotted key from `FEATURES`. `@provides` registers the method return value on the app registry. `@request_provides` registers it on the current request.
+
+A module that is not decorated is still loaded when its class is named `CornerstoneHooksImpl`, `CornerstoneAsyncHooksImpl`, `EndpointHooksImpl`, or `EndpointAsyncHooksImpl`. Those legacy classes use `order=0` and stay enabled.
+
 For cornerstone
 
 ```Python
 
-from fastapi import FastAPI
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.decorators import cornerstone, provides
 from example.cornerstone.auth.implement import validate_request
 
 
+@cornerstone(name="auth", order=100)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def __init__(self):
-        super(CornerstoneHooksImpl, self).__init__()
-
+    @provides("auth.validate_request")
     def pre_endpoint_setup(self):
         print("call pre setup from CornerstoneHooksImpl!!!")
-        print("---- get fastapi app ------")
         print(self.app)
+        return validate_request
 
     def post_endpoint_setup(self):
         print("call post setup from CornerstoneHooksImpl!!!")
 
-    def pre_endpoint_teardown(self):
-        print("call pre teardown from CornerstoneHooksImpl!!!")
 
-    def post_endpoint_teardown(self):
-        print("call pre teardown from CornerstoneHooksImpl!!!")
-
-    def pre_endpoint_call(self):
-        pass
-
-    def post_endpoint_call(self):
-        pass
-
-
+@cornerstone(name="auth", order=100)
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
-
-    def __init__(self):
-        super(CornerstoneAsyncHooksImpl, self).__init__()
 
     async def pre_endpoint_setup(self):
         print("call pre setup from CornerstoneAsyncHooksImpl!!!")
 
     async def post_endpoint_setup(self):
         print("call post setup from CornerstoneAsyncHooksImpl!!!")
-
-    async def pre_endpoint_teardown(self):
-        print("call pre teardown from CornerstoneAsyncHooksImpl!!!")
-
-    async def post_endpoint_teardown(self):
-        print("call pre teardown from CornerstoneAsyncHooksImpl!!!")
-
-    async def pre_endpoint_call(self):
-        pass
-
-    async def post_endpoint_call(self):
-        pass
 
 ```
 
@@ -114,28 +91,27 @@ For endpoint
 
 ```Python
 
-from fastapi import FastAPI
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.decorators import endpoint, provides
+from example.endpoints_package1.house_price.service.implement import HousePriceModel
+from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
 
 
+@endpoint(name="house_price")
 class EndpointHooksImpl(EndpointHooks):
 
-    def __init__(self):
-        super(EndpointHooksImpl, self).__init__()
-
+    @provides(HousePriceModel)
     def setup(self):
         print("call pre setup from EndpointHooksImpl!!!")
-        print("---- get fastapi app ------")
         print(self.app)
+        return HousePriceModel(DEFAULT_MODEL_PATH)
 
     def teardown(self):
         print("call pre teardown from EndpointHooksImpl!!!")
 
 
+@endpoint(name="house_price")
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
-
-    def __init__(self):
-        super(EndpointAsyncHooksImpl, self).__init__()
 
     async def setup(self):
         print("call pre setup from EndpointAsyncHooksImpl!!!")
@@ -143,6 +119,16 @@ class EndpointAsyncHooksImpl(EndpointAsyncHooks):
     async def teardown(self):
         print("call pre teardown from EndpointAsyncHooksImpl!!!")
 
+```
+
+Routes read registered objects with `DependsHive`:
+
+```Python
+
+from fastapi_hive.ioc_framework.registry import DependsHive
+
+def post_predict(model: HousePriceModel = DependsHive(HousePriceModel)):
+    return model.predict(block_data)
 
 ```
 
@@ -263,18 +249,17 @@ from example.endpoints_package1.house_price.router.implement import router
 
 from fastapi import FastAPI
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
+from fastapi_hive.ioc_framework.decorators import endpoint
 
 
+@endpoint(name="house_price", mount=False)
 class EndpointHooksImpl(EndpointHooks):
-
-    def __init__(self):
-        super(EndpointHooksImpl, self).__init__()
 
     def setup(self):
         print("call pre setup from EndpointHooksImpl (service)!!!")
 
         app: FastAPI = self.app
 
-        app.include_router(router, tags=["house price"], prefix=f"/v1/house_price1")
+        app.include_router(router, tags=["house price"], prefix="/v1/house_price1")
 
 ```

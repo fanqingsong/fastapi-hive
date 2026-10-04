@@ -22,6 +22,15 @@ class EndpointRouterMounter:
         self._endpoint_container = endpoint_container
         self._ioc_config = ioc_config
 
+    @staticmethod
+    def _endpoint_order(endpoint_instance: EndpointMeta) -> int:
+        orders = [
+            cls.__hive__.order
+            for cls in endpoint_instance.sync_hooks
+            if getattr(cls, "__hive__", None) is not None and cls.__hive__.role == "endpoint"
+        ]
+        return min(orders) if orders else 0
+
     def mount(self) -> None:
         logger.info("running endpoint router mounter.")
 
@@ -33,10 +42,18 @@ class EndpointRouterMounter:
         hide_endpoint_in_tag = self._ioc_config.HIDE_ENDPOINT_IN_TAG
 
         endpoints = self._endpoint_container.endpoints
-        for one_endpoint_pkg_path, endpoint_instance in endpoints.items():
+        ordered = sorted(
+            endpoints.items(),
+            key=lambda item: (self._endpoint_order(item[1]), item[1].name),
+        )
+        for one_endpoint_pkg_path, endpoint_instance in ordered:
             logger.info(f"router mounting, endpoint name = {one_endpoint_pkg_path}")
 
             endpoint_instance: EndpointMeta = endpoint_instance
+            mount_spec = endpoint_instance.mount_spec
+            if mount_spec.skip:
+                logger.info("endpoint mount disabled by decorator.")
+                continue
 
             imported_module_router = endpoint_instance.imported_module_router
             if not hasattr(imported_module_router, 'router'):
@@ -61,11 +78,18 @@ class EndpointRouterMounter:
             if not hide_endpoint_in_tag:
                 tag = f"{tag}.{endpoint_name}"
 
+            if mount_spec.explicit:
+                if mount_spec.prefix is not None:
+                    prefix = mount_spec.prefix
+                tags = mount_spec.tags if mount_spec.tags is not None else [tag]
+            else:
+                tags = [tag]
+
             '''
             set container_name in url
             '''
             app.include_router(
                 module_router,
-                tags=[tag],
+                tags=tags,
                 prefix=prefix)
 
