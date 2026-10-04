@@ -70,7 +70,7 @@ modules that are easier to review, test, move, or remove.
 At initialization, `IoCFramework` scans the configured package paths and imports
 each child module. It then:
 
-1. exposes cornerstone and endpoint state through the FastAPI application;
+1. discovers decorated modules, then exposes their published values through the hive registry;
 2. registers synchronous and asynchronous startup/shutdown hooks;
 3. mounts every discovered endpoint router when automatic mounting is enabled;
 4. installs request middleware that runs cornerstone hooks before and after
@@ -91,8 +91,9 @@ that must be attached to each request.
   folder structure.
 - **Lifecycle hooks** — run sync or async setup and teardown code at application,
   module, and request boundaries.
-- **Shared and isolated state** — make cornerstone resources and endpoint-owned
-  resources available through `app.state` and `request.state`.
+- **Shared and isolated state** — publish process-level values with `@provides`
+  and request-scoped values with `@request_provides`. Routes read them through
+  `DependsHive`.
 - **Incremental adoption** — wrap an existing FastAPI app with only a small
   bootstrap block.
 
@@ -163,37 +164,46 @@ generated URL. Set `HIDE_ENDPOINT_IN_TAG` to control OpenAPI tag names.
 
 ### 4. Add lifecycle behavior
 
-Define `EndpointHooksImpl` in an endpoint package to preload an endpoint-owned
-resource:
+Decorate a hook class in the endpoint package. `@provides` registers the
+return value for later injection:
 
 ```python
 # my_app/endpoints/house_price/service/__init__.py
+from fastapi_hive.ioc_framework.decorators import endpoint, provides
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 
 from .implement import HousePriceModel
 
 
-class EndpointHooksImpl(EndpointHooks):
+@endpoint(name="house_price")
+class HousePriceService(EndpointHooks):
+    @provides(HousePriceModel)
     def setup(self):
-        self.app_state["model"] = HousePriceModel("model.joblib")
-
-    def teardown(self):
-        self.app_state.pop("model", None)
+        return HousePriceModel("model.joblib")
 ```
 
-The resource is then available to that endpoint:
+The route receives that object through `DependsHive`:
 
 ```python
-model = request.app.state.endpoints[
-    "endpoints.house_price"
-]["model"]
-prediction = model.predict(payload)
+from fastapi_hive.ioc_framework.registry import DependsHive
+
+def predict(model: HousePriceModel = DependsHive(HousePriceModel)):
+    return model.predict(payload)
 ```
 
-Cornerstones use `CornerstoneHooksImpl` and additionally support
-`pre_endpoint_call` / `post_endpoint_call` hooks for request-scoped behavior.
-Async equivalents are available through `EndpointAsyncHooks` and
-`CornerstoneAsyncHooks`.
+Cornerstones use `@cornerstone`. `pre_endpoint_call` and `post_endpoint_call`
+run around each request; mark a return value with `@request_provides` to
+publish it for that request only. `DependsHive` reads the request registry
+before the application registry.
+
+`order` controls hook order. `profiles` and `enabled_when` skip a module unless
+`ACTIVE_PROFILES` or `FEATURES` enables it. Set `mount=False` on `@endpoint`
+to register the router yourself.
+
+A class that is not decorated is still loaded when its name is
+`CornerstoneHooksImpl`, `CornerstoneAsyncHooksImpl`, `EndpointHooksImpl`, or
+`EndpointAsyncHooksImpl`. Those legacy classes use `order=0` and stay enabled.
+Async hooks use `EndpointAsyncHooks` and `CornerstoneAsyncHooks`.
 
 ## Run the example
 

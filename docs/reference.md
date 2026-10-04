@@ -11,7 +11,10 @@ All configuarable parameters are listed below.
 | name | description | default |
 | ----- | ---- | ---- |
 | CORNERSTONE_PACKAGE_PATH | cornerstone path | "./cornerstone" |
+| ENDPOINT_PACKAGE_PATHS | endpoint package paths | ["./example/endpoints_package1"] |
 | API_PREFIX | all api prefix, usual for version, such as "v1" | "" |
+| ACTIVE_PROFILES | profiles that enable a decorated module | [] |
+| FEATURES | feature flags read by enabled_when | {} |
 | ROUTER_MOUNT_AUTOMATED | if router mounted automatically | True |
 | HIDE_ENDPOINT_CONTAINER_IN_API | if endpoint container folder name showed in API | False |
 | HIDE_ENDPOINT_IN_API | if endpoint name showed in API | Flase |
@@ -82,11 +85,28 @@ app = get_app()
 
 ```
 
+## module decorators
+
+----
+
+Decorate the hook class so the container can discover it. A module without a decorator is still loaded when the class name is `CornerstoneHooksImpl`, `CornerstoneAsyncHooksImpl`, `EndpointHooksImpl`, or `EndpointAsyncHooksImpl`.
+
+| decorator | purpose |
+| --- | --- |
+| `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `pre_endpoint_setup` runs before the application starts. |
+| `@endpoint(name, order=0, prefix=None, tags=None, mount=True, profiles=None, enabled_when=None)` | business module. `prefix` and `tags` override automatic router mounting. `mount=False` leaves mounting to `setup`. |
+| `@provides(key)` | register the method return value on the application registry. `key` is a type or a string. |
+| `@request_provides(key)` | register the method return value on the current request registry. |
+
+`profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` is a dotted key in `FEATURES`; a missing or false value skips the module. Hooks in one phase run by ascending `order`, then by name.
+
+Routes read a published value with `DependsHive(key)`. The request registry is checked first, then the application registry.
+
 ## cornerstone hooks
 
 ----
 
-The framework provides abstract parent classes (CornerstoneHooks & CornerstoneAsyncHooks), every cornerstone instance must setup hook instace inherited from the parent classes, and can use dependency objects of parent classes.
+The framework provides abstract parent classes (CornerstoneHooks & CornerstoneAsyncHooks). Decorate a subclass with `@cornerstone`. The subclass can use the dependency objects below.
 
 the following is the visibility of dependency objects regarding to each hook.
 
@@ -96,8 +116,8 @@ the following is the visibility of dependency objects regarding to each hook.
 | post_endpoint_setup | Yes | Yes | No | Yes | No |
 | pre_endpoint_teardown | Yes | Yes | No | Yes | No |
 | post_endpoint_teardown | Yes | Yes | No | Yes |  No |
-| pre_endpoint_call | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| post_endpoint_call | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| pre_endpoint_call | Yes | Yes | Yes | Yes | Yes |
+| post_endpoint_call | Yes | Yes | Yes | Yes | Yes |
 
 If the visibility of one dependency object is Yes to one hook, i.e. this dependency can be used in the hook.
 
@@ -108,8 +128,8 @@ dependency objects are injected by framework, each object has its meaning like b
 | app | the instance of FastAPI |
 | cornerstone | the meta data of the cornerstone that hook belong to |
 | request | the incoming http request object |
-| app_state | this cornerstone's state in app.state, hook can set key with value in this dict, and it can be accessed by request.app.state.cornerstones['cornerstone.xxx']['key'] in router implementation. |
-| request_state | this cornerstone's state in request.state，hook can set key with value in this dict, and it can be accessed by request.state.cornerstones['cornerstone.xxx']['key'] in router implementation. |
+| app_state | this cornerstone's dict in `app.state.cornerstones`. Prefer `@provides` and `DependsHive` when a router needs the value. |
+| request_state | this cornerstone's dict in `request.state.cornerstones`. Prefer `@request_provides` and `DependsHive` for request-scoped values. |
 
 
 
@@ -122,72 +142,49 @@ hooks can be set in cornerstone init file.
 example/cornerstone/db/__init__.py
 
 ```python
-import logging
-import time
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.decorators import cornerstone, provides, request_provides
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
-from fastapi import FastAPI
-from starlette.requests import Request
 from fastapi_sqlalchemy import db
 
 
 __all__ = ['Base']
 
 
+class LazyDBSession:
+    def __init__(self, database):
+        self._database = database
+
+    def __getattr__(self, name):
+        return getattr(self._database.session, name)
+
+
+@cornerstone(name="db", order=0)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def __init__(self):
-        super(CornerstoneHooksImpl, self).__init__()
-
+    @provides("db")
     def pre_endpoint_setup(self):
-        print("call pre setup from cornerstone db!!!")
-
         add_db_middleware(self.app, self.cornerstone)
-
         self.app_state['db'] = db
+        return db
 
     def post_endpoint_setup(self):
-        print("call post setup from cornerstone!!!")
-
         create_all_tables(self.app)
 
-    def pre_endpoint_teardown(self):
-        print("call pre teardown from cornerstone!!!")
-
-    def post_endpoint_teardown(self):
-        print("call pre teardown from cornerstone!!!")
-
+    @request_provides("db.session")
     def pre_endpoint_call(self):
-        print("call pre endpoint call from cornerstone!!!")
-
         self.request_state['db'] = db
-
-    def post_endpoint_call(self):
-        print("call post endpoint call from cornerstone!!!")
+        return LazyDBSession(db)
 
 
+@cornerstone(name="db", order=0)
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    def __init__(self):
-        super(CornerstoneAsyncHooksImpl, self).__init__()
-
     async def pre_endpoint_setup(self):
-        print("call pre setup from cornerstone async!!!")
+        pass
 
     async def post_endpoint_setup(self):
-        print("call post setup from cornerstone async!!!")
-
-    async def pre_endpoint_teardown(self):
-        print("call pre teardown from cornerstone async!!!")
-
-    async def post_endpoint_teardown(self):
-        print("call pre teardown from cornerstone async!!!")
-
-    async def pre_endpoint_call(self):
-        print("call pre endpoint call from cornerstone async!!!")
-
-    async def post_endpoint_call(self):
-        print("call post endpoint call from cornerstone async!!!")
+        pass
 ```
 
 
@@ -195,7 +192,7 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
 ----
 
-The framework provides abstract parent classes (EndpointHooks & EndpointAsyncHooks), every endpoint instance can setup hook instace inherited from the parent classes, and can use dependency objects of parent classes.
+The framework provides abstract parent classes (EndpointHooks & EndpointAsyncHooks). Decorate a subclass with `@endpoint`. The subclass can use the dependency objects below.
 
 the following is the visibility of dependency objects regarding to each hook.
 
@@ -212,7 +209,7 @@ dependency objects are injected by framework, each object has its meaning like b
 | --- | --- |
 | app | the instance of FastAPI |
 | endpoint | the meta data of the endpoint that hook belong to |
-| app_state | this endpoint's state in app.state, hook can set key with value in this dict, and it can be accessed by request.app.state.endpoints['xxx_endpoints.xxx']['key'] in router implementation. |
+| app_state | this endpoint's dict in `app.state.endpoints`. Prefer `@provides` and `DependsHive` when a router needs the value. |
 
 
 please check in the code for usages.
@@ -224,38 +221,39 @@ hooks can be set in endpoint init file and three sub-modules(db/service/router) 
 example/endpoints_package1/house_price/service/__init__.py
 
 ```python
-
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-from fastapi import FastAPI
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.decorators import endpoint, provides
 
 
+@endpoint(name="house_price")
 class EndpointHooksImpl(EndpointHooks):
 
-    def __init__(self):
-        super(EndpointHooksImpl, self).__init__()
-
+    @provides(HousePriceModel)
     def setup(self):
-        print("call pre setup from EndpointHooksImpl (service)!!!")
-
-        app_state = self.app_state
-        app_state['house_price_model'] = HousePriceModel(DEFAULT_MODEL_PATH)
+        return HousePriceModel(DEFAULT_MODEL_PATH)
 
     def teardown(self):
-        print("call pre teardown from EndpointHooksImpl (service)!!!")
+        pass
 
 
+@endpoint(name="house_price")
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    def __init__(self):
-        super(EndpointAsyncHooksImpl, self).__init__()
-
     async def setup(self):
-        print("call pre setup from EndpointAsyncHooksImpl (service)!!!")
+        pass
 
     async def teardown(self):
-        print("call pre teardown from EndpointAsyncHooksImpl (service)!!!")
+        pass
+```
 
+The router receives the model with `DependsHive`:
+
+```python
+from fastapi_hive.ioc_framework.registry import DependsHive
+
+def post_predict(model: HousePriceModel = DependsHive(HousePriceModel)):
+    return model.predict(block_data)
 ```
 

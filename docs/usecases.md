@@ -79,57 +79,48 @@ But for the ideal code structure, we take assumption that all codes of one servi
 
 FastAPI hive really support this code structure, and meet the preloading requirement which is implemented by regiser startup event.
 
-in the below file, we use setup hook to load machine learning model before request, and save loaded model as self._app.state.house_price_model.
+in the below file, the setup hook loads the machine learning model before requests and registers it with `@provides`.
 
 example/endpoints_package1/house_price/service/__init__.py
 
 
 ```python
-
-
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-from fastapi import FastAPI
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.decorators import endpoint, provides
 
 
+@endpoint(name="house_price")
 class EndpointHooksImpl(EndpointHooks):
 
-    def __init__(self):
-        super(EndpointHooksImpl, self).__init__()
-
+    @provides(HousePriceModel)
     def setup(self):
-        print("call pre setup from EndpointHooksImpl (service)!!!")
-
-        app_state = self.app_state
-        app_state['house_price_model'] = HousePriceModel(DEFAULT_MODEL_PATH)
+        return HousePriceModel(DEFAULT_MODEL_PATH)
 
     def teardown(self):
-        print("call pre teardown from EndpointHooksImpl (service)!!!")
+        pass
 
 
+@endpoint(name="house_price")
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    def __init__(self):
-        super(EndpointAsyncHooksImpl, self).__init__()
-
     async def setup(self):
-        print("call pre setup from EndpointAsyncHooksImpl (service)!!!")
+        pass
 
     async def teardown(self):
-        print("call pre teardown from EndpointAsyncHooksImpl (service)!!!")
-
+        pass
 ```
 
-Then in router file, we implement predict endpoint which call loaded model with variable request.app.state.house_price_model
+The predict route receives the loaded model through `DependsHive(HousePriceModel)`.
 
 example/endpoints_package1/house_price/router/implement.py
 
 ```python
 from fastapi import APIRouter, Depends
-from starlette.requests import Request
 
 from example.cornerstone import auth
+from fastapi_hive.ioc_framework.registry import DependsHive
 
 from example.endpoints_package1.house_price.schema.payload import (
     HousePredictionPayload)
@@ -143,12 +134,11 @@ router = APIRouter()
 
 @router.post("/predict", response_model=HousePredictionResult, name="predict")
 def post_predict(
-    request: Request,
     authenticated: bool = Depends(auth.validate_request),
-    block_data: HousePredictionPayload = None
+    block_data: HousePredictionPayload = None,
+    model: HousePriceModel = DependsHive(HousePriceModel),
 ) -> HousePredictionResult:
 
-    model: HousePriceModel = request.app.state.endpoints['endpoints_package1.house_price']['house_price_model']
     prediction: HousePredictionResult = model.predict(block_data)
 
     return prediction
@@ -338,73 +328,46 @@ Secondly, create db initial file, and implement hooks call.
 example/cornerstone/db/__init__.py
 
 ```python
-import logging
-import time
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.decorators import cornerstone, provides, request_provides
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
-from fastapi import FastAPI
-from starlette.requests import Request
 from fastapi_sqlalchemy import db
 
 
 __all__ = ['Base']
 
 
+class LazyDBSession:
+    def __init__(self, database):
+        self._database = database
+
+    def __getattr__(self, name):
+        return getattr(self._database.session, name)
+
+
+@cornerstone(name="db", order=0)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def __init__(self):
-        super(CornerstoneHooksImpl, self).__init__()
-
+    @provides("db")
     def pre_endpoint_setup(self):
-        print("call pre setup from cornerstone db!!!")
-
         add_db_middleware(self.app, self.cornerstone)
-
         self.app_state['db'] = db
+        return db
 
     def post_endpoint_setup(self):
-        print("call post setup from cornerstone!!!")
-
         create_all_tables(self.app)
 
-    def pre_endpoint_teardown(self):
-        print("call pre teardown from cornerstone!!!")
-
-    def post_endpoint_teardown(self):
-        print("call pre teardown from cornerstone!!!")
-
+    @request_provides("db.session")
     def pre_endpoint_call(self):
-        print("call pre endpoint call from cornerstone!!!")
-
         self.request_state['db'] = db
-
-    def post_endpoint_call(self):
-        print("call post endpoint call from cornerstone!!!")
+        return LazyDBSession(db)
 
 
+@cornerstone(name="db", order=0)
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    def __init__(self):
-        super(CornerstoneAsyncHooksImpl, self).__init__()
-
     async def pre_endpoint_setup(self):
-        print("call pre setup from cornerstone async!!!")
-
-    async def post_endpoint_setup(self):
-        print("call post setup from cornerstone async!!!")
-
-    async def pre_endpoint_teardown(self):
-        print("call pre teardown from cornerstone async!!!")
-
-    async def post_endpoint_teardown(self):
-        print("call pre teardown from cornerstone async!!!")
-
-    async def pre_endpoint_call(self):
-        print("call pre endpoint call from cornerstone async!!!")
-
-    async def post_endpoint_call(self):
-        print("call post endpoint call from cornerstone async!!!")
-
+        pass
 ```
 
 
@@ -432,29 +395,23 @@ class Note(Base):
 Lastly, create a router file to call db with ORM model:
 
 ```python
-
 from fastapi import APIRouter
-from starlette.requests import Request
 from typing import List
 from example.endpoints_package1.notes import schemas
 from example.endpoints_package1.notes import db as dbmodel
+from fastapi_hive.ioc_framework.registry import DependsHive
 
 router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Note], name="query notes.")
-def get_notes(req: Request, skip: int = 0, limit: int = 100):
-    # db = req.app.state.cornerstones['cornerstone.db']["db"].session
-
-    db = req.state.cornerstones['cornerstone.db']["db"].session
+def get_notes(skip: int = 0, limit: int = 100, db=DependsHive("db.session")):
     notes = db.query(dbmodel.Note).offset(skip).limit(limit).all()
     return notes
 
 
 @router.post("", response_model=schemas.Note, name="create note")
-def create_note(note: schemas.NoteIn, req: Request):
-    db = req.app.state.cornerstones['cornerstone.db']["db"].session
-
+def create_note(note: schemas.NoteIn, db=DependsHive("db.session")):
     db_note = dbmodel.Note(text=note.text, completed=note.completed)
     db.add(db_note)
     db.commit()
