@@ -1,1 +1,4 @@
-from example.endpoints_package1.notes.service.implement import NoteTextNormalizer
+from example.endpoints_package1.notes.service.implement import (
+    NoteComposer,
+    NoteTextNormalizer,
+)
