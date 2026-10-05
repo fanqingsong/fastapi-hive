@@ -2,7 +2,7 @@ import importlib
 import os
 import re
 from collections import defaultdict
-from typing import Callable, Optional
+from typing import Optional
 
 from loguru import logger
 from fastapi_hive.ioc_framework.decorators import collect_hooks
@@ -14,8 +14,7 @@ class CornerstoneMeta:
         self._container_name: Optional[str] = None
         self._package_path: Optional[str] = None
         self._imported_module = None
-        self.sync_hooks = []
-        self.async_hooks = []
+        self.hooks = []
 
     @property
     def name(self) -> str:
@@ -59,20 +58,6 @@ class CornerstoneContainer:
     def cornerstones(self):
         return self._cornerstones
 
-    def iterate_cornerstones(self, callback: Callable):
-        cornerstones = self._cornerstones
-        for _, one_cornerstone in cornerstones.items():
-            one_cornerstone: CornerstoneMeta = one_cornerstone
-
-            callback(one_cornerstone)
-
-    async def async_iterate_cornerstones(self, callback: Callable):
-        cornerstones = self._cornerstones
-        for _, one_cornerstone in cornerstones.items():
-            one_cornerstone: CornerstoneMeta = one_cornerstone
-
-            await callback(one_cornerstone)
-
     def register_cornerstone_package_path(self, cornerstone_package_path):
         self._cornerstone_package_path = cornerstone_package_path
 
@@ -97,15 +82,10 @@ class CornerstoneContainer:
             cornerstone_instance.container_name = container_name
             cornerstone_instance.package_path = one_cornerstone_pkg_path
             cornerstone_instance.imported_module = one_module_entity
-            sync_hooks, async_hooks = collect_hooks(
+            cornerstone_instance.hooks = collect_hooks(
                 one_module_entity,
                 role="cornerstone",
-                legacy_sync="CornerstoneHooksImpl",
-                legacy_async="CornerstoneAsyncHooksImpl",
-                default_name=one_cornerstone_name,
             )
-            cornerstone_instance.sync_hooks = sync_hooks
-            cornerstone_instance.async_hooks = async_hooks
 
             # logger.debug(f'{container_name}.{one_cornerstone_name}')
             self._cornerstones[f'{container_name}.{one_cornerstone_name}'] = cornerstone_instance

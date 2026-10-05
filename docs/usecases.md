@@ -87,7 +87,7 @@ example/endpoints_package1/house_price/service/__init__.py
 ```python
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from fastapi_hive.ioc_framework.decorators import endpoint, provides
 
 
@@ -99,16 +99,6 @@ class EndpointHooksImpl(EndpointHooks):
         return HousePriceModel(DEFAULT_MODEL_PATH)
 
     def shutdown(self):
-        pass
-
-
-@endpoint(name="house_price")
-class EndpointAsyncHooksImpl(EndpointAsyncHooks):
-
-    async def startup(self):
-        pass
-
-    async def shutdown(self):
         pass
 ```
 
@@ -328,7 +318,7 @@ Secondly, create db initial file, and implement hooks call.
 example/cornerstone/db/__init__.py
 
 ```python
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
 from fastapi_hive.ioc_framework.decorators import cornerstone, provides, request_provides
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi_sqlalchemy import db
@@ -349,7 +339,7 @@ class LazyDBSession:
 class CornerstoneHooksImpl(CornerstoneHooks):
 
     @provides("db")
-    def pre_endpoint_startup(self):
+    def configure(self):
         add_db_middleware(self.app, self.cornerstone)
         self.app_state['db'] = db
         return db
@@ -361,13 +351,6 @@ class CornerstoneHooksImpl(CornerstoneHooks):
     def pre_endpoint_call(self):
         self.request_state['db'] = db
         return LazyDBSession(db)
-
-
-@cornerstone(name="db", order=0)
-class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
-
-    async def pre_endpoint_startup(self):
-        pass
 ```
 
 

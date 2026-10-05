@@ -70,9 +70,10 @@ modules that are easier to review, test, move, or remove.
 At initialization, `IoCFramework` scans the configured package paths and imports
 each child module. It then:
 
-1. discovers decorated modules, then exposes their published values through the hive registry;
+1. discovers decorated modules and each endpoint's `router` module in the same scan,
+   then exposes published values through the hive registry;
 2. registers synchronous and asynchronous startup/shutdown hooks;
-3. mounts every discovered endpoint router when automatic mounting is enabled;
+3. mounts the collected routers when automatic mounting is enabled;
 4. installs request middleware that runs cornerstone hooks before and after
    each request.
 
@@ -87,8 +88,9 @@ that must be attached to each request.
 - **Capability-oriented modules** — colocate all code for one endpoint.
 - **Automatic discovery** — load cornerstones and multiple endpoint packages
   from configurable paths.
-- **Automatic router mounting** — derive URL prefixes and OpenAPI tags from the
-  folder structure.
+- **Automatic router mounting** — collect each endpoint's `APIRouter` with its
+  hooks, then derive URL prefixes and OpenAPI tags from the folder structure
+  or from `@endpoint(prefix=..., tags=...)`.
 - **Lifecycle hooks** — run sync or async startup and shutdown code at application,
   module, and request boundaries.
 - **Shared and isolated state** — publish process-level values with `@provides`
@@ -134,11 +136,29 @@ my_app/
 └── main.py
 ```
 
-An endpoint router package exports a regular FastAPI `APIRouter`:
+An endpoint router package exports a regular FastAPI `APIRouter` named `router`.
+The container collects that object while it loads the endpoint—the same pass
+that collects `@endpoint` hooks:
 
 ```python
 # my_app/endpoints/heartbeat/router/__init__.py
 from .implement import router
+```
+
+Override the generated prefix and OpenAPI tag on the hook class:
+
+```python
+# example/endpoints_package2/heart_beat2/router/__init__.py
+from .implement import router
+from fastapi_hive.ioc_framework.decorators import endpoint
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
+
+
+@endpoint(name="heart_beat2", prefix="/api/hb2", tags=["heartbeat-v2"])
+class EndpointHooksImpl(EndpointHooks):
+    def startup(self):
+        # self.endpoint.routers is the collected RouterBinding list
+        pass
 ```
 
 ### 3. Initialize the hive
@@ -219,14 +239,15 @@ run around each request; mark a return value with `@request_provides` to
 publish it for that request only. `DependsHive` reads the request registry
 before the application registry.
 
-`order` controls hook order. `profiles` and `enabled_when` skip a module unless
-`ACTIVE_PROFILES` or `FEATURES` enables it. Set `mount=False` on `@endpoint`
-to register the router yourself.
+`order` controls hook order and the order collected routers are mounted.
+`profiles` and `enabled_when` skip a module unless `ACTIVE_PROFILES` or
+`FEATURES` enables it. Set `mount=False` on `@endpoint` to register the router
+yourself.
 
-A class that is not decorated is still loaded when its name is
-`CornerstoneHooksImpl`, `CornerstoneAsyncHooksImpl`, `EndpointHooksImpl`, or
-`EndpointAsyncHooksImpl`. Those legacy classes use `order=0` and stay enabled.
-Async hooks use `EndpointAsyncHooks` and `CornerstoneAsyncHooks`.
+Hook methods may be `def` or `async def`. The framework always invokes them
+from an async lifecycle. `CornerstoneHooks.configure()` is the exception: it
+runs while the app is assembled and must stay synchronous so middleware can
+be registered. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
 ## Run the example
 
@@ -234,7 +255,7 @@ The included application demonstrates:
 
 - API-key authentication as a cornerstone;
 - database setup and request-scoped access as a cornerstone;
-- heartbeat endpoints;
+- heartbeat endpoints (package2 uses `@endpoint(prefix=..., tags=...)`);
 - ML model preloading and house-price prediction;
 - endpoint discovery across two endpoint packages.
 
@@ -250,9 +271,10 @@ uvicorn example.main:app --reload
 `pip3 install -e .` installs this checkout in editable mode, so the example imports the local `fastapi_hive` package. `make run-example` runs that install and then starts the app.
 
 Open [http://localhost:8000/docs](http://localhost:8000/docs) to explore the
-generated OpenAPI interface. Configure `API_KEY` in `example/.env` before trying
-authenticated endpoints; `docs/sample_payload.json` contains a prediction
-request example.
+generated OpenAPI interface. `GET /hive/routers` lists every router collected
+during the endpoint scan (`heart_beat2` mounts at `/api/hb2/heartbeat`).
+Configure `API_KEY` in `example/.env` before trying authenticated endpoints;
+`docs/sample_payload.json` contains a prediction request example.
 
 ## Test
 

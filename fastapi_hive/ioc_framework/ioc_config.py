@@ -1,7 +1,7 @@
 
 
 from pydantic import BaseModel, Field
-from typing import List, Callable, Dict
+from typing import List, Dict
 
 
 class IoCConfig(BaseModel):
@@ -14,12 +14,4 @@ class IoCConfig(BaseModel):
     HIDE_ENDPOINT_CONTAINER_IN_API: bool = False
     HIDE_ENDPOINT_IN_API: bool = False
     HIDE_ENDPOINT_IN_TAG: bool = False
-    PRE_ENDPOINT_STARTUP: Callable = None
-    POST_ENDPOINT_STARTUP: Callable = None
-    PRE_ENDPOINT_SHUTDOWN: Callable = None
-    POST_ENDPOINT_SHUTDOWN: Callable = None
-    ASYNC_PRE_ENDPOINT_STARTUP: Callable = None
-    ASYNC_POST_ENDPOINT_STARTUP: Callable = None
-    ASYNC_PRE_ENDPOINT_SHUTDOWN: Callable = None
-    ASYNC_POST_ENDPOINT_SHUTDOWN: Callable = None
 

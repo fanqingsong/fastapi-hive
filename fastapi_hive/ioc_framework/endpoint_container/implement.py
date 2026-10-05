@@ -1,9 +1,14 @@
 import importlib
 import os
-from typing import Callable, Optional
+from typing import Optional
 
 from loguru import logger
-from fastapi_hive.ioc_framework.decorators import collect_hooks, resolve_mount
+from fastapi_hive.ioc_framework.decorators import (
+    collect_hooks,
+    collect_routers,
+    endpoint_hook_order,
+    resolve_mount,
+)
 
 
 class EndpointMeta:
@@ -15,9 +20,9 @@ class EndpointMeta:
         self._imported_module_db = None
         self._imported_module_router = None
         self._imported_module_service = None
-        self.sync_hooks = []
-        self.async_hooks = []
+        self.hooks = []
         self.mount_spec = resolve_mount([])
+        self.routers = []
 
     @property
     def name(self) -> str:
@@ -85,22 +90,6 @@ class EndpointContainer:
     def endpoints(self):
         return self._endpoints
 
-    def iterate_endpoints(self, callback: Callable):
-        endpoints = self._endpoints
-        
-        for _, one_endpoint in endpoints.items():
-            one_endpoint: EndpointMeta = one_endpoint
-
-            callback(one_endpoint)
-
-    async def async_iterate_endpoints(self, callback: Callable):
-        endpoints = self._endpoints
-        
-        for _, one_endpoint in endpoints.items():
-            one_endpoint: EndpointMeta = one_endpoint
-
-            await callback(one_endpoint)
-
     def register_endpoint_package_paths(self, endpoint_package_paths):
         endpoint_package_paths = set(endpoint_package_paths)
         current_package_paths = self._endpoint_package_paths
@@ -141,26 +130,22 @@ class EndpointContainer:
                 if os.path.exists(f'{one_package_path}/{one_endpoint_name}/service'):
                     endpoint_instance.imported_module_service = importlib.import_module(f'{one_endpoint_path}.service')
 
-                sync_hooks = []
-                async_hooks = []
+                hooks = []
                 for module in (
                     endpoint_instance.imported_module_db,
                     endpoint_instance.imported_module_router,
                     endpoint_instance.imported_module_service,
                     one_endpoint_entity,
                 ):
-                    module_sync, module_async = collect_hooks(
-                        module,
-                        role="endpoint",
-                        legacy_sync="EndpointHooksImpl",
-                        legacy_async="EndpointAsyncHooksImpl",
-                        default_name=one_endpoint_name,
-                    )
-                    sync_hooks.extend(module_sync)
-                    async_hooks.extend(module_async)
-                endpoint_instance.sync_hooks = sync_hooks
-                endpoint_instance.async_hooks = async_hooks
-                endpoint_instance.mount_spec = resolve_mount(sync_hooks)
+                    hooks.extend(collect_hooks(module, role="endpoint"))
+                endpoint_instance.hooks = hooks
+                endpoint_instance.mount_spec = resolve_mount(hooks)
+                endpoint_instance.routers = collect_routers(
+                    endpoint_instance.imported_module_router,
+                    mount_spec=endpoint_instance.mount_spec,
+                    order=endpoint_hook_order(hooks),
+                    name=one_endpoint_name,
+                )
 
                 self._endpoints[f'{container_name}.{one_endpoint_name}'] = endpoint_instance
 

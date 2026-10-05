@@ -55,13 +55,13 @@ From code view, the startup or shutdown hooks should be set in __init__.py if ne
 
 Decorate the hook class. `order` decides who runs first in the same phase. `profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` reads a dotted key from `FEATURES`. `@provides` registers the method return value on the app registry. `@request_provides` registers it on the current request.
 
-A module that is not decorated is still loaded when its class is named `CornerstoneHooksImpl`, `CornerstoneAsyncHooksImpl`, `EndpointHooksImpl`, or `EndpointAsyncHooksImpl`. Those legacy classes use `order=0` and stay enabled.
+Only decorated hook classes are loaded. Methods may be `def` or `async def`. `configure()` on a cornerstone must stay synchronous so middleware can be registered before the app starts. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
 For cornerstone
 
 ```Python
 
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
 from fastapi_hive.ioc_framework.decorators import cornerstone, provides
 from example.cornerstone.auth.implement import validate_request
 
@@ -78,16 +78,6 @@ class CornerstoneHooksImpl(CornerstoneHooks):
     def post_endpoint_startup(self):
         print("call post startup from CornerstoneHooksImpl!!!")
 
-
-@cornerstone(name="auth", order=100)
-class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
-
-    async def pre_endpoint_startup(self):
-        print("call pre startup from CornerstoneAsyncHooksImpl!!!")
-
-    async def post_endpoint_startup(self):
-        print("call post startup from CornerstoneAsyncHooksImpl!!!")
-
 ```
 
 
@@ -95,7 +85,7 @@ For endpoint
 
 ```Python
 
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from fastapi_hive.ioc_framework.decorators import endpoint, provides
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
@@ -112,16 +102,6 @@ class EndpointHooksImpl(EndpointHooks):
 
     def shutdown(self):
         print("call pre shutdown from EndpointHooksImpl!!!")
-
-
-@endpoint(name="house_price")
-class EndpointAsyncHooksImpl(EndpointAsyncHooks):
-
-    async def startup(self):
-        print("call pre startup from EndpointAsyncHooksImpl!!!")
-
-    async def shutdown(self):
-        print("call pre shutdown from EndpointAsyncHooksImpl!!!")
 
 ```
 
@@ -180,13 +160,18 @@ hive:
 ```
 
 Programmatic assignment (`hive.config.API_PREFIX = ...`) still works and wins
-over env and file. Lifecycle callbacks such as `PRE_ENDPOINT_STARTUP` remain
-code-only.
+over env and file.
 
 ## URL MAPPING
 
-As you know, this framework will discover and load all cornerstones and endpoints in all packages automatically.
-The API endpoint URLs will be constructed by endpoint container folder name or endpoint folder name, in order to avoid conflicts and be sensible.
+The framework discovers cornerstones and endpoints in the same load pass.
+While an endpoint is imported, it also collects that package's `router` module
+(`router/__init__.py` must export an `APIRouter` named `router`) onto
+`EndpointMeta.routers`. After endpoint startup hooks run, a built-in caller
+mounts those collected routers.
+
+The default URL is built from the API prefix, the endpoint container folder
+name, and the endpoint folder name, so paths stay unique and predictable.
 
 If the folder structure likes below
 
@@ -224,9 +209,16 @@ After turnning off, the endpoint URLs will be like:
 {API_PREFIX}/prediction/yyy
 ```
 
-Also if you want to disabled the router automated mount function, you can set config with ROUTER_MOUNT_AUTOMATED = False, then you can set hooks to register router by yourself.
+`@endpoint(prefix=..., tags=...)` replaces the generated prefix and OpenAPI tag.
+The example `heart_beat2` module mounts at `/api/hb2` instead of
+`/api/heart_beat2`. `GET /hive/routers` on the example app lists every collected
+binding.
 
-example\endpoints_package1\house_price\router\__init__.py
+If you want to disable automatic mounting, set `ROUTER_MOUNT_AUTOMATED = False`
+(or `router_mount_automated: false` in `hive.yaml`) and register the router in
+a startup hook:
+
+example/endpoints_package1/house_price/router/__init__.py
 
 
 ```python

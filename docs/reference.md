@@ -19,14 +19,6 @@ All configuarable parameters are listed below.
 | HIDE_ENDPOINT_CONTAINER_IN_API | if endpoint container folder name showed in API | False |
 | HIDE_ENDPOINT_IN_API | if endpoint name showed in API | Flase |
 | HIDE_ENDPOINT_IN_TAG | if endpoint name showed in tag | False |
-| PRE_ENDPOINT_STARTUP | external pre endpoint startup | None |
-| POST_ENDPOINT_STARTUP | external post endpoint startup | None |
-| PRE_ENDPOINT_SHUTDOWN | external pre endpoint shutdown | None |
-| POST_ENDPOINT_SHUTDOWN | external post endpoint shutdown | None |
-| ASYNC_PRE_ENDPOINT_STARTUP | external async pre endpoint startup | None |
-| ASYNC_POST_ENDPOINT_STARTUP | external async post endpoint startup | None |
-| ASYNC_PRE_ENDPOINT_SHUTDOWN | external async pre endpoint shutdown | None |
-| ASYNC_POST_ENDPOINT_SHUTDOWN | external async post endpoint shutdown | None |
 
 
 These configs are loaded automatically from convention, `hive.yaml` /
@@ -40,7 +32,7 @@ defaults / folder convention < config file < `.env` < process env <
 
 `IoCFramework.bootstrap(app)` constructs the container and calls
 `init_modules()`. Pass `settings={...}` or `config_path=` when you do not want
-the working-directory file. Lifecycle callbacks stay code-only.
+the working-directory file.
 
 ```python
 from fastapi import FastAPI
@@ -65,7 +57,6 @@ hive:
 ```python
 # optional code override, still supported
 hive = IoCFramework(app, settings={"API_PREFIX": "/api"})
-hive.config.PRE_ENDPOINT_STARTUP = hive_pre_startup
 hive.init_modules()
 ```
 
@@ -73,11 +64,11 @@ hive.init_modules()
 
 ----
 
-Decorate the hook class so the container can discover it. A module without a decorator is still loaded when the class name is `CornerstoneHooksImpl`, `CornerstoneAsyncHooksImpl`, `EndpointHooksImpl`, or `EndpointAsyncHooksImpl`.
+Decorate the hook class so the container can discover it. Undecorated classes are ignored.
 
 | decorator | purpose |
 | --- | --- |
-| `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `pre_endpoint_startup` runs before the application starts. |
+| `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `configure()` runs while the app is assembled and must be synchronous. Other hooks run from the async lifecycle. |
 | `@endpoint(name, order=0, prefix=None, tags=None, mount=True, profiles=None, enabled_when=None)` | business module. `prefix` and `tags` override automatic router mounting. `mount=False` leaves mounting to `startup`. |
 | `@provides(key)` | register the method return value on the application registry. `key` is a type or a string. |
 | `@request_provides(key)` | register the method return value on the current request registry. |
@@ -86,16 +77,31 @@ Decorate the hook class so the container can discover it. A module without a dec
 
 Routes read a published value with `DependsHive(key)`. The request registry is checked first, then the application registry.
 
+## router collection
+
+----
+
+Endpoint loading collects hooks and routers together. A `router` subpackage that exports `APIRouter` as `router` becomes an `EndpointMeta.routers` entry (`RouterBinding`: the router, mount spec, order, and name). Automatic mounting consumes that list with the same order as endpoint hooks.
+
+| helper | purpose |
+| --- | --- |
+| `collect_routers(module, mount_spec=..., order=..., name=...)` | pick the conventional `router` attribute |
+| `select_routers(pairs)` | drop `mount=False` bindings and sort by order, then name |
+| `resolve_router_target(meta, binding, config)` | build prefix and tags from `API_PREFIX`, `HIDE_*`, or an explicit `@endpoint` mount |
+
+Set `prefix` / `tags` on `@endpoint` to override the generated URL. See `example/endpoints_package2/heart_beat2`.
+
 ## cornerstone hooks
 
 ----
 
-The framework provides abstract parent classes (CornerstoneHooks & CornerstoneAsyncHooks). Decorate a subclass with `@cornerstone`. The subclass can use the dependency objects below.
+The framework provides `CornerstoneHooks`. Decorate a subclass with `@cornerstone`. Hook methods may be `def` or `async def`, except `configure()`, which must stay synchronous. Blocking I/O should use `anyio.to_thread.run_sync`.
 
 the following is the visibility of dependency objects regarding to each hook.
 
 | hook name | app | cornerstone | request | app_state  | request_state |
 | --- | --- | --- | --- | --- | --- |
+| configure | Yes | Yes | No | Yes | No |
 | pre_endpoint_startup | Yes | Yes | No | Yes | No |
 | post_endpoint_startup | Yes | Yes | No | Yes | No |
 | pre_endpoint_shutdown | Yes | Yes | No | Yes | No |
@@ -119,14 +125,12 @@ dependency objects are injected by framework, each object has its meaning like b
 
 please check in the code for usages.
 
-either of sync or async mode can be used.
-
 hooks can be set in cornerstone init file.
 
 example/cornerstone/db/__init__.py
 
 ```python
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
 from fastapi_hive.ioc_framework.decorators import cornerstone, provides, request_provides
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi_sqlalchemy import db
@@ -147,7 +151,7 @@ class LazyDBSession:
 class CornerstoneHooksImpl(CornerstoneHooks):
 
     @provides("db")
-    def pre_endpoint_startup(self):
+    def configure(self):
         add_db_middleware(self.app, self.cornerstone)
         self.app_state['db'] = db
         return db
@@ -159,16 +163,6 @@ class CornerstoneHooksImpl(CornerstoneHooks):
     def pre_endpoint_call(self):
         self.request_state['db'] = db
         return LazyDBSession(db)
-
-
-@cornerstone(name="db", order=0)
-class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
-
-    async def pre_endpoint_startup(self):
-        pass
-
-    async def post_endpoint_startup(self):
-        pass
 ```
 
 
@@ -176,7 +170,7 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
 ----
 
-The framework provides abstract parent classes (EndpointHooks & EndpointAsyncHooks). Decorate a subclass with `@endpoint`. The subclass can use the dependency objects below.
+The framework provides `EndpointHooks`. Decorate a subclass with `@endpoint`. `startup` and `shutdown` may be `def` or `async def`.
 
 the following is the visibility of dependency objects regarding to each hook.
 
@@ -192,13 +186,11 @@ dependency objects are injected by framework, each object has its meaning like b
 | name | meaning |
 | --- | --- |
 | app | the instance of FastAPI |
-| endpoint | the meta data of the endpoint that hook belong to |
+| endpoint | the meta data of the endpoint that hook belong to. `endpoint.routers` is the list collected from the `router` subpackage. |
 | app_state | this endpoint's dict in `app.state.endpoints`. Prefer `@provides` and `DependsHive` when a router needs the value. |
 
 
 please check in the code for usages.
-
-either of sync or async mode can be used.
 
 hooks can be set in endpoint init file and three sub-modules(db/service/router) init file.
 
@@ -207,7 +199,7 @@ example/endpoints_package1/house_price/service/__init__.py
 ```python
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from fastapi_hive.ioc_framework.decorators import endpoint, provides
 
 
@@ -219,16 +211,6 @@ class EndpointHooksImpl(EndpointHooks):
         return HousePriceModel(DEFAULT_MODEL_PATH)
 
     def shutdown(self):
-        pass
-
-
-@endpoint(name="house_price")
-class EndpointAsyncHooksImpl(EndpointAsyncHooks):
-
-    async def startup(self):
-        pass
-
-    async def shutdown(self):
         pass
 ```
 

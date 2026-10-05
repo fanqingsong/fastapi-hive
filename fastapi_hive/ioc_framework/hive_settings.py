@@ -14,16 +14,6 @@ CORNERSTONE_DIR_NAMES = ("cornerstone", "cornerstones")
 ENDPOINT_DIR_NAMES = ("endpoints", "endpoint_packages")
 DEFAULT_CORNERSTONE_PATH = "./cornerstone"
 DEFAULT_ENDPOINT_PATHS = ["./endpoints"]
-CALLABLE_FIELDS = {
-    "PRE_ENDPOINT_STARTUP",
-    "POST_ENDPOINT_STARTUP",
-    "PRE_ENDPOINT_SHUTDOWN",
-    "POST_ENDPOINT_SHUTDOWN",
-    "ASYNC_PRE_ENDPOINT_STARTUP",
-    "ASYNC_POST_ENDPOINT_STARTUP",
-    "ASYNC_PRE_ENDPOINT_SHUTDOWN",
-    "ASYNC_POST_ENDPOINT_SHUTDOWN",
-}
 
 _FIELD_ALIASES = {
     "cornerstone_package_path": "CORNERSTONE_PACKAGE_PATH",
@@ -163,7 +153,7 @@ def normalize_mapping(data: Dict[str, Any]) -> Dict[str, Any]:
     normalized = {}
     for key, value in data.items():
         field = normalize_key(str(key))
-        if field is None or field in CALLABLE_FIELDS:
+        if field is None:
             continue
         normalized[field] = value
     return normalized
@@ -179,7 +169,7 @@ def load_dotenv_hive_vars(path: Path) -> Dict[str, Any]:
             continue
         key, value = line.split("=", 1)
         field = normalize_key(key)
-        if field is None or field in CALLABLE_FIELDS:
+        if field is None:
             continue
         values[field] = _parse_env_value(field, value)
     return values
@@ -191,7 +181,7 @@ def load_process_env() -> Dict[str, Any]:
         if not key.startswith(ENV_PREFIX):
             continue
         field = normalize_key(key)
-        if field is None or field in CALLABLE_FIELDS:
+        if field is None:
             continue
         values[field] = _parse_env_value(field, value)
     return values

@@ -46,22 +46,22 @@ endpoint for every service module which expose routers on swagger API page.
 
 ### Initialization Precedure of Startup
 
-FastAPI Hive Framework loads packages of cornerstones and endpoints, It covers the cornerstone and enpoint common initialization requirements, and provide hooks mechanism to startup/shutdown environment. As of router, it will be mounted into app during app startup automatically.
+FastAPI Hive Framework loads packages of cornerstones and endpoints, It covers the cornerstone and enpoint common initialization requirements, and provide hooks mechanism to startup/shutdown environment. Routers are collected in the same endpoint scan as hooks (`EndpointMeta.routers`) and mounted by a built-in caller after endpoint startup hooks run.
 
 so the overview of precedure:
 * loading cornerstones
-* loading endpoints
+* loading endpoints (hooks and `router` modules in one pass)
 * call startup hooks to initialize all modules
+* mount the collected routers when `ROUTER_MOUNT_AUTOMATED` is true
 
 ---
 
 #### Startup hooks calling flow:
 
 There are serveral stages in startup hooks calling stages:
-* call external pre_endpoint_startup hook (from global part)
 * call cornerstones' pre_endpoint_startup hooks one by one.
 * call endpoints' startup hooks one by one, but in this stage, there are three in-built sub-modules(db/service/router) which also can be hooked.
-* call external post_endpoint_startup hook
+* mount collected routers (`select_routers` + `include_router`) when automatic mounting is enabled.
 * call cornerstones' post_endpoint_startup hooks one by one
 
 The same is as with shutdown hooks calling logic.

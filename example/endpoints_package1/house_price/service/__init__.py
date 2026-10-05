@@ -2,7 +2,7 @@
 
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks, EndpointAsyncHooks
+from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from fastapi_hive.ioc_framework.decorators import endpoint, provides
 
 
@@ -20,18 +20,3 @@ class EndpointHooksImpl(EndpointHooks):
 
     def shutdown(self):
         print("call pre shutdown from EndpointHooksImpl (service)!!!")
-
-
-@endpoint(name="house_price")
-class EndpointAsyncHooksImpl(EndpointAsyncHooks):
-
-    def __init__(self):
-        super(EndpointAsyncHooksImpl, self).__init__()
-
-    async def startup(self):
-        print("call pre startup from EndpointAsyncHooksImpl (service)!!!")
-
-    async def shutdown(self):
-        print("call pre shutdown from EndpointAsyncHooksImpl (service)!!!")
-
-

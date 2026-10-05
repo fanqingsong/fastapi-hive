@@ -52,7 +52,7 @@ The key features are:
 * **Conerstone Container**: a top-level folder to layout codes by function folder, like db and authentication. 
 * **Endpoint Container**: a top-level folder to layout service codes by endpoint folder,  
 * **Endpoint folder**: a sub-folder in Endpoint Container, layout one service code by function folder(router, db, service, etc).
-* **Router Mounting Automatically**: the router defined by module will be mounted into app automatically.
+* **Router Mounting Automatically**: each endpoint's `router` module is collected with its hooks; the framework mounts those routers automatically (or uses `@endpoint(prefix=..., tags=...)`).
 * **Model Preloading Easily**: the service(such as ML model) defined by module will be mounted into app easily, in order to reduce loading time during endpoint request.
 * **Developer-Friendly**: all one-endpoint/cornerstone codes are put in one same folders, easy to review and update.
 * **Easy-to-be-Integrated**: Just several line codes to integrate it in your app.

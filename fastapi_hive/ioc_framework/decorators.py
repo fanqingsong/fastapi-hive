@@ -3,9 +3,6 @@ from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Type, get_type_hints
 
 
-_ASYNC_BASES = {"CornerstoneAsyncHooks", "EndpointAsyncHooks"}
-
-
 @dataclass
 class HiveMeta:
     role: str
@@ -16,8 +13,6 @@ class HiveMeta:
     prefix: Optional[str] = None
     tags: Optional[List[str]] = None
     mount: bool = True
-    async_mode: bool = False
-    legacy: bool = False
 
 
 @dataclass
@@ -28,12 +23,16 @@ class MountSpec:
     explicit: bool = False
 
 
-def _async_mode(cls: type) -> bool:
-    return any(base.__name__ in _ASYNC_BASES for base in cls.__mro__)
+@dataclass
+class RouterBinding:
+    router: Any
+    mount: MountSpec
+    order: int = 0
+    name: str = ""
 
 
 def _attach(cls: type, role: str, name: str, order: int, profiles, enabled_when,
-            prefix, tags, mount, legacy: bool) -> type:
+            prefix, tags, mount) -> type:
     cls.__hive__ = HiveMeta(
         role=role,
         name=name,
@@ -43,8 +42,6 @@ def _attach(cls: type, role: str, name: str, order: int, profiles, enabled_when,
         prefix=prefix,
         tags=list(tags) if tags else None,
         mount=mount,
-        async_mode=_async_mode(cls),
-        legacy=legacy,
     )
     return cls
 
@@ -52,7 +49,7 @@ def _attach(cls: type, role: str, name: str, order: int, profiles, enabled_when,
 def cornerstone(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None,
                 enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
-        return _attach(cls, "cornerstone", name, order, profiles, enabled_when, None, None, True, False)
+        return _attach(cls, "cornerstone", name, order, profiles, enabled_when, None, None, True)
 
     return wrap
 
@@ -62,7 +59,7 @@ def endpoint(name: str, order: int = 0, prefix: Optional[str] = None,
              profiles: Optional[Sequence[str]] = None,
              enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
-        return _attach(cls, "endpoint", name, order, profiles, enabled_when, prefix, tags, mount, False)
+        return _attach(cls, "endpoint", name, order, profiles, enabled_when, prefix, tags, mount)
 
     return wrap
 
@@ -100,41 +97,73 @@ def is_enabled(meta: HiveMeta, config) -> bool:
     return True
 
 
-def collect_hooks(module, *, role: str, legacy_sync: str, legacy_async: str,
-                  default_name: str) -> Tuple[List[type], List[type]]:
+def collect_hooks(module, *, role: str) -> List[type]:
     if module is None:
-        return [], []
+        return []
 
-    sync: List[type] = []
-    async_hooks: List[type] = []
+    hooks: List[type] = []
     seen = set()
     for obj in list(vars(module).values()):
         if not isinstance(obj, type) or obj in seen:
             continue
         seen.add(obj)
         hive = getattr(obj, "__hive__", None)
-        if hive is None or hive.role != role or hive.legacy:
+        if hive is None or hive.role != role:
             continue
-        (async_hooks if hive.async_mode else sync).append(obj)
+        hooks.append(obj)
+    return hooks
 
-    if not sync:
-        legacy_cls = getattr(module, legacy_sync, None)
-        if isinstance(legacy_cls, type):
-            _attach(legacy_cls, role, default_name, 0, None, None, None, None, True, True)
-            sync.append(legacy_cls)
-    if not async_hooks:
-        legacy_cls = getattr(module, legacy_async, None)
-        if isinstance(legacy_cls, type):
-            _attach(legacy_cls, role, default_name, 0, None, None, None, None, True, True)
-            async_hooks.append(legacy_cls)
-    return sync, async_hooks
+
+def collect_routers(module, *, mount_spec: MountSpec, order: int = 0,
+                    name: str = "") -> List[RouterBinding]:
+    if module is None:
+        return []
+    from fastapi import APIRouter
+    router = getattr(module, "router", None)
+    if not isinstance(router, APIRouter):
+        return []
+    return [RouterBinding(router=router, mount=mount_spec, order=order, name=name)]
+
+
+def endpoint_hook_order(classes: Sequence[type]) -> int:
+    orders = [
+        cls.__hive__.order
+        for cls in classes
+        if getattr(cls, "__hive__", None) is not None and cls.__hive__.role == "endpoint"
+    ]
+    return min(orders) if orders else 0
+
+
+def select_routers(pairs: Sequence[Tuple["RouterBinding", Any]]) -> List[Tuple["RouterBinding", Any]]:
+    chosen = [(binding, meta) for binding, meta in pairs if not binding.mount.skip]
+    chosen.sort(key=lambda item: (item[0].order, item[0].name or getattr(item[1], "name", "")))
+    return chosen
+
+
+def resolve_router_target(meta, binding: RouterBinding, config) -> Tuple[str, List[str]]:
+    prefix = f"{config.API_PREFIX}"
+    if not config.HIDE_ENDPOINT_CONTAINER_IN_API:
+        prefix = f"{prefix}/{meta.container_name}"
+    if not config.HIDE_ENDPOINT_IN_API:
+        prefix = f"{prefix}/{meta.name}"
+    tag = f"{meta.container_name}"
+    if not config.HIDE_ENDPOINT_IN_TAG:
+        tag = f"{tag}.{meta.name}"
+    mount = binding.mount
+    if mount.explicit:
+        if mount.prefix is not None:
+            prefix = mount.prefix
+        tags = mount.tags if mount.tags is not None else [tag]
+    else:
+        tags = [tag]
+    return prefix, tags
 
 
 def resolve_mount(classes: Sequence[type]) -> MountSpec:
     decorated = []
     for cls in classes:
         hive = getattr(cls, "__hive__", None)
-        if hive is not None and hive.role == "endpoint" and not hive.legacy:
+        if hive is not None and hive.role == "endpoint":
             decorated.append(cls)
     if any(not cls.__hive__.mount for cls in decorated):
         return MountSpec(skip=True)
@@ -181,16 +210,26 @@ def publish_provides(method: Callable, result: Any, app_registry, request_regist
         request_registry.register(request_key, result)
 
 
-def invoke(instance: Any, method_name: str, app_registry, request_registry=None):
+def invoke_sync(instance: Any, method_name: str, app_registry, request_registry=None):
     method = getattr(instance, method_name)
+    if inspect.iscoroutinefunction(method):
+        raise TypeError(
+            f"{type(instance).__name__}.{method_name} must be synchronous"
+        )
     result = method()
+    if inspect.isawaitable(result):
+        raise TypeError(
+            f"{type(instance).__name__}.{method_name} must be synchronous"
+        )
     publish_provides(method, result, app_registry, request_registry)
     return result
 
 
-async def invoke_async(instance: Any, method_name: str, app_registry, request_registry=None):
+async def invoke(instance: Any, method_name: str, app_registry, request_registry=None):
     method = getattr(instance, method_name)
-    result = await method()
+    result = method()
+    if inspect.isawaitable(result):
+        result = await result
     publish_provides(method, result, app_registry, request_registry)
     return result
 
@@ -203,11 +242,7 @@ def bind_cornerstone(instance: Any, app, meta, request=None) -> None:
     if request is None:
         return
     instance.request = request
-    state = request.state.cornerstones[pkg_path]
-    if hasattr(instance, "request_state"):
-        instance.request_state = state
-    if hasattr(instance, "req_state"):
-        instance.req_state = state
+    instance.request_state = request.state.cornerstones[pkg_path]
 
 
 def bind_endpoint(instance: Any, app, meta) -> None:

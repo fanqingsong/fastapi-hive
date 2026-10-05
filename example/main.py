@@ -27,6 +27,26 @@ def get_app() -> FastAPI:
     def get_root():
         return "Go to docs URL to look up API: http://localhost:8000/docs"
 
+    @fast_app.get("/hive/routers")
+    def list_collected_routers():
+        items = []
+        for key, slot in fast_app.state.endpoints.items():
+            meta = slot.get("__endpoint__")
+            if meta is None:
+                continue
+            for binding in getattr(meta, "routers", []):
+                items.append({
+                    "endpoint": key,
+                    "name": binding.name,
+                    "order": binding.order,
+                    "skip": binding.mount.skip,
+                    "prefix": binding.mount.prefix,
+                    "tags": binding.mount.tags,
+                    "explicit": binding.mount.explicit,
+                    "paths": [getattr(route, "path", None) for route in binding.router.routes],
+                })
+        return items
+
     return fast_app
 
 

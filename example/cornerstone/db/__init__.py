@@ -1,4 +1,4 @@
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks, CornerstoneAsyncHooks
+from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
 from fastapi_hive.ioc_framework.decorators import cornerstone, provides, request_provides
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi_sqlalchemy import db
@@ -24,8 +24,8 @@ class CornerstoneHooksImpl(CornerstoneHooks):
         super(CornerstoneHooksImpl, self).__init__()
 
     @provides("db")
-    def pre_endpoint_startup(self):
-        print("call pre startup from cornerstone db!!!")
+    def configure(self):
+        print("call configure from cornerstone db!!!")
 
         add_db_middleware(self.app, self.cornerstone)
 
@@ -52,28 +52,3 @@ class CornerstoneHooksImpl(CornerstoneHooks):
 
     def post_endpoint_call(self):
         print("call post endpoint call from cornerstone!!!")
-
-
-@cornerstone(name="db", order=0)
-class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
-
-    def __init__(self):
-        super(CornerstoneAsyncHooksImpl, self).__init__()
-
-    async def pre_endpoint_startup(self):
-        print("call pre startup from cornerstone async!!!")
-
-    async def post_endpoint_startup(self):
-        print("call post startup from cornerstone async!!!")
-
-    async def pre_endpoint_shutdown(self):
-        print("call pre shutdown from cornerstone async!!!")
-
-    async def post_endpoint_shutdown(self):
-        print("call pre shutdown from cornerstone async!!!")
-
-    async def pre_endpoint_call(self):
-        print("call pre endpoint call from cornerstone async!!!")
-
-    async def post_endpoint_call(self):
-        print("call post endpoint call from cornerstone async!!!")

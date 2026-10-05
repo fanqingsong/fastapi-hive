@@ -7,7 +7,7 @@ from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from fastapi import FastAPI
 from abc import ABC
 from starlette.requests import Request
-from fastapi_hive.ioc_framework.decorators import bind_cornerstone, create_hook, invoke, invoke_async, select_hooks
+from fastapi_hive.ioc_framework.decorators import bind_cornerstone, create_hook, invoke, invoke_sync, select_hooks
 
 
 class CornerstoneHooks(ABC):
@@ -17,14 +17,14 @@ class CornerstoneHooks(ABC):
     Usage
     ===
 
-    In your cornerstone cornerstones `__init__.py` create a subclass of `CornerstoneHooks`
+    In your cornerstone `__init__.py` create a subclass of `CornerstoneHooks`
 
     ```python
-    from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneHooks
+    from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
 
 
     class CornerstoneImpl(CornerstoneHooks):
-        def pre_endpoint_startup(self):
+        def configure(self):
             pass
     ```
     '''
@@ -76,107 +76,32 @@ class CornerstoneHooks(ABC):
     def request_state(self, value: dict):
         self._request_state = value
 
+    def configure(self):
+        """Assemble-time only. Register middleware. Must not be async."""
+        pass
+
     def pre_endpoint_startup(self):
+        """应用启动时、各 endpoint 执行 startup 之前调用。"""
         pass
 
     def post_endpoint_startup(self):
+        """应用启动时、各 endpoint 执行 startup 之后调用。"""
         pass
 
     def pre_endpoint_shutdown(self):
+        """应用关闭时、各 endpoint 执行 shutdown 之前调用。"""
         pass
 
     def post_endpoint_shutdown(self):
+        """应用关闭时、各 endpoint 执行 shutdown 之后调用。"""
         pass
 
     def pre_endpoint_call(self):
+        """每次 HTTP 请求进入 endpoint 处理逻辑之前调用。"""
         pass
 
     def post_endpoint_call(self):
-        pass
-
-
-class CornerstoneAsyncHooks(ABC):
-    '''
-    Base class for cornerstone cornerstones in async mode.
-
-    Usage
-    ===
-
-    In your cornerstone cornerstones `__init__.py` create a subclass of `CornerstoneAsyncHooks`
-
-    ```python
-    from fastapi_hive.ioc_framework.cornerstone_model import CornerstoneAsyncHooks
-
-
-    class CornerstoneAsyncImpl(CornerstoneAsyncHooks):
-        async def pre_endpoint_startup(self):
-            pass
-    ```
-    '''
-
-    def __init__(self) -> None:
-        self._app: Optional[FastAPI] = None
-        self._cornerstone: Optional[CornerstoneMeta] = None
-        self._request: Optional[Request] = None
-        self._app_state: Optional[dict] = None
-        self._req_state: Optional[dict] = None
-
-    @property
-    def app(self):
-        return self._app
-
-    @app.setter
-    def app(self, value: FastAPI):
-        self._app = value
-
-    @property
-    def cornerstone(self):
-        return self._cornerstone
-
-    @cornerstone.setter
-    def cornerstone(self, value: CornerstoneMeta):
-        self._cornerstone = value
-
-    @property
-    def request(self):
-        return self._request
-
-    @request.setter
-    def request(self, value: Request):
-        self._request = value
-
-    @property
-    def app_state(self):
-        return self._app_state
-
-    @app_state.setter
-    def app_state(self, value: dict):
-        self._app_state = value
-
-    @property
-    def req_state(self):
-        return self._req_state
-
-    @req_state.setter
-    def req_state(self, value: dict):
-        self._req_state = value
-
-    async def pre_endpoint_startup(self):
-        pass
-
-    async def post_endpoint_startup(self):
-        pass
-
-    async def pre_endpoint_shutdown(self):
-        pass
-
-    async def post_endpoint_shutdown(self):
-        pass
-
-    async def pre_endpoint_call(self):
-        pass
-
-    async def post_endpoint_call(self):
+        """每次 HTTP 请求完成 endpoint 处理逻辑之后调用。"""
         pass
 
 
@@ -197,92 +122,49 @@ class CornerstoneHookCaller:
     def _pairs(self):
         pairs = []
         for meta in self._cornerstone_container.cornerstones.values():
-            for cls in meta.sync_hooks:
+            for cls in meta.hooks:
                 pairs.append((cls, meta))
         return select_hooks(pairs, self._ioc_config)
 
-    def _run(self, method_name: str, request: Request = None):
+    def _bind(self, cls, meta, request: Request = None):
         app_registry = getattr(self._app.state, "hive", None)
-        request_registry = getattr(request.state, "hive", None) if request is not None else None
+        instance = create_hook(cls, app_registry)
+        bind_cornerstone(instance, self._app, meta, request)
+        return instance, app_registry
+
+    def run_configure(self):
+        logger.info("running cornerstone_hooks configure...")
         for cls, meta in self._pairs():
-            instance = create_hook(cls, app_registry)
-            bind_cornerstone(instance, self._app, meta, request)
-            invoke(instance, method_name, app_registry, request_registry)
-
-    def run_pre_startup_hook(self):
-        logger.info("running cornerstone_hooks sync pre endpoint startup...")
-        self._run("pre_endpoint_startup")
-
-    def run_post_startup_hook(self):
-        logger.info("running cornerstone_hooks sync post endpoint startup...")
-        self._run("post_endpoint_startup")
-
-    def run_pre_shutdown_hook(self):
-        logger.info("running cornerstone_hooks sync pre endpoint shutdown...")
-        self._run("pre_endpoint_shutdown")
-
-    def run_post_shutdown_hook(self):
-        logger.info("running cornerstone_hooks sync post endpoint shutdown...")
-        self._run("post_endpoint_shutdown")
-
-    def run_pre_call_hook(self, request: Request):
-        logger.info("running cornerstone_hooks sync pre endpoint call...")
-        self._run("pre_endpoint_call", request)
-
-    def run_post_call_hook(self, request: Request):
-        logger.info("running cornerstone_hooks sync post endpoint call...")
-        self._run("post_endpoint_call", request)
-
-
-class CornerstoneHookAsyncCaller:
-    @inject
-    def __init__(
-            self,
-            app: FastAPI,
-            cornerstone_container: CornerstoneContainer = Provide[DIContainer.cornerstone_container],
-            ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
-    ):
-        logger.info("conerstone hook async caller is initializing.")
-
-        self._app = app
-        self._cornerstone_container = cornerstone_container
-        self._ioc_config = ioc_config
-
-    def _pairs(self):
-        pairs = []
-        for meta in self._cornerstone_container.cornerstones.values():
-            for cls in meta.async_hooks:
-                pairs.append((cls, meta))
-        return select_hooks(pairs, self._ioc_config)
+            instance, app_registry = self._bind(cls, meta)
+            invoke_sync(instance, "configure", app_registry)
 
     async def _run(self, method_name: str, request: Request = None):
         app_registry = getattr(self._app.state, "hive", None)
         request_registry = getattr(request.state, "hive", None) if request is not None else None
         for cls, meta in self._pairs():
-            instance = create_hook(cls, app_registry)
-            bind_cornerstone(instance, self._app, meta, request)
-            await invoke_async(instance, method_name, app_registry, request_registry)
+            instance, _ = self._bind(cls, meta, request)
+            await invoke(instance, method_name, app_registry, request_registry)
 
     async def run_pre_startup_hook(self):
-        logger.info("running cornerstone_hooks async pre endpoint startup...")
+        logger.info("running cornerstone_hooks pre endpoint startup...")
         await self._run("pre_endpoint_startup")
 
     async def run_post_startup_hook(self):
-        logger.info("running cornerstone_hooks async post endpoint startup...")
+        logger.info("running cornerstone_hooks post endpoint startup...")
         await self._run("post_endpoint_startup")
 
     async def run_pre_shutdown_hook(self):
-        logger.info("running cornerstone_hooks async pre endpoint shutdown...")
+        logger.info("running cornerstone_hooks pre endpoint shutdown...")
         await self._run("pre_endpoint_shutdown")
 
     async def run_post_shutdown_hook(self):
-        logger.info("running cornerstone_hooks async post endpoint shutdown...")
+        logger.info("running cornerstone_hooks post endpoint shutdown...")
         await self._run("post_endpoint_shutdown")
 
     async def run_pre_call_hook(self, request: Request):
-        logger.info("running cornerstone_hooks async pre endpoint call...")
+        logger.info("running cornerstone_hooks pre endpoint call...")
         await self._run("pre_endpoint_call", request)
 
     async def run_post_call_hook(self, request: Request):
-        logger.info("running cornerstone_hooks async post endpoint call...")
+        logger.info("running cornerstone_hooks post endpoint call...")
         await self._run("post_endpoint_call", request)
