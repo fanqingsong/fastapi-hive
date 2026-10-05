@@ -22,16 +22,16 @@ pip3 install .
 
 Note: You can reference example code to complete this part. 
 
-### Make packages of cornerstones and endpoints
+### Make packages of foundations and endpoints
 
-First, create or refactor you code into cornerstones and endpoints folders:
+First, create or refactor you code into foundations and endpoints folders:
 
 ![module folders](img/module_folders.png)
 
 Code Folder Structure
 
     app
-        cornerstones
+        foundations
             db
                 __init__.py
                 implement.py
@@ -56,16 +56,16 @@ package root `__init__.py`. An `@endpoint` class in a submodule is rejected.
 
 Decorate the hook class. `order` decides who runs first in the same phase. `profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` reads a dotted key from `FEATURES`. `@provides` / `@component` register beans on `HiveContext`. Lifecycle methods cannot use `@provides`. Hook parameters and `Inject` resolve the same keys. `@autoconfigure` + `@conditional` load optional starters.
 
-Only decorated hook classes are loaded. Methods may be `def` or `async def`. `configure()` on a cornerstone must stay synchronous so middleware can be registered before the app starts. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
+Only decorated hook classes are loaded. Methods may be `def` or `async def`. `configure()` on a foundation must stay synchronous so middleware can be registered before the app starts. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
-Beans stay on an `@autoconfigure` class. Cornerstone hooks, such as `example/cornerstone/db`, stay on `@cornerstone`.
+Beans stay on an `@autoconfigure` class. Foundation hooks, such as `example/foundation/db`, stay on `@foundation`.
 
-For a cornerstone bean
+For a foundation bean
 
 ```Python
 
 from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
-from example.cornerstone.auth.implement import validate_http_request
+from example.foundation.auth.implement import validate_http_request
 
 
 @autoconfigure(name="hive.auth", order=100)
@@ -116,14 +116,14 @@ the same three stages in reverse around endpoint `shutdown`.
 
 ### Setup hive framework init codes 
 
-Second, bootstrap the container. Convention looks for `cornerstone(s)/` and
+Second, bootstrap the container. Convention looks for `foundation(s)/` and
 `endpoints/` beside the caller or the working directory. Put the rest in
 `settings=` on `bootstrap`, or in `HIVE_*` environment variables.
 
 ```Python
 from fastapi import FastAPI
 from loguru import logger
-from example.cornerstone.config import APP_NAME, APP_VERSION, IS_DEBUG
+from example.foundation.config import APP_NAME, APP_VERSION, IS_DEBUG
 
 from fastapi_hive.ioc_framework import IoCFramework
 
@@ -135,7 +135,7 @@ def get_app() -> FastAPI:
         fast_app,
         settings={
             "api_prefix": "/api",
-            "cornerstone_package_path": "./cornerstone",
+            "foundation_package_path": "./foundation",
             "endpoint_package_paths": [
                 "./endpoints_package1",
                 "./endpoints_package2",
@@ -153,7 +153,7 @@ over env.
 
 ## URL MAPPING
 
-The framework discovers cornerstones and endpoints in the same load pass.
+The framework discovers foundations and endpoints in the same load pass.
 `@endpoint` hook classes must live in the endpoint package root. Mount routers
 yourself in `startup` with `self.app.include_router(...)`.
 

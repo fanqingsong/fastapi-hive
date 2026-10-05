@@ -7,8 +7,8 @@ from fastapi import FastAPI
 from loguru import logger
 from starlette.requests import Request
 from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
-from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHookCaller
+from fastapi_hive.ioc_framework.foundation_container import FoundationContainer
+from fastapi_hive.ioc_framework.foundation_hooks import FoundationHookCaller
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHookCaller
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
@@ -33,8 +33,8 @@ class IoCFramework:
         endpoint_container: EndpointContainer = Provide[
             DIContainer.endpoint_container
         ],
-        cornerstone_container: CornerstoneContainer = Provide[
-            DIContainer.cornerstone_container
+        foundation_container: FoundationContainer = Provide[
+            DIContainer.foundation_container
         ],
     ):
         self._app = app
@@ -48,9 +48,9 @@ class IoCFramework:
         )
 
         self._endpoint_container = endpoint_container
-        self._cornerstone_container = cornerstone_container
+        self._foundation_container = foundation_container
 
-        self._cornerstone_hook_caller = CornerstoneHookCaller(app)
+        self._foundation_hook_caller = FoundationHookCaller(app)
         self._endpoint_hook_caller = EndpointHookCaller(app)
 
     @classmethod
@@ -68,17 +68,17 @@ class IoCFramework:
         return self._ioc_config
 
     def init_modules(self) -> None:
-        self._load_cornerstones()
+        self._load_foundations()
         self._load_endpoints()
 
-        # set cornerstone state as app state to expose for endpoint access, such as db instance
-        self._app.state.cornerstones = self._get_initial_cornerstone_state()
+        # set foundation state as app state to expose for endpoint access, such as db instance
+        self._app.state.foundations = self._get_initial_foundation_state()
 
         # set endpoint state as app state to expose for endpoint access, such as ML model instance
         self._app.state.endpoints = self._get_initial_endpoint_state()
         context = HiveContext(self._app)
         definitions, autos = build_definitions(
-            scanned_modules(self._cornerstone_container, self._endpoint_container),
+            scanned_modules(self._foundation_container, self._endpoint_container),
             self._ioc_config,
         )
         context.add_definitions(definitions)
@@ -87,9 +87,9 @@ class IoCFramework:
         self._app.state.hive = context
 
         # Starlette requires middleware to be registered before the application
-        # starts. Cornerstone configure() and autoconfigure.configure() install
+        # starts. Foundation configure() and autoconfigure.configure() install
         # shared middleware while the app is being assembled.
-        self._cornerstone_hook_caller.run_configure()
+        self._foundation_hook_caller.run_configure()
         extras = {FastAPI: self._app}
         owners = {item.owner_cls for item in definitions}
         for cls in autos:
@@ -103,13 +103,13 @@ class IoCFramework:
 
         self._add_http_middleware()
 
-    def _get_initial_cornerstone_state(self):
-        cornerstones = self._cornerstone_container.cornerstones
+    def _get_initial_foundation_state(self):
+        foundations = self._foundation_container.foundations
 
         state = defaultdict(dict)
-        for pkg_path, cornerstone in cornerstones.items():
+        for pkg_path, foundation in foundations.items():
             state[pkg_path] = {}
-            state[pkg_path]['__cornerstone__'] = cornerstone
+            state[pkg_path]['__foundation__'] = foundation
 
         return state
 
@@ -130,7 +130,7 @@ class IoCFramework:
         async def add_process_time_header(request: Request, call_next):
             start_time = time.time()
 
-            request.state.cornerstones = self._get_initial_cornerstone_state()
+            request.state.foundations = self._get_initial_foundation_state()
             request.state.hive = HiveRegistry()
 
             response = await call_next(request)
@@ -142,16 +142,16 @@ class IoCFramework:
 
             return response
 
-    def _load_cornerstones(self):
-        logger.info("loading all cornerstones...")
+    def _load_foundations(self):
+        logger.info("loading all foundations...")
 
-        package_path = self._ioc_config.CORNERSTONE_PACKAGE_PATH
+        package_path = self._ioc_config.FOUNDATION_PACKAGE_PATH
         if not package_path or not os.path.isdir(package_path):
-            logger.info("no cornerstone package directory, skip loading.")
+            logger.info("no foundation package directory, skip loading.")
             return
 
-        self._cornerstone_container.register_cornerstone_package_path(package_path)
-        self._cornerstone_container.load_cornerstones()
+        self._foundation_container.register_foundation_package_path(package_path)
+        self._foundation_container.load_foundations()
 
     def _load_endpoints(self):
         logger.info("loading all endpoints...")
@@ -187,9 +187,9 @@ class IoCFramework:
         async def startup() -> None:
             logger.info("running startup handlers...")
 
-            await self._cornerstone_hook_caller.run_before_startup_hook()
+            await self._foundation_hook_caller.run_before_startup_hook()
             await self._endpoint_hook_caller.run_startup_hook()
-            await self._cornerstone_hook_caller.run_after_startup_hook()
+            await self._foundation_hook_caller.run_after_startup_hook()
 
         return startup
 
@@ -197,9 +197,9 @@ class IoCFramework:
         async def shutdown() -> None:
             logger.info("running shutdown handlers...")
 
-            await self._cornerstone_hook_caller.run_before_shutdown_hook()
+            await self._foundation_hook_caller.run_before_shutdown_hook()
             await self._endpoint_hook_caller.run_shutdown_hook()
-            await self._cornerstone_hook_caller.run_after_shutdown_hook()
+            await self._foundation_hook_caller.run_after_shutdown_hook()
 
         return shutdown
 

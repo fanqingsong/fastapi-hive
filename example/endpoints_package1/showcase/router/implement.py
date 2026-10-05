@@ -3,7 +3,7 @@ import sys
 from fastapi import APIRouter
 from starlette.requests import Request
 
-from example.cornerstone.lifecycle import RequestStamp
+from example.foundation.lifecycle import RequestStamp
 from example.endpoints_package1.showcase.beans import LazyProbe, PrimaryGreeter
 from fastapi_hive.ioc_framework.decorators import Qualifier, resolve_params
 from fastapi_hive.ioc_framework.registry import Inject

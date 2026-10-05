@@ -28,31 +28,31 @@ def test_normalize_mapping_flattens_autoconfigure():
 
 def test_collect_hive_settings_ignores_yaml_file(tmp_path, monkeypatch):
     (tmp_path / "hive.yaml").write_text(
-        "api_prefix: /from-file\ncornerstone_package_path: ./from-file\n",
+        "api_prefix: /from-file\nfoundation_package_path: ./from-file\n",
         encoding="utf-8",
     )
     monkeypatch.delenv("HIVE_API_PREFIX", raising=False)
-    monkeypatch.delenv("HIVE_CORNERSTONE_PACKAGE_PATH", raising=False)
+    monkeypatch.delenv("HIVE_FOUNDATION_PACKAGE_PATH", raising=False)
 
     values = collect_hive_settings(roots=[tmp_path])
     assert "API_PREFIX" not in values
-    assert values.get("CORNERSTONE_PACKAGE_PATH") != str(tmp_path / "from-file")
+    assert values.get("FOUNDATION_PACKAGE_PATH") != str(tmp_path / "from-file")
 
 
 def test_settings_paths_resolve_beside_caller(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     app_dir = tmp_path / "myapp"
-    (app_dir / "cornerstone").mkdir(parents=True)
+    (app_dir / "foundation").mkdir(parents=True)
     (app_dir / "endpoints_package1").mkdir()
 
     values = collect_hive_settings(
         overrides={
-            "cornerstone_package_path": "./cornerstone",
+            "foundation_package_path": "./foundation",
             "endpoint_package_paths": ["./endpoints_package1"],
         },
         roots=[tmp_path, app_dir],
     )
-    assert values["CORNERSTONE_PACKAGE_PATH"] == "./myapp/cornerstone"
+    assert values["FOUNDATION_PACKAGE_PATH"] == "./myapp/foundation"
     assert values["ENDPOINT_PACKAGE_PATHS"] == ["./myapp/endpoints_package1"]
 
 
@@ -67,11 +67,11 @@ def test_constructor_overrides_win(tmp_path, monkeypatch):
 
 
 def test_convention_discovers_package_folders(tmp_path):
-    (tmp_path / "cornerstones").mkdir()
+    (tmp_path / "foundations").mkdir()
     (tmp_path / "endpoints").mkdir()
     values = {}
     apply_convention(values, roots=[tmp_path])
-    assert values["CORNERSTONE_PACKAGE_PATH"] == str(tmp_path / "cornerstones")
+    assert values["FOUNDATION_PACKAGE_PATH"] == str(tmp_path / "foundations")
     assert values["ENDPOINT_PACKAGE_PATHS"] == [str(tmp_path / "endpoints")]
 
 

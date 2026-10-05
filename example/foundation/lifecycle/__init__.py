@@ -1,9 +1,9 @@
 import anyio
 from fastapi import FastAPI
 
-from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneMeta
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
-from fastapi_hive.ioc_framework.decorators import component, cornerstone
+from fastapi_hive.ioc_framework.foundation_container import FoundationMeta
+from fastapi_hive.ioc_framework.foundation_hooks import FoundationHooks
+from fastapi_hive.ioc_framework.decorators import component, foundation
 
 
 @component(scope="request")
@@ -17,16 +17,16 @@ def _threaded_marker():
     return "threaded"
 
 
-@cornerstone(name="lifecycle", order=50, profiles=["demo"])
-class LifecycleHooks(CornerstoneHooks):
-    """Every cornerstone hook, sync and async, plus parameter injection."""
+@foundation(name="lifecycle", order=50, profiles=["demo"])
+class LifecycleHooks(FoundationHooks):
+    """Every foundation hook, sync and async, plus parameter injection."""
 
     def configure(self):
         self.app.state.hive_lifecycle = ["configure"]
 
-    def before_endpoint_startup(self, app: FastAPI, cornerstone: CornerstoneMeta):
+    def before_endpoint_startup(self, app: FastAPI, foundation: FoundationMeta):
         app.state.hive_lifecycle.append(
-            "before_endpoint_startup:" + cornerstone.name
+            "before_endpoint_startup:" + foundation.name
         )
 
     async def after_endpoint_startup(self):
@@ -40,25 +40,25 @@ class LifecycleHooks(CornerstoneHooks):
         self.app.state.hive_lifecycle.append("after_endpoint_shutdown")
 
 
-@cornerstone(name="audit", order=10, profiles=["demo"], enabled_when="audit")
-class AuditHooks(CornerstoneHooks):
+@foundation(name="audit", order=10, profiles=["demo"], enabled_when="audit")
+class AuditHooks(FoundationHooks):
 
     def before_endpoint_startup(self):
         self.app.state.hive_lifecycle.append("audit.before_startup")
 
 
-@cornerstone(name="disabled_probe", enabled_when="missing_flag")
-class DisabledProbe(CornerstoneHooks):
+@foundation(name="disabled_probe", enabled_when="missing_flag")
+class DisabledProbe(FoundationHooks):
 
     def configure(self):
-        raise RuntimeError("disabled cornerstone configure must not run")
+        raise RuntimeError("disabled foundation configure must not run")
 
     def before_endpoint_startup(self):
         self.app.state.hive_lifecycle.append("disabled.startup")
 
 
-@cornerstone(name="off_profile", profiles=["never"])
-class OffProfileHooks(CornerstoneHooks):
+@foundation(name="off_profile", profiles=["never"])
+class OffProfileHooks(FoundationHooks):
 
     def before_endpoint_startup(self):
         self.app.state.hive_lifecycle.append("off_profile.startup")

@@ -10,7 +10,7 @@ All configuarable parameters are listed below.
 
 | name | description | default |
 | ----- | ---- | ---- |
-| CORNERSTONE_PACKAGE_PATH | cornerstone path | "./cornerstone" |
+| FOUNDATION_PACKAGE_PATH | foundation path | "./foundation" |
 | ENDPOINT_PACKAGE_PATHS | endpoint package paths | ["./endpoints"] |
 | API_PREFIX | all api prefix, usual for version, such as "v1" | "" |
 | ACTIVE_PROFILES | profiles that enable a decorated module | [] |
@@ -37,7 +37,7 @@ from fastapi_hive.ioc_framework import IoCFramework
 app = FastAPI()
 IoCFramework.bootstrap(app, settings={
     "api_prefix": "/api",
-    "cornerstone_package_path": "./cornerstone",
+    "foundation_package_path": "./foundation",
     "endpoint_package_paths": [
         "./endpoints_package1",
         "./endpoints_package2",
@@ -53,7 +53,7 @@ Decorate the hook class so the container can discover it. Undecorated classes ar
 
 | decorator | purpose |
 | --- | --- |
-| `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `configure()` runs while the app is assembled and must be synchronous. Other hooks run from the async lifecycle. |
+| `@foundation(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `configure()` runs while the app is assembled and must be synchronous. Other hooks run from the async lifecycle. |
 | `@endpoint(name, order=0, profiles=None, enabled_when=None)` | business module. Define the class in the endpoint package root. Mount routers in `startup` with `self.app.include_router`. |
 | `@provides(key, scope="app")` | register a factory method as a bean. `scope` is `app`, `request`, or `transient`. Lifecycle methods cannot use `@provides`. |
 | `@component` | register a class constructor as a bean. Default key is the class. |
@@ -78,34 +78,34 @@ The framework does not collect or mount `APIRouter` objects. In an `@endpoint`
 See `example/endpoints_package1/house_price/__init__.py`.
 
 
-## cornerstone hooks
+## foundation hooks
 
 ----
 
-The framework provides `CornerstoneHooks`. Decorate a subclass with `@cornerstone`. Hook methods may be `def` or `async def`, except `configure()`, which must stay synchronous. Blocking I/O should use `anyio.to_thread.run_sync`.
+The framework provides `FoundationHooks`. Decorate a subclass with `@foundation`. Hook methods may be `def` or `async def`, except `configure()`, which must stay synchronous. Blocking I/O should use `anyio.to_thread.run_sync`.
 
 Hook methods and `__init__` receive dependencies by parameter. Built-in extras:
 
 | name | type | meaning |
 | --- | --- | --- |
 | app | `FastAPI` | the FastAPI application |
-| cornerstone | `CornerstoneMeta` | metadata of this cornerstone |
+| foundation | `FoundationMeta` | metadata of this foundation |
 
-Published Hive keys are injected the same way: a type hint or `Inject(key)`. `self.app` and `self.cornerstone` remain available as context after bind. Per-request work belongs in middleware registered from `configure()`.
+Published Hive keys are injected the same way: a type hint or `Inject(key)`. `self.app` and `self.foundation` remain available as context after bind. Per-request work belongs in middleware registered from `configure()`.
 
 
 
 please check in the code for usages.
 
-hooks can be set in cornerstone init file.
+hooks can be set in foundation init file.
 
-example/cornerstone/db/__init__.py
+example/foundation/db/__init__.py
 
 ```python
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
-from fastapi_hive.ioc_framework.decorators import autoconfigure, conditional, cornerstone, provides
-from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
+from fastapi_hive.ioc_framework.foundation_hooks import FoundationHooks
+from fastapi_hive.ioc_framework.decorators import autoconfigure, conditional, foundation, provides
+from example.foundation.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi_sqlalchemy import db
 
 
@@ -136,8 +136,8 @@ class SqlAlchemyAuto:
         return LazyDBSession(db)
 
 
-@cornerstone(name="db", order=0)
-class CornerstoneHooksImpl(CornerstoneHooks):
+@foundation(name="db", order=0)
+class FoundationHooksImpl(FoundationHooks):
 
     def after_endpoint_startup(self):
         create_all_tables(self.app)
@@ -157,7 +157,7 @@ Hook methods and `__init__` receive dependencies by parameter. Built-in extras:
 | app | `FastAPI` | the FastAPI application |
 | endpoint | `EndpointMeta` | metadata of this endpoint |
 
-Published Hive keys are injected the same way as on cornerstone hooks. `self.app` / `self.endpoint` remain available as context after bind.
+Published Hive keys are injected the same way as on foundation hooks. `self.app` / `self.endpoint` remain available as context after bind.
 
 
 please check in the code for usages.

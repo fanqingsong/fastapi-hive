@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  Keep each API, schema, service, and model together; share infrastructure through reusable cornerstones.
+  Keep each API, schema, service, and model together; share infrastructure through reusable foundations.
 </p>
 
 <p align="center">
@@ -34,7 +34,7 @@ application grows:
 
 ```text
 app/                             app/
-├── routers/                     ├── cornerstones/
+├── routers/                     ├── foundations/
 │   ├── heartbeat.py             │   ├── auth/
 │   └── house_price.py           │   └── db/
 ├── schemas/          ──────▶    └── endpoints/
@@ -55,8 +55,8 @@ capability-oriented layout on the right:
 - **Endpoints are the bees** — each endpoint folder owns one business
   capability, including its router, schemas, service, and optional database
   models.
-- **Cornerstones build the hive** — shared concerns such as authentication and
-  database access live in independently initialized modules.
+- **Foundations are the structure the hive is built on** — shared concerns such
+  as authentication and database access live in independently initialized modules.
 - **The IoC framework is the beekeeper** — it discovers modules, runs their
   lifecycle hooks, and exposes their state. Endpoints mount their own routers.
 
@@ -74,7 +74,7 @@ each child module. It then:
    then exposes published values through the hive registry;
 2. registers synchronous and asynchronous startup/shutdown hooks;
 3. lets each endpoint mount its `APIRouter` from `startup`;
-4. installs request middleware that runs cornerstone hooks before and after
+4. installs request middleware that runs foundation hooks before and after
    each request.
 
 ![FastAPI Hive lifecycle](docs/img/fastapi-hive-lifecycle.svg)
@@ -86,7 +86,7 @@ that must be attached to each request.
 ## Core capabilities
 
 - **Capability-oriented modules** — colocate all code for one endpoint.
-- **Automatic discovery** — load cornerstones and multiple endpoint packages
+- **Automatic discovery** — load foundations and multiple endpoint packages
   from configurable paths.
 - **Explicit router mounting** — include each endpoint's `APIRouter` in
   `startup` with `self.app.include_router(...)`.
@@ -117,7 +117,7 @@ FastAPI Hive supports Python 3.8 through Python 3.13.
 
 ```text
 my_app/
-├── cornerstones/
+├── foundations/
 │   ├── auth/
 │   │   ├── __init__.py
 │   │   └── implement.py
@@ -153,7 +153,7 @@ class EndpointHooksImpl(EndpointHooks):
 
 ### 3. Initialize the hive
 
-If `cornerstone`/`cornerstones` and `endpoints` sit next to `main.py`, the
+If `foundation`/`foundations` and `endpoints` sit next to `main.py`, the
 container picks them up by convention:
 
 ```python
@@ -214,7 +214,7 @@ def predict(model: HousePriceModel = Inject(HousePriceModel)):
     return model.predict(payload)
 ```
 
-Cornerstones use `@cornerstone` for lifecycle side effects. App-scoped beans
+Foundations use `@foundation` for lifecycle side effects. App-scoped beans
 are created at bootstrap (`refresh`). Request-scoped beans are created on first
 `get` in that request. Hook methods and `__init__` take the same keys as
 parameters (type hints or `Inject`).
@@ -243,7 +243,7 @@ with `hive.autoconfigure.exclude: ["hive.db"]`.
 `FEATURES` enables it. Mount routers in `startup` with `include_router`.
 
 Hook methods may be `def` or `async def`. The framework always invokes them
-from an async lifecycle. `CornerstoneHooks.configure()` is the exception: it
+from an async lifecycle. `FoundationHooks.configure()` is the exception: it
 runs while the app is assembled and must stay synchronous so middleware can
 be registered. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
@@ -251,8 +251,8 @@ be registered. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
 The included application demonstrates:
 
-- API-key authentication as a cornerstone;
-- database setup and request-scoped access as a cornerstone;
+- API-key authentication as a foundation;
+- database setup and request-scoped access as a foundation;
 - heartbeat endpoints (package2 mounts at `/api/hb2`);
 - ML model preloading and house-price prediction;
 - endpoint discovery across two endpoint packages.

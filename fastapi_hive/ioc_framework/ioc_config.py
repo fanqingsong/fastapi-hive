@@ -5,7 +5,7 @@ from typing import List, Dict
 
 
 class IoCConfig(BaseModel):
-    CORNERSTONE_PACKAGE_PATH: str = "./cornerstone"
+    FOUNDATION_PACKAGE_PATH: str = "./foundation"
     API_PREFIX: str = ""
     ENDPOINT_PACKAGE_PATHS: List[str] = ["./endpoints"]
     ACTIVE_PROFILES: List[str] = Field(default_factory=list)

@@ -39,10 +39,10 @@ LIFECYCLE_METHODS = frozenset({
 })
 
 
-def cornerstone(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None,
+def foundation(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None,
                 enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
-        _attach(cls, "cornerstone", name, order, profiles, enabled_when)
+        _attach(cls, "foundation", name, order, profiles, enabled_when)
         collect_providers(cls)
         return cls
 
@@ -307,9 +307,9 @@ async def invoke(instance: Any, method_name: str, context, request=None, extras=
     return await call_injected(method, context, request, extras)
 
 
-def bind_cornerstone(instance: Any, app, meta) -> None:
+def bind_foundation(instance: Any, app, meta) -> None:
     instance.app = app
-    instance.cornerstone = meta
+    instance.foundation = meta
 
 
 def bind_endpoint(instance: Any, app, meta) -> None:

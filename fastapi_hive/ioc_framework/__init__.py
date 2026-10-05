@@ -4,7 +4,7 @@ from fastapi_hive.ioc_framework.decorators import (
     autoconfigure,
     component,
     conditional,
-    cornerstone,
+    foundation,
     endpoint,
     provides,
     Qualifier,
@@ -15,7 +15,7 @@ from fastapi_hive.ioc_framework.context import HiveContext
 
 __all__ = [
     "IoCFramework",
-    "cornerstone",
+    "foundation",
     "endpoint",
     "provides",
     "component",
@@ -31,7 +31,7 @@ __all__ = [
 di_container: DIContainer = DIContainer()
 di_container.wire(
     modules=[
-        "fastapi_hive.ioc_framework.cornerstone_hooks.implement",
+        "fastapi_hive.ioc_framework.foundation_hooks.implement",
         "fastapi_hive.ioc_framework.endpoint_hooks.implement",
         "fastapi_hive.ioc_framework.implement",
     ]

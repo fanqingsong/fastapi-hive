@@ -1,6 +1,6 @@
 
 
-from example.cornerstone import messages
+from example.foundation import messages
 
 
 def test_auth_using_prediction_api_no_apikey_header(test_client) -> None:

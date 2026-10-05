@@ -275,7 +275,7 @@ models.Base.metadata.create_all(bind=engine)
 
 Let's see How to use fastapi-hive as of db part.
 
-First, create one db setting file: example/cornerstone/db/implement.py
+First, create one db setting file: example/foundation/db/implement.py
 
 ```python
 
@@ -283,11 +283,11 @@ First, create one db setting file: example/cornerstone/db/implement.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from fastapi import FastAPI
-from example.cornerstone.config import DATABASE_URL
+from example.foundation.config import DATABASE_URL
 from fastapi_sqlalchemy import DBSessionMiddleware  # middleware helper
 from fastapi_sqlalchemy import db  # an object to provide global access to a database session
 
-from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneMeta
+from fastapi_hive.ioc_framework.foundation_container import FoundationMeta
 
 Base = declarative_base()
 engine = create_engine(
@@ -296,10 +296,10 @@ engine = create_engine(
 )
 
 
-def add_db_middleware(app: FastAPI, cornerstone: CornerstoneMeta):
+def add_db_middleware(app: FastAPI, foundation: FoundationMeta):
     app.add_middleware(DBSessionMiddleware, db_url=DATABASE_URL)
 
-    # cornerstone.state['db'] = db
+    # foundation.state['db'] = db
 
 
 def create_all_tables(app: FastAPI):
@@ -310,13 +310,13 @@ def create_all_tables(app: FastAPI):
 
 Secondly, create db initial file, and implement hooks call.
 
-example/cornerstone/db/__init__.py
+example/foundation/db/__init__.py
 
 ```python
 from fastapi import FastAPI
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
-from fastapi_hive.ioc_framework.decorators import autoconfigure, conditional, cornerstone, provides
-from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
+from fastapi_hive.ioc_framework.foundation_hooks import FoundationHooks
+from fastapi_hive.ioc_framework.decorators import autoconfigure, conditional, foundation, provides
+from example.foundation.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi_sqlalchemy import db
 
 
@@ -347,8 +347,8 @@ class SqlAlchemyAuto:
         return LazyDBSession(db)
 
 
-@cornerstone(name="db", order=0)
-class CornerstoneHooksImpl(CornerstoneHooks):
+@foundation(name="db", order=0)
+class FoundationHooksImpl(FoundationHooks):
 
     def after_endpoint_startup(self):
         create_all_tables(self.app)
@@ -363,7 +363,7 @@ example/endpoints_package1/notes/db/implement.py
 
 from sqlalchemy import Column, Integer, String, Boolean
 
-from example.cornerstone.db import Base
+from example.foundation.db import Base
 
 
 class Note(Base):

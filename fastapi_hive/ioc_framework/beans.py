@@ -115,7 +115,7 @@ def infer_deps(func: Callable) -> List[Any]:
         if key in BUILTIN_EXTRAS:
             continue
         if inspect.isclass(key) and key.__module__ in (
-            "fastapi_hive.ioc_framework.cornerstone_container.implement",
+            "fastapi_hive.ioc_framework.foundation_container.implement",
             "fastapi_hive.ioc_framework.endpoint_container.implement",
         ):
             continue

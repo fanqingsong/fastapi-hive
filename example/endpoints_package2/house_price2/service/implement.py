@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 from loguru import logger
 
-from example.cornerstone.messages import NO_VALID_PAYLOAD
+from example.foundation.messages import NO_VALID_PAYLOAD
 
 from example.endpoints_package2.house_price2.schema.payload import (
     HousePredictionPayload, payload_to_list)

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
   <title id="title">FastAPI Hive lifecycle</title>
-  <desc id="desc">Startup initializes cornerstones and endpoints, request middleware invokes per-request hooks, and shutdown tears resources down.</desc>
+  <desc id="desc">Startup initializes foundations and endpoints, request middleware invokes per-request hooks, and shutdown tears resources down.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0b2530"/>
@@ -27,7 +27,7 @@
       <text x="42" y="133" fill="#92400e">External pre-startup</text>
       <path d="M150 146v15" stroke="#94a3b8" marker-end="url(#arrow)"/>
       <rect x="24" y="164" width="252" height="38" rx="9" fill="#f0fdfa" stroke="#99f6e4"/>
-      <text x="42" y="189" fill="#115e59">Cornerstone pre-startup</text>
+      <text x="42" y="189" fill="#115e59">Foundation pre-startup</text>
       <path d="M150 202v15" stroke="#94a3b8" marker-end="url(#arrow)"/>
       <rect x="24" y="220" width="252" height="38" rx="9" fill="#fffbeb" stroke="#fde68a"/>
       <text x="42" y="245" fill="#92400e">Endpoint startup + mount routers</text>
@@ -47,13 +47,13 @@
 
     <g font-family="Inter,Segoe UI,sans-serif" font-size="14">
       <rect x="24" y="108" width="282" height="38" rx="9" fill="#f0fdfa" stroke="#99f6e4"/>
-      <text x="42" y="133" fill="#115e59">Cornerstone pre-call hooks</text>
+      <text x="42" y="133" fill="#115e59">Foundation pre-call hooks</text>
       <path d="M165 146v15" stroke="#94a3b8" marker-end="url(#arrow)"/>
       <rect x="24" y="164" width="282" height="38" rx="9" fill="#ecfeff" stroke="#a5f3fc"/>
       <text x="42" y="189" fill="#155e75">FastAPI endpoint execution</text>
       <path d="M165 202v15" stroke="#94a3b8" marker-end="url(#arrow)"/>
       <rect x="24" y="220" width="282" height="38" rx="9" fill="#f0fdfa" stroke="#99f6e4"/>
-      <text x="42" y="245" fill="#115e59">Cornerstone post-call hooks</text>
+      <text x="42" y="245" fill="#115e59">Foundation post-call hooks</text>
       <text x="165" y="292" text-anchor="middle" font-size="13" font-weight="700" fill="#64748b">sync and async hooks supported</text>
     </g>
   </g>
@@ -72,7 +72,7 @@
       <text x="42" y="133" fill="#475569">External pre-shutdown</text>
       <path d="M150 146v15" stroke="#94a3b8" marker-end="url(#arrow)"/>
       <rect x="24" y="164" width="252" height="38" rx="9" fill="#f0fdfa" stroke="#99f6e4"/>
-      <text x="42" y="189" fill="#115e59">Cornerstone pre-shutdown</text>
+      <text x="42" y="189" fill="#115e59">Foundation pre-shutdown</text>
       <path d="M150 202v15" stroke="#94a3b8" marker-end="url(#arrow)"/>
       <rect x="24" y="220" width="252" height="38" rx="9" fill="#f8fafc" stroke="#cbd5e1"/>
       <text x="42" y="245" fill="#475569">Endpoint shutdown</text>

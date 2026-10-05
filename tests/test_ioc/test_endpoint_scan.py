@@ -50,10 +50,10 @@ def test_endpoint_scan_finds_component_and_router_without_db_router_service(
     module_names = {module.__name__ for module in meta.imported_modules}
     assert "epkg.demo.schemas" in module_names
 
-    class Cornerstones:
-        cornerstones = {}
+    class Foundations:
+        foundations = {}
 
-    modules = scanned_modules(Cornerstones(), container)
+    modules = scanned_modules(Foundations(), container)
     markers = [
         obj
         for module in modules

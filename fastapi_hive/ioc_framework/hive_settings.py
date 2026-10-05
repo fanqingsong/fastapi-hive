@@ -9,13 +9,13 @@ from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 
 
 ENV_PREFIX = "HIVE_"
-CORNERSTONE_DIR_NAMES = ("cornerstone", "cornerstones")
+FOUNDATION_DIR_NAMES = ("foundation", "foundations")
 ENDPOINT_DIR_NAMES = ("endpoints", "endpoint_packages")
-DEFAULT_CORNERSTONE_PATH = "./cornerstone"
+DEFAULT_FOUNDATION_PATH = "./foundation"
 DEFAULT_ENDPOINT_PATHS = ["./endpoints"]
 
 _FIELD_ALIASES = {
-    "cornerstone_package_path": "CORNERSTONE_PACKAGE_PATH",
+    "foundation_package_path": "FOUNDATION_PACKAGE_PATH",
     "endpoint_package_paths": "ENDPOINT_PACKAGE_PATHS",
     "api_prefix": "API_PREFIX",
     "active_profiles": "ACTIVE_PROFILES",
@@ -173,12 +173,12 @@ def _first_existing_dir(roots: Sequence[Path], names: Sequence[str]) -> Optional
 
 def apply_convention(values: Dict[str, Any], roots: Optional[Sequence[Path]] = None):
     search_roots = list(roots) if roots is not None else discover_roots()
-    cornerstone = values.get("CORNERSTONE_PACKAGE_PATH", DEFAULT_CORNERSTONE_PATH)
-    uses_default_cornerstone = cornerstone == DEFAULT_CORNERSTONE_PATH
-    if not cornerstone or (uses_default_cornerstone and not os.path.isdir(cornerstone)):
-        found = _first_existing_dir(search_roots, CORNERSTONE_DIR_NAMES)
+    foundation = values.get("FOUNDATION_PACKAGE_PATH", DEFAULT_FOUNDATION_PATH)
+    uses_default_foundation = foundation == DEFAULT_FOUNDATION_PATH
+    if not foundation or (uses_default_foundation and not os.path.isdir(foundation)):
+        found = _first_existing_dir(search_roots, FOUNDATION_DIR_NAMES)
         if found:
-            values["CORNERSTONE_PACKAGE_PATH"] = found
+            values["FOUNDATION_PACKAGE_PATH"] = found
 
     endpoints = values.get("ENDPOINT_PACKAGE_PATHS", DEFAULT_ENDPOINT_PATHS)
     uses_default_endpoints = endpoints == DEFAULT_ENDPOINT_PATHS
@@ -190,9 +190,9 @@ def apply_convention(values: Dict[str, Any], roots: Optional[Sequence[Path]] = N
 
 
 def resolve_package_paths(values: Dict[str, Any], base: Path) -> None:
-    cornerstone = values.get("CORNERSTONE_PACKAGE_PATH")
-    if isinstance(cornerstone, str) and cornerstone:
-        values["CORNERSTONE_PACKAGE_PATH"] = _path_beside(cornerstone, base)
+    foundation = values.get("FOUNDATION_PACKAGE_PATH")
+    if isinstance(foundation, str) and foundation:
+        values["FOUNDATION_PACKAGE_PATH"] = _path_beside(foundation, base)
     endpoints = values.get("ENDPOINT_PACKAGE_PATHS")
     if isinstance(endpoints, list):
         values["ENDPOINT_PACKAGE_PATHS"] = [

@@ -5,11 +5,11 @@ import pytest
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
+from fastapi_hive.ioc_framework.foundation_hooks import FoundationHooks
 from fastapi_hive.ioc_framework.decorators import (
     collect_hooks,
     collect_providers,
-    cornerstone,
+    foundation,
     create_hook,
     endpoint,
     invoke,
@@ -27,17 +27,17 @@ from fastapi_hive.ioc_framework.registry import Inject, HiveRegistry, resolve
 def test_collect_decorated_hook_skips_undecorated_class():
     module = types.ModuleType("sample_hooks")
 
-    @cornerstone(name="db", order=5)
-    class DbHooks(CornerstoneHooks):
+    @foundation(name="db", order=5)
+    class DbHooks(FoundationHooks):
         pass
 
-    class CornerstoneHooksImpl(CornerstoneHooks):
+    class FoundationHooksImpl(FoundationHooks):
         pass
 
     module.DbHooks = DbHooks
-    module.CornerstoneHooksImpl = CornerstoneHooksImpl
+    module.FoundationHooksImpl = FoundationHooksImpl
 
-    hooks = collect_hooks(module, role="cornerstone")
+    hooks = collect_hooks(module, role="foundation")
 
     assert hooks == [DbHooks]
 
@@ -45,25 +45,25 @@ def test_collect_decorated_hook_skips_undecorated_class():
 def test_undecorated_class_is_not_collected():
     module = types.ModuleType("legacy_hooks")
 
-    class CornerstoneHooksImpl(CornerstoneHooks):
+    class FoundationHooksImpl(FoundationHooks):
         pass
 
-    module.CornerstoneHooksImpl = CornerstoneHooksImpl
+    module.FoundationHooksImpl = FoundationHooksImpl
 
-    assert collect_hooks(module, role="cornerstone") == []
+    assert collect_hooks(module, role="foundation") == []
 
 
 def test_select_hooks_sorts_and_filters():
-    @cornerstone(name="late", order=10)
-    class Late(CornerstoneHooks):
+    @foundation(name="late", order=10)
+    class Late(FoundationHooks):
         pass
 
-    @cornerstone(name="early", order=1, profiles=["prod"])
-    class Early(CornerstoneHooks):
+    @foundation(name="early", order=1, profiles=["prod"])
+    class Early(FoundationHooks):
         pass
 
-    @cornerstone(name="flagged", order=0, enabled_when="features.notes")
-    class Flagged(CornerstoneHooks):
+    @foundation(name="flagged", order=0, enabled_when="features.notes")
+    class Flagged(FoundationHooks):
         pass
 
     disabled = IoCConfig(ACTIVE_PROFILES=["dev"], FEATURES={"features": {"notes": False}})
@@ -170,7 +170,7 @@ def test_invoke_sync_rejects_async_configure():
 
 
 def test_mixed_sync_configure_and_async_startup():
-    class Mixed(CornerstoneHooks):
+    class Mixed(FoundationHooks):
         @provides("db")
         def engine(self):
             return "engine"

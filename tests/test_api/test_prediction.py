@@ -1,6 +1,6 @@
 
 
-from example.cornerstone import config
+from example.foundation import config
 
 
 def test_prediction(test_client) -> None:

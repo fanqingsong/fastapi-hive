@@ -11,7 +11,7 @@ sys.path.insert(0, _repo_root)
 
 from fastapi import FastAPI
 from loguru import logger
-from example.cornerstone.config import (APP_NAME, APP_VERSION, IS_DEBUG)
+from example.foundation.config import (APP_NAME, APP_VERSION, IS_DEBUG)
 
 from fastapi_hive.ioc_framework import IoCFramework
 
@@ -25,7 +25,7 @@ def get_app() -> FastAPI:
         fast_app,
         settings={
             "api_prefix": "/api",
-            "cornerstone_package_path": "./cornerstone",
+            "foundation_package_path": "./foundation",
             "endpoint_package_paths": [
                 "./endpoints_package1",
                 "./endpoints_package2",

@@ -8,11 +8,11 @@ with open('README.md', 'r', encoding='utf-8') as f:
 setup(
     name='fastapi_hive',
     version='1.0.24',
-    description='framework for FastAPI cornerstones management',
+    description='framework for FastAPI foundations management',
     long_description_content_type='text/markdown',
     long_description=long_description,
     url="https://github.com/fanqingsong/fastapi-hive",
-    keywords="fastapi machine-learning packages cornerstones",
+    keywords="fastapi machine-learning packages foundations",
     license='Apache-2.0 license',
     author='Qingsong Fan',
     author_email='qsfan@qq.com',

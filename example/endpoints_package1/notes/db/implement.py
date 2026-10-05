@@ -1,7 +1,7 @@
 
 from sqlalchemy import Column, Integer, String, Boolean
 
-from example.cornerstone.db import Base
+from example.foundation.db import Base
 
 
 class Note(Base):

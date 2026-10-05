@@ -196,9 +196,9 @@ def sort_autoconfigure(classes: Sequence[type]) -> List[type]:
     return ordered
 
 
-def scanned_modules(cornerstone_container, endpoint_container) -> List:
+def scanned_modules(foundation_container, endpoint_container) -> List:
     modules = []
-    for meta in cornerstone_container.cornerstones.values():
+    for meta in foundation_container.foundations.values():
         modules.append(meta.imported_module)
     for meta in endpoint_container.endpoints.values():
         for module in getattr(meta, "imported_modules", None) or [meta.imported_module]:
