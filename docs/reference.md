@@ -113,9 +113,8 @@ Hook methods and `__init__` receive dependencies by parameter. Built-in extras:
 | --- | --- | --- |
 | app | `FastAPI` | the FastAPI application |
 | cornerstone | `CornerstoneMeta` | metadata of this cornerstone |
-| request | `Request` | the incoming HTTP request (`pre_endpoint_call` / `post_endpoint_call` only) |
 
-Published Hive keys are injected the same way: a type hint or `Inject(key)`. `self.app` / `self.cornerstone` / `self.request` remain available as context after bind.
+Published Hive keys are injected the same way: a type hint or `Inject(key)`. `self.app` and `self.cornerstone` remain available as context after bind. Per-request work belongs in middleware registered from `configure()`.
 
 
 
@@ -163,7 +162,7 @@ class SqlAlchemyAuto:
 @cornerstone(name="db", order=0)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def post_endpoint_startup(self):
+    def after_endpoint_startup(self):
         create_all_tables(self.app)
 ```
 
@@ -186,29 +185,22 @@ Published Hive keys are injected the same way as on cornerstone hooks. `self.app
 
 please check in the code for usages.
 
-hooks can be set in any submodule of the endpoint package. `@component` is scanned the same way, so it does not have to live under `db`, `router`, or `service`.
+hooks can be set in any submodule of the endpoint package. `@component` and `@autoconfigure` are scanned the same way, so a bean factory does not have to live on the hook class.
 
 example/endpoints_package1/house_price/service/__init__.py
 
 ```python
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
-from fastapi_hive.ioc_framework.decorators import endpoint, provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
 
 
-@endpoint(name="house_price")
-class EndpointHooksImpl(EndpointHooks):
+@autoconfigure(name="house_price.model")
+class HousePriceModelAuto:
 
     @provides(HousePriceModel)
     def model(self):
         return HousePriceModel(DEFAULT_MODEL_PATH)
-
-    def startup(self):
-        pass
-
-    def shutdown(self):
-        pass
 ```
 
 The router receives the model with `Inject`:

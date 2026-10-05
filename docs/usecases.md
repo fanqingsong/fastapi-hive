@@ -87,19 +87,15 @@ example/endpoints_package1/house_price/service/__init__.py
 ```python
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
-from fastapi_hive.ioc_framework.decorators import endpoint, provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
 
 
-@endpoint(name="house_price")
-class EndpointHooksImpl(EndpointHooks):
+@autoconfigure(name="house_price.model")
+class HousePriceModelAuto:
 
     @provides(HousePriceModel)
     def model(self):
         return HousePriceModel(DEFAULT_MODEL_PATH)
-
-    def shutdown(self):
-        pass
 ```
 
 The predict route receives the loaded model through `Inject(HousePriceModel)`.
@@ -354,7 +350,7 @@ class SqlAlchemyAuto:
 @cornerstone(name="db", order=0)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def post_endpoint_startup(self):
+    def after_endpoint_startup(self):
         create_all_tables(self.app)
 ```
 

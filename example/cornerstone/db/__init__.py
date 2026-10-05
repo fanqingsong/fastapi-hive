@@ -44,5 +44,5 @@ class SqlAlchemyAuto:
 @cornerstone(name="db", order=0)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    def post_endpoint_startup(self):
+    def after_endpoint_startup(self):
         create_all_tables(self.app)

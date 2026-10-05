@@ -63,29 +63,17 @@ so the overview of precedure:
 #### Startup hooks calling flow:
 
 There are serveral stages in startup hooks calling stages:
-* call cornerstones' pre_endpoint_startup hooks one by one.
+* call cornerstones' before_endpoint_startup hooks one by one.
 * call endpoints' startup hooks one by one. `@endpoint` classes from any submodule of the package can be hooked.
 * mount collected routers (`select_routers` + `include_router`) when automatic mounting is enabled.
-* call cornerstones' post_endpoint_startup hooks one by one
+* call cornerstones' after_endpoint_startup hooks one by one
 
 The same is as with shutdown hooks calling logic.
 
 ![startup_flow](img/startup_flow.png)
 
 
-### Initialization Precedure of Request
+### Per-request setup
 
-Beside startup and shutdown hooks, maybe you also notice that there are two extra hooks (pre_endpoint_call/post_endpoint_call) in above picture.
-
-Yes, it is just for preparing some resource before handling request.
-
-For example, db.connect is expected before endpoint handle request, and db.disconnect is expected after endpoint handle request.
-
-It is implemented in a in-built http middleware.
-The flow is like below:
-
-    ---> request 
-    ---> cornerstones' pre_endpoint_call 
-    ---> endpoint excution 
-    ---> cornerstones' post_endpoint_call
+Cornerstone hooks do not run on each HTTP request. Register middleware from `configure()` when a request needs a resource opened before the endpoint and closed afterwards, for example a database session. Middleware can see the response, run cleanup when the endpoint raises, and nest in registration order.
 

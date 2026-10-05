@@ -1,11 +1,10 @@
 from example.endpoints_package2.house_price2.service.implement import HousePriceModel
 from example.endpoints_package2.house_price2.config import DEFAULT_MODEL_PATH
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
-from fastapi_hive.ioc_framework.decorators import endpoint, provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
 
 
-@endpoint(name="house_price2")
-class EndpointHooksImpl(EndpointHooks):
+@autoconfigure(name="house_price2.model")
+class HousePriceModelAuto:
 
     @provides(HousePriceModel)
     def model(self):

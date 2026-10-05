@@ -57,17 +57,18 @@ Decorate the hook class. `order` decides who runs first in the same phase. `prof
 
 Only decorated hook classes are loaded. Methods may be `def` or `async def`. `configure()` on a cornerstone must stay synchronous so middleware can be registered before the app starts. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
-For cornerstone
+Beans stay on an `@autoconfigure` class. Cornerstone hooks, such as `example/cornerstone/db`, stay on `@cornerstone`.
+
+For a cornerstone bean
 
 ```Python
 
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
-from fastapi_hive.ioc_framework.decorators import cornerstone, provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
 from example.cornerstone.auth.implement import validate_http_request
 
 
-@cornerstone(name="auth", order=100)
-class CornerstoneHooksImpl(CornerstoneHooks):
+@autoconfigure(name="hive.auth", order=100)
+class AuthAuto:
 
     @provides("auth.ok")
     def checker(self):
@@ -76,18 +77,19 @@ class CornerstoneHooksImpl(CornerstoneHooks):
 ```
 
 
-For endpoint
+Endpoint lifecycle stays on `@endpoint`. The model factory is separate:
+
+For an endpoint bean
 
 ```Python
 
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
-from fastapi_hive.ioc_framework.decorators import endpoint, provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
 from example.endpoints_package1.house_price.service.implement import HousePriceModel
 from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
 
 
-@endpoint(name="house_price")
-class EndpointHooksImpl(EndpointHooks):
+@autoconfigure(name="house_price.model")
+class HousePriceModelAuto:
 
     @provides(HousePriceModel)
     def model(self):

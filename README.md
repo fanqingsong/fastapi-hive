@@ -208,19 +208,19 @@ generated URL. Set `HIDE_ENDPOINT_IN_TAG` to control OpenAPI tag names.
 
 ### 4. Add lifecycle behavior
 
-Decorate a hook class in the endpoint package. Put `@provides` on a dedicated
-provider method — not on `startup` / `configure` / other lifecycle hooks:
+Decorate a hook class in the endpoint package for lifecycle only. Put
+`@provides` on an `@autoconfigure` class, not on `startup` / `configure` /
+other lifecycle hooks:
 
 ```python
 # my_app/endpoints/house_price/service/__init__.py
-from fastapi_hive.ioc_framework.decorators import endpoint, provides
-from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
+from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
 
 from .implement import HousePriceModel
 
 
-@endpoint(name="house_price")
-class HousePriceService(EndpointHooks):
+@autoconfigure(name="house_price.model")
+class HousePriceModelAuto:
     @provides(HousePriceModel)
     def model(self):
         return HousePriceModel("model.joblib")

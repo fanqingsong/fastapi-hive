@@ -139,11 +139,7 @@ class IoCFramework:
             request.state.cornerstones = self._get_initial_cornerstone_state()
             request.state.hive = HiveRegistry()
 
-            await self._cornerstone_hook_caller.run_pre_call_hook(request)
-
             response = await call_next(request)
-
-            await self._cornerstone_hook_caller.run_post_call_hook(request)
 
             process_time = time.time() - start_time
 
@@ -197,13 +193,13 @@ class IoCFramework:
         async def startup() -> None:
             logger.info("running startup handlers...")
 
-            await self._cornerstone_hook_caller.run_pre_startup_hook()
+            await self._cornerstone_hook_caller.run_before_startup_hook()
             await self._endpoint_hook_caller.run_startup_hook()
 
             if self._ioc_config.ROUTER_MOUNT_AUTOMATED:
                 self._endpoint_router_mounter.mount()
 
-            await self._cornerstone_hook_caller.run_post_startup_hook()
+            await self._cornerstone_hook_caller.run_after_startup_hook()
 
         return startup
 
@@ -211,9 +207,9 @@ class IoCFramework:
         async def shutdown() -> None:
             logger.info("running shutdown handlers...")
 
-            await self._cornerstone_hook_caller.run_pre_shutdown_hook()
+            await self._cornerstone_hook_caller.run_before_shutdown_hook()
             await self._endpoint_hook_caller.run_shutdown_hook()
-            await self._cornerstone_hook_caller.run_post_shutdown_hook()
+            await self._cornerstone_hook_caller.run_after_shutdown_hook()
 
         return shutdown
 

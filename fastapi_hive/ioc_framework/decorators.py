@@ -53,12 +53,10 @@ def _attach(cls: type, role: str, name: str, order: int, profiles, enabled_when,
 
 LIFECYCLE_METHODS = frozenset({
     "configure",
-    "pre_endpoint_startup",
-    "post_endpoint_startup",
-    "pre_endpoint_shutdown",
-    "post_endpoint_shutdown",
-    "pre_endpoint_call",
-    "post_endpoint_call",
+    "before_endpoint_startup",
+    "after_endpoint_startup",
+    "before_endpoint_shutdown",
+    "after_endpoint_shutdown",
     "startup",
     "shutdown",
 })
@@ -408,12 +406,9 @@ async def invoke(instance: Any, method_name: str, context, request=None, extras=
     return await call_injected(method, context, request, extras)
 
 
-def bind_cornerstone(instance: Any, app, meta, request=None) -> None:
+def bind_cornerstone(instance: Any, app, meta) -> None:
     instance.app = app
     instance.cornerstone = meta
-    if request is None:
-        return
-    instance.request = request
 
 
 def bind_endpoint(instance: Any, app, meta) -> None:

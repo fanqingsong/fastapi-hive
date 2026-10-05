@@ -279,7 +279,7 @@ def test_mixed_sync_configure_and_async_startup():
         def configure(self):
             return "configured"
 
-        async def pre_endpoint_startup(self):
+        async def before_endpoint_startup(self):
             return "ready"
 
     context = HiveContext()
@@ -288,7 +288,7 @@ def test_mixed_sync_configure_and_async_startup():
     assert invoke_sync(instance, "configure", context) == "configured"
     context.refresh()
     assert context.get("db") == "engine"
-    assert asyncio.run(invoke(instance, "pre_endpoint_startup", context)) == "ready"
+    assert asyncio.run(invoke(instance, "before_endpoint_startup", context)) == "ready"
 
 
 def test_class_can_publish_multiple_app_providers():

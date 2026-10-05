@@ -25,7 +25,12 @@ def get_app() -> FastAPI:
 
     @fast_app.get("/")
     def get_root():
-        return "Go to docs URL to look up API: http://localhost:8000/docs"
+        return {
+            "docs": "/docs",
+            "feature_tour": "/api/showcase/tour",
+            "manual_mount": "/api/manual/ping",
+            "collected_routers": "/hive/routers",
+        }
 
     @fast_app.get("/hive/routers")
     def list_collected_routers():

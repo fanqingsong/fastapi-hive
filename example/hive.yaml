@@ -9,13 +9,24 @@ hive:
   endpoint_package_paths:
     - ./endpoints_package1
     - ./endpoints_package2
+  # Global automatic mounting stays on. manual_mount opts out with mount=False.
   router_mount_automated: true
   hide_endpoint_container_in_api: true
   hide_endpoint_in_api: false
   hide_endpoint_in_tag: true
+  # Profiles gate @cornerstone / @endpoint / @conditional(profiles=...).
+  active_profiles:
+    - demo
+  # Dotted keys read by enabled_when.
   features:
     db: true
+    audit: true
   autoconfigure:
     enabled: true
-    imports: []
-    exclude: []
+    # Same loader as a hive.autoconfigure entry point. The class lives outside
+    # the scanned packages, so it is loaded only through this list.
+    imports:
+      - example.starters.imported_auto:ImportedAuto
+    # showcase.skipped is scanned, then dropped by name.
+    exclude:
+      - showcase.skipped

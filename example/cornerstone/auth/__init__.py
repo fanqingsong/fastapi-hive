@@ -1,10 +1,9 @@
-from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
-from fastapi_hive.ioc_framework.decorators import cornerstone, provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, provides
 from example.cornerstone.auth.implement import validate_http_request
 
 
-@cornerstone(name="auth", order=100)
-class CornerstoneHooksImpl(CornerstoneHooks):
+@autoconfigure(name="hive.auth", order=100)
+class AuthAuto:
 
     @provides("auth.ok")
     def checker(self):
