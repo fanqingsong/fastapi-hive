@@ -13,6 +13,17 @@ nav:
 - usecases.md
 - reference.md
 - model_description.md
+markdown_extensions:
+- toc:
+    permalink: true
+- tables
+- pymdownx.highlight:
+    anchor_linenums: true
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format
 
 
 
