@@ -53,7 +53,7 @@ Code Folder Structure
 
 From code view, the startup or shutdown hooks should be set in __init__.py if needed.
 
-Decorate the hook class. `order` decides who runs first in the same phase. `profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` reads a dotted key from `FEATURES`. `@provides` registers the method return value on the app registry. `@request_provides` registers it on the current request.
+Decorate the hook class. `order` decides who runs first in the same phase. `profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` reads a dotted key from `FEATURES`. `@provides` / `@component` register beans on `HiveContext`. Lifecycle methods cannot use `@provides`. Hook parameters and `Inject` resolve the same keys. `@autoconfigure` + `@conditional` load optional starters.
 
 Only decorated hook classes are loaded. Methods may be `def` or `async def`. `configure()` on a cornerstone must stay synchronous so middleware can be registered before the app starts. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
@@ -63,20 +63,15 @@ For cornerstone
 
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
 from fastapi_hive.ioc_framework.decorators import cornerstone, provides
-from example.cornerstone.auth.implement import validate_request
+from example.cornerstone.auth.implement import validate_http_request
 
 
 @cornerstone(name="auth", order=100)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    @provides("auth.validate_request")
-    def pre_endpoint_startup(self):
-        print("call pre startup from CornerstoneHooksImpl!!!")
-        print(self.app)
-        return validate_request
-
-    def post_endpoint_startup(self):
-        print("call post startup from CornerstoneHooksImpl!!!")
+    @provides("auth.ok")
+    def checker(self):
+        return validate_http_request
 
 ```
 
@@ -95,23 +90,18 @@ from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
 class EndpointHooksImpl(EndpointHooks):
 
     @provides(HousePriceModel)
-    def startup(self):
-        print("call pre startup from EndpointHooksImpl!!!")
-        print(self.app)
+    def model(self):
         return HousePriceModel(DEFAULT_MODEL_PATH)
-
-    def shutdown(self):
-        print("call pre shutdown from EndpointHooksImpl!!!")
 
 ```
 
-Routes read registered objects with `DependsHive`:
+Routes read registered objects with `Inject`:
 
 ```Python
 
-from fastapi_hive.ioc_framework.registry import DependsHive
+from fastapi_hive.ioc_framework.registry import Inject
 
-def post_predict(model: HousePriceModel = DependsHive(HousePriceModel)):
+def post_predict(model: HousePriceModel = Inject(HousePriceModel)):
     return model.predict(block_data)
 
 ```

@@ -10,6 +10,7 @@ from fastapi_hive.ioc_framework.decorators import (
     MountSpec,
     RouterBinding,
     collect_hooks,
+    collect_providers,
     collect_routers,
     cornerstone,
     create_hook,
@@ -22,9 +23,11 @@ from fastapi_hive.ioc_framework.decorators import (
     select_hooks,
     select_routers,
 )
+from fastapi_hive.ioc_framework.beans import definitions_from_class
+from fastapi_hive.ioc_framework.context import HiveContext
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
-from fastapi_hive.ioc_framework.registry import DependsHive, HiveRegistry
+from fastapi_hive.ioc_framework.registry import Inject, HiveRegistry, resolve
 
 
 def test_collect_decorated_hook_skips_undecorated_class():
@@ -78,18 +81,20 @@ def test_select_hooks_sorts_and_filters():
     assert [cls.__hive__.name for cls, _ in selected] == ["flagged", "early", "late"]
 
 
-def test_provides_is_visible_through_depends_hive():
+def test_provides_is_visible_through_inject():
     class Owner:
         @provides("model")
-        def startup(self):
+        def model(self):
             return "loaded"
 
     app = FastAPI()
-    app.state.hive = HiveRegistry()
-    asyncio.run(invoke(Owner(), "startup", app.state.hive))
+    context = HiveContext(app)
+    context.add_definitions(definitions_from_class(Owner, "scan"))
+    context.refresh()
+    app.state.hive = context
 
     @app.get("/model")
-    def read_model(model: str = DependsHive("model")):
+    def read_model(model: str = Inject("model")):
         return {"model": model}
 
     with TestClient(app) as client:
@@ -97,6 +102,26 @@ def test_provides_is_visible_through_depends_hive():
 
     assert response.status_code == 200
     assert response.json() == {"model": "loaded"}
+
+
+def test_depends_hive_invokes_request_callable():
+    from starlette.requests import Request
+
+    def checker(request: Request) -> str:
+        return request.headers.get("x-name", "anon")
+
+    app = FastAPI()
+    app.state.hive = HiveRegistry()
+    app.state.hive.register("auth.ok", checker)
+
+    @app.get("/who")
+    def who(name: str = Inject("auth.ok")):
+        return {"name": name}
+
+    with TestClient(app) as client:
+        response = client.get("/who", headers={"x-name": "hive"})
+
+    assert response.json() == {"name": "hive"}
 
 
 def test_depends_hive_prefers_request_registry():
@@ -111,7 +136,7 @@ def test_depends_hive_prefers_request_registry():
         return await call_next(request)
 
     @app.get("/item")
-    def read_item(item: str = DependsHive("item")):
+    def read_item(item: str = Inject("item")):
         return {"item": item}
 
     with TestClient(app) as client:
@@ -230,14 +255,91 @@ def test_invoke_sync_rejects_async_configure():
 def test_mixed_sync_configure_and_async_startup():
     class Mixed(CornerstoneHooks):
         @provides("db")
-        def configure(self):
+        def engine(self):
             return "engine"
+
+        def configure(self):
+            return "configured"
 
         async def pre_endpoint_startup(self):
             return "ready"
 
-    registry = HiveRegistry()
+    context = HiveContext()
+    context.add_definitions(definitions_from_class(Mixed, "scan"))
     instance = Mixed()
-    invoke_sync(instance, "configure", registry)
-    assert registry.get("db") == "engine"
-    assert asyncio.run(invoke(instance, "pre_endpoint_startup", registry)) == "ready"
+    assert invoke_sync(instance, "configure", context) == "configured"
+    context.refresh()
+    assert context.get("db") == "engine"
+    assert asyncio.run(invoke(instance, "pre_endpoint_startup", context)) == "ready"
+
+
+def test_class_can_publish_multiple_app_providers():
+    class Owner:
+        @provides("one")
+        def first(self):
+            return 1
+
+        @provides("two")
+        def second(self):
+            return 2
+
+    context = HiveContext()
+    assert [spec.key for spec in collect_providers(Owner)] == ["one", "two"]
+    context.add_definitions(definitions_from_class(Owner, "scan"))
+    context.refresh()
+    assert context.get("one") == 1
+    assert context.get("two") == 2
+
+
+def test_request_registry_overrides_app_in_resolve():
+    app_registry = HiveRegistry()
+    app_registry.register("item", "app")
+    request_registry = HiveRegistry()
+    request_registry.register("item", "request")
+    assert resolve("item", app_registry, request_registry) == "request"
+
+
+def test_hook_parameter_injection_from_type_and_inject():
+    registry = HiveRegistry()
+    registry.register("name", "hive")
+    registry.register(Token, Token())
+
+    class Owner:
+        def startup(self, token: Token, name: str = Inject("name")):
+            return token, name
+
+    token, name = asyncio.run(invoke(Owner(), "startup", registry))
+    assert isinstance(token, Token)
+    assert name == "hive"
+
+
+def test_provides_on_lifecycle_method_raises():
+    with pytest.raises(TypeError, match="lifecycle method"):
+        @endpoint(name="bad")
+        class BadHooks(EndpointHooks):
+            @provides("model")
+            def startup(self):
+                return "nope"
+
+
+def test_missing_dependency_raises_key_error():
+    with pytest.raises(KeyError, match="missing"):
+        resolve("missing", HiveRegistry())
+
+
+def test_create_hook_and_depends_hive_share_instance():
+    registry = HiveRegistry()
+    token = Token()
+    registry.register(Token, token)
+    instance = create_hook(NotesHooks, registry)
+    assert instance.token is resolve(Token, registry)
+
+    app = FastAPI()
+    app.state.hive = registry
+
+    @app.get("/token")
+    def read_token(value: Token = Inject(Token)):
+        return {"same": value is token}
+
+    with TestClient(app) as client:
+        assert client.get("/token").json() == {"same": True}

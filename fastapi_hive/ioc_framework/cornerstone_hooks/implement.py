@@ -7,7 +7,13 @@ from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from fastapi import FastAPI
 from abc import ABC
 from starlette.requests import Request
-from fastapi_hive.ioc_framework.decorators import bind_cornerstone, create_hook, invoke, invoke_sync, select_hooks
+from fastapi_hive.ioc_framework.decorators import (
+    bind_cornerstone,
+    create_hook,
+    invoke,
+    invoke_sync,
+    select_hooks,
+)
 
 
 class CornerstoneHooks(ABC):
@@ -33,8 +39,6 @@ class CornerstoneHooks(ABC):
         self._app: Optional[FastAPI] = None
         self._cornerstone: Optional[CornerstoneMeta] = None
         self._request: Optional[Request] = None
-        self._app_state: Optional[dict] = None
-        self._request_state: Optional[dict] = None
 
     @property
     def app(self):
@@ -59,22 +63,6 @@ class CornerstoneHooks(ABC):
     @request.setter
     def request(self, value: Request):
         self._request = value
-
-    @property
-    def app_state(self):
-        return self._app_state
-
-    @app_state.setter
-    def app_state(self, value: dict):
-        self._app_state = value
-
-    @property
-    def request_state(self):
-        return self._request_state
-
-    @request_state.setter
-    def request_state(self, value: dict):
-        self._request_state = value
 
     def configure(self):
         """Assemble-time only. Register middleware. Must not be async."""
@@ -126,24 +114,30 @@ class CornerstoneHookCaller:
                 pairs.append((cls, meta))
         return select_hooks(pairs, self._ioc_config)
 
+    def _extras(self, meta, request: Request = None):
+        extras = {FastAPI: self._app, CornerstoneMeta: meta}
+        if request is not None:
+            extras[Request] = request
+        return extras
+
     def _bind(self, cls, meta, request: Request = None):
-        app_registry = getattr(self._app.state, "hive", None)
-        instance = create_hook(cls, app_registry)
+        context = getattr(self._app.state, "hive", None)
+        extras = self._extras(meta, request)
+        instance = create_hook(cls, context, extras, request)
         bind_cornerstone(instance, self._app, meta, request)
-        return instance, app_registry
+        return instance, context, extras
 
     def run_configure(self):
         logger.info("running cornerstone_hooks configure...")
         for cls, meta in self._pairs():
-            instance, app_registry = self._bind(cls, meta)
-            invoke_sync(instance, "configure", app_registry)
+            instance, context, extras = self._bind(cls, meta)
+            invoke_sync(instance, "configure", context, extras=extras)
 
     async def _run(self, method_name: str, request: Request = None):
-        app_registry = getattr(self._app.state, "hive", None)
-        request_registry = getattr(request.state, "hive", None) if request is not None else None
+        context = getattr(self._app.state, "hive", None)
         for cls, meta in self._pairs():
-            instance, _ = self._bind(cls, meta, request)
-            await invoke(instance, method_name, app_registry, request_registry)
+            instance, _, extras = self._bind(cls, meta, request)
+            await invoke(instance, method_name, context, request, extras)
 
     async def run_pre_startup_hook(self):
         logger.info("running cornerstone_hooks pre endpoint startup...")

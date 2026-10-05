@@ -138,6 +138,7 @@ class EndpointContainer:
                     one_endpoint_entity,
                 ):
                     hooks.extend(collect_hooks(module, role="endpoint"))
+
                 endpoint_instance.hooks = hooks
                 endpoint_instance.mount_spec = resolve_mount(hooks)
                 endpoint_instance.routers = collect_routers(

@@ -15,6 +15,9 @@ All configuarable parameters are listed below.
 | API_PREFIX | all api prefix, usual for version, such as "v1" | "" |
 | ACTIVE_PROFILES | profiles that enable a decorated module | [] |
 | FEATURES | feature flags read by enabled_when | {} |
+| AUTOCONFIGURE_ENABLED | load `hive.autoconfigure` entry points and imports | True |
+| AUTOCONFIGURE_IMPORTS | extra `module:Class` autoconfigure paths | [] |
+| AUTOCONFIGURE_EXCLUDE | skip autoconfigure by name or `module:Class` | [] |
 | ROUTER_MOUNT_AUTOMATED | if router mounted automatically | True |
 | HIDE_ENDPOINT_CONTAINER_IN_API | if endpoint container folder name showed in API | False |
 | HIDE_ENDPOINT_IN_API | if endpoint name showed in API | Flase |
@@ -70,12 +73,19 @@ Decorate the hook class so the container can discover it. Undecorated classes ar
 | --- | --- |
 | `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `configure()` runs while the app is assembled and must be synchronous. Other hooks run from the async lifecycle. |
 | `@endpoint(name, order=0, prefix=None, tags=None, mount=True, profiles=None, enabled_when=None)` | business module. `prefix` and `tags` override automatic router mounting. `mount=False` leaves mounting to `startup`. |
-| `@provides(key)` | register the method return value on the application registry. `key` is a type or a string. |
-| `@request_provides(key)` | register the method return value on the current request registry. |
+| `@provides(key, scope="app")` | register a factory method as a bean. `scope` is `app`, `request`, or `transient`. Lifecycle methods cannot use `@provides`. |
+| `@component` | register a class constructor as a bean. Default key is the class. |
+| `@autoconfigure(name, order=0, after=(), before=())` | mark a starter class. Loaded from scan, entry points, or `AUTOCONFIGURE_IMPORTS`. |
+| `@conditional(...)` | AND conditions: `on_import`, `on_missing`, `on_bean`, `enabled_when`, `profiles`, `on_property`. |
+| `Inject(key)` | FastAPI dependency that calls `HiveContext.get`. |
 
-`profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` is a dotted key in `FEATURES`; a missing or false value skips the module. Hooks in one phase run by ascending `order`, then by name.
+`profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` is a dotted key in `FEATURES`.
 
-Routes read a published value with `DependsHive(key)`. The request registry is checked first, then the application registry.
+Bean creation: request cache, then app cache, then factory. App-scoped beans are created at `refresh()`. Request-scoped beans are created on first `get` in that request. Duplicate keys without a single `primary` fail at startup. Cycles fail. Missing keys raise `KeyError`.
+
+Conditions: first `on_import` / `profiles` / `enabled_when` / `on_property`; then autoconfigure `after`/`before`; then rounds of `on_bean` / `on_missing`. A user-provided bean with the same key suppresses a starter that declares `on_missing`.
+
+Routes should use `Inject(key)` because FastAPI builds the dependency graph at import time. Hook parameters can use type hints. If a resolved value is a callable whose only required argument is `Request`, `Inject` calls it.
 
 ## router collection
 
@@ -97,29 +107,15 @@ Set `prefix` / `tags` on `@endpoint` to override the generated URL. See `example
 
 The framework provides `CornerstoneHooks`. Decorate a subclass with `@cornerstone`. Hook methods may be `def` or `async def`, except `configure()`, which must stay synchronous. Blocking I/O should use `anyio.to_thread.run_sync`.
 
-the following is the visibility of dependency objects regarding to each hook.
+Hook methods and `__init__` receive dependencies by parameter. Built-in extras:
 
-| hook name | app | cornerstone | request | app_state  | request_state |
-| --- | --- | --- | --- | --- | --- |
-| configure | Yes | Yes | No | Yes | No |
-| pre_endpoint_startup | Yes | Yes | No | Yes | No |
-| post_endpoint_startup | Yes | Yes | No | Yes | No |
-| pre_endpoint_shutdown | Yes | Yes | No | Yes | No |
-| post_endpoint_shutdown | Yes | Yes | No | Yes |  No |
-| pre_endpoint_call | Yes | Yes | Yes | Yes | Yes |
-| post_endpoint_call | Yes | Yes | Yes | Yes | Yes |
+| name | type | meaning |
+| --- | --- | --- |
+| app | `FastAPI` | the FastAPI application |
+| cornerstone | `CornerstoneMeta` | metadata of this cornerstone |
+| request | `Request` | the incoming HTTP request (`pre_endpoint_call` / `post_endpoint_call` only) |
 
-If the visibility of one dependency object is Yes to one hook, i.e. this dependency can be used in the hook.
-
-dependency objects are injected by framework, each object has its meaning like below:
-
-| name | meaning |
-| --- | --- |
-| app | the instance of FastAPI |
-| cornerstone | the meta data of the cornerstone that hook belong to |
-| request | the incoming http request object |
-| app_state | this cornerstone's dict in `app.state.cornerstones`. Prefer `@provides` and `DependsHive` when a router needs the value. |
-| request_state | this cornerstone's dict in `request.state.cornerstones`. Prefer `@request_provides` and `DependsHive` for request-scoped values. |
+Published Hive keys are injected the same way: a type hint or `Inject(key)`. `self.app` / `self.cornerstone` / `self.request` remain available as context after bind.
 
 
 
@@ -130,8 +126,9 @@ hooks can be set in cornerstone init file.
 example/cornerstone/db/__init__.py
 
 ```python
+from fastapi import FastAPI
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
-from fastapi_hive.ioc_framework.decorators import cornerstone, provides, request_provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, conditional, cornerstone, provides
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi_sqlalchemy import db
 
@@ -147,22 +144,27 @@ class LazyDBSession:
         return getattr(self._database.session, name)
 
 
+@autoconfigure(name="hive.db")
+@conditional(on_import="fastapi_sqlalchemy", enabled_when="db")
+class SqlAlchemyAuto:
+
+    def configure(self, app: FastAPI):
+        add_db_middleware(app, None)
+
+    @provides("db")
+    def engine(self):
+        return db
+
+    @provides("db.session", scope="request")
+    def session(self):
+        return LazyDBSession(db)
+
+
 @cornerstone(name="db", order=0)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    @provides("db")
-    def configure(self):
-        add_db_middleware(self.app, self.cornerstone)
-        self.app_state['db'] = db
-        return db
-
     def post_endpoint_startup(self):
         create_all_tables(self.app)
-
-    @request_provides("db.session")
-    def pre_endpoint_call(self):
-        self.request_state['db'] = db
-        return LazyDBSession(db)
 ```
 
 
@@ -172,22 +174,14 @@ class CornerstoneHooksImpl(CornerstoneHooks):
 
 The framework provides `EndpointHooks`. Decorate a subclass with `@endpoint`. `startup` and `shutdown` may be `def` or `async def`.
 
-the following is the visibility of dependency objects regarding to each hook.
+Hook methods and `__init__` receive dependencies by parameter. Built-in extras:
 
-| hook name | app | endpoint | app_state |
-| --- | --- | --- | --- |
-| startup | Yes | Yes | Yes |
-| shutdown | Yes | Yes | Yes |
+| name | type | meaning |
+| --- | --- | --- |
+| app | `FastAPI` | the FastAPI application |
+| endpoint | `EndpointMeta` | metadata of this endpoint. `endpoint.routers` is the list collected from the `router` subpackage. |
 
-If the visibility of one dependency object is Yes to one hook, i.e. this dependency can be used in the hook.
-
-dependency objects are injected by framework, each object has its meaning like below:
-
-| name | meaning |
-| --- | --- |
-| app | the instance of FastAPI |
-| endpoint | the meta data of the endpoint that hook belong to. `endpoint.routers` is the list collected from the `router` subpackage. |
-| app_state | this endpoint's dict in `app.state.endpoints`. Prefer `@provides` and `DependsHive` when a router needs the value. |
+Published Hive keys are injected the same way as on cornerstone hooks. `self.app` / `self.endpoint` remain available as context after bind.
 
 
 please check in the code for usages.
@@ -207,19 +201,22 @@ from fastapi_hive.ioc_framework.decorators import endpoint, provides
 class EndpointHooksImpl(EndpointHooks):
 
     @provides(HousePriceModel)
-    def startup(self):
+    def model(self):
         return HousePriceModel(DEFAULT_MODEL_PATH)
+
+    def startup(self):
+        pass
 
     def shutdown(self):
         pass
 ```
 
-The router receives the model with `DependsHive`:
+The router receives the model with `Inject`:
 
 ```python
-from fastapi_hive.ioc_framework.registry import DependsHive
+from fastapi_hive.ioc_framework.registry import Inject
 
-def post_predict(model: HousePriceModel = DependsHive(HousePriceModel)):
+def post_predict(model: HousePriceModel = Inject(HousePriceModel)):
     return model.predict(block_data)
 ```
 

@@ -5,6 +5,7 @@ from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
+from fastapi_hive.ioc_framework.autowire import autowire_router
 from fastapi_hive.ioc_framework.decorators import resolve_router_target, select_routers
 
 
@@ -33,7 +34,10 @@ class EndpointRouterMounter:
         logger.info("running endpoint router mounter.")
 
         app: FastAPI = self._app
+        context = getattr(app.state, "hive", None)
         for binding, meta in self._pairs():
             logger.info(f"router mounting, endpoint name = {meta.container_name}.{meta.name}")
+            if context is not None:
+                autowire_router(binding.router, context)
             prefix, tags = resolve_router_target(meta, binding, self._ioc_config)
             app.include_router(binding.router, tags=tags, prefix=prefix)

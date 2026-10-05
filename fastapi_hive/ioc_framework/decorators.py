@@ -2,6 +2,11 @@ import inspect
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Type, get_type_hints
 
+from fastapi.params import Depends as DependsParam
+
+from fastapi_hive.ioc_framework.beans import BeanCondition
+from fastapi_hive.ioc_framework.registry import HiveKey
+
 
 @dataclass
 class HiveMeta:
@@ -46,10 +51,25 @@ def _attach(cls: type, role: str, name: str, order: int, profiles, enabled_when,
     return cls
 
 
+LIFECYCLE_METHODS = frozenset({
+    "configure",
+    "pre_endpoint_startup",
+    "post_endpoint_startup",
+    "pre_endpoint_shutdown",
+    "post_endpoint_shutdown",
+    "pre_endpoint_call",
+    "post_endpoint_call",
+    "startup",
+    "shutdown",
+})
+
+
 def cornerstone(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None,
                 enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
-        return _attach(cls, "cornerstone", name, order, profiles, enabled_when, None, None, True)
+        _attach(cls, "cornerstone", name, order, profiles, enabled_when, None, None, True)
+        collect_providers(cls)
+        return cls
 
     return wrap
 
@@ -59,23 +79,90 @@ def endpoint(name: str, order: int = 0, prefix: Optional[str] = None,
              profiles: Optional[Sequence[str]] = None,
              enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
-        return _attach(cls, "endpoint", name, order, profiles, enabled_when, prefix, tags, mount)
+        _attach(cls, "endpoint", name, order, profiles, enabled_when, prefix, tags, mount)
+        collect_providers(cls)
+        return cls
 
     return wrap
 
 
-def provides(key: Any) -> Callable:
+def provides(key: Any, scope: str = "app") -> Callable:
+    if scope not in ("app", "request", "transient"):
+        raise ValueError(f"provides scope must be 'app', 'request' or 'transient', got {scope!r}")
+
     def wrap(fn: Callable) -> Callable:
         fn.__hive_provides__ = key
+        fn.__hive_provides_scope__ = scope
         return fn
 
     return wrap
 
 
-def request_provides(key: Any) -> Callable:
-    def wrap(fn: Callable) -> Callable:
-        fn.__hive_request_provides__ = key
-        return fn
+class Qualifier:
+    def __init__(self, name: Any):
+        self.name = name
+
+
+def component(key: Any = None, scope: str = "app", primary: bool = False, lazy: bool = False) -> Callable:
+    if scope not in ("app", "request", "transient"):
+        raise ValueError(f"component scope must be 'app', 'request' or 'transient', got {scope!r}")
+
+    def wrap(cls: type) -> type:
+        cls.__hive_component__ = {
+            "key": key if key is not None else cls,
+            "scope": scope,
+            "primary": primary,
+            "lazy": lazy,
+        }
+        return cls
+
+    return wrap
+
+
+def autoconfigure(
+    name: str,
+    order: int = 0,
+    after: Optional[Sequence[str]] = None,
+    before: Optional[Sequence[str]] = None,
+) -> Callable:
+    def wrap(cls: type) -> type:
+        existing = getattr(cls, "__hive_autoconfigure__", None) or {}
+        cls.__hive_autoconfigure__ = {
+            "name": name,
+            "order": order,
+            "after": list(after or existing.get("after") or []),
+            "before": list(before or existing.get("before") or []),
+            "conditions": existing.get("conditions") or getattr(cls, "__hive_conditional__", None),
+        }
+        collect_providers(cls)
+        return cls
+
+    return wrap
+
+
+def conditional(
+    on_import: Optional[str] = None,
+    on_missing: Any = None,
+    on_bean: Any = None,
+    enabled_when: Optional[str] = None,
+    profiles: Optional[Sequence[str]] = None,
+    on_property: Optional[str] = None,
+) -> Callable:
+    condition = BeanCondition(
+        on_import=on_import,
+        on_missing=on_missing,
+        on_bean=on_bean,
+        enabled_when=enabled_when,
+        profiles=list(profiles) if profiles else None,
+        on_property=on_property,
+    )
+
+    def wrap(obj):
+        auto = getattr(obj, "__hive_autoconfigure__", None)
+        if isinstance(auto, dict):
+            auto["conditions"] = condition
+        obj.__hive_conditional__ = condition
+        return obj
 
     return wrap
 
@@ -174,21 +261,102 @@ def resolve_mount(classes: Sequence[type]) -> MountSpec:
     return MountSpec()
 
 
-def create_hook(cls: Type, registry) -> Any:
+@dataclass
+class ProviderSpec:
+    name: str
+    key: Any
+    scope: str
+
+
+def _callable_func(value: Any) -> Optional[Callable]:
+    if isinstance(value, (staticmethod, classmethod)):
+        return value.__func__
+    if inspect.isfunction(value) or inspect.ismethod(value):
+        return value
+    return None
+
+
+def collect_providers(cls: type) -> List[ProviderSpec]:
+    specs = {}
+    for klass in reversed(cls.__mro__):
+        if klass is object:
+            continue
+        for name, value in klass.__dict__.items():
+            func = _callable_func(value)
+            if func is None:
+                continue
+            key = getattr(func, "__hive_provides__", None)
+            if name in LIFECYCLE_METHODS and key is not None:
+                raise TypeError(
+                    f"{cls.__name__}.{name} is a lifecycle method and cannot use @provides"
+                )
+            if key is None:
+                specs.pop(name, None)
+                continue
+            specs[name] = ProviderSpec(
+                name=name,
+                key=key,
+                scope=getattr(func, "__hive_provides_scope__", "app"),
+            )
+    return list(specs.values())
+
+
+def _hive_key_from_default(default: Any) -> Any:
+    if isinstance(default, DependsParam) and isinstance(default.dependency, HiveKey):
+        return default.dependency.key
+    return None
+
+
+def _context_get(context, key, request=None):
+    if context is None:
+        raise KeyError(f"Hive dependency {key!r} is not registered")
+    if hasattr(context, "definitions"):
+        return context.get(key, request)
+    if hasattr(context, "has") and context.has(key):
+        return context.get(key)
+    raise KeyError(f"Hive dependency {key!r} is not registered")
+
+
+def resolve_params(func: Callable, context, request=None, extras=None) -> dict:
+    extras = extras or {}
     try:
-        hints = get_type_hints(cls.__init__)
+        hints = get_type_hints(func, include_extras=True)
     except Exception:
-        hints = {}
+        try:
+            hints = get_type_hints(func)
+        except Exception:
+            hints = {}
     kwargs = {}
-    signature = inspect.signature(cls.__init__)
-    for name, param in signature.parameters.items():
+    for name, param in inspect.signature(func).parameters.items():
         if name == "self":
             continue
-        hint = hints.get(name)
-        if hint is not None and registry is not None and registry.has(hint):
-            kwargs[name] = registry.get(hint)
-        elif param.default is inspect.Parameter.empty:
+        if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
             continue
+        hive_key = _hive_key_from_default(param.default)
+        if hive_key is not None:
+            kwargs[name] = _context_get(context, hive_key, request)
+            continue
+        hint = hints.get(name)
+        if hint is not None and hint in extras:
+            kwargs[name] = extras[hint]
+            continue
+        if hint is not None:
+            from fastapi_hive.ioc_framework.beans import qualifier_from_hint, unwrap_hint
+
+            key = qualifier_from_hint(hint) or unwrap_hint(hint)
+            if key in extras:
+                kwargs[name] = extras[key]
+                continue
+            kwargs[name] = _context_get(context, key, request)
+            continue
+        if param.default is not inspect.Parameter.empty:
+            continue
+        raise TypeError(f"Cannot inject parameter {name!r} of {func.__qualname__}")
+    return kwargs
+
+
+def create_hook(cls: Type, context, extras=None, request=None) -> Any:
+    kwargs = resolve_params(cls.__init__, context, request, extras)
     return cls(**kwargs)
 
 
@@ -198,55 +366,42 @@ def select_hooks(pairs: Sequence[Tuple[type, Any]], config) -> List[Tuple[type, 
     return chosen
 
 
-def publish_provides(method: Callable, result: Any, app_registry, request_registry) -> None:
-    if result is None:
-        return
-    func = getattr(method, "__func__", method)
-    provide_key = getattr(func, "__hive_provides__", None)
-    if provide_key is not None and app_registry is not None:
-        app_registry.register(provide_key, result)
-    request_key = getattr(func, "__hive_request_provides__", None)
-    if request_key is not None and request_registry is not None:
-        request_registry.register(request_key, result)
-
-
-def invoke_sync(instance: Any, method_name: str, app_registry, request_registry=None):
-    method = getattr(instance, method_name)
+def call_injected_sync(method: Callable, context, request=None, extras=None):
+    kwargs = resolve_params(method, context, request, extras)
     if inspect.iscoroutinefunction(method):
-        raise TypeError(
-            f"{type(instance).__name__}.{method_name} must be synchronous"
-        )
-    result = method()
+        raise TypeError(f"{method.__qualname__} must be synchronous")
+    result = method(**kwargs)
     if inspect.isawaitable(result):
-        raise TypeError(
-            f"{type(instance).__name__}.{method_name} must be synchronous"
-        )
-    publish_provides(method, result, app_registry, request_registry)
+        raise TypeError(f"{method.__qualname__} must be synchronous")
     return result
 
 
-async def invoke(instance: Any, method_name: str, app_registry, request_registry=None):
-    method = getattr(instance, method_name)
-    result = method()
+async def call_injected(method: Callable, context, request=None, extras=None):
+    kwargs = resolve_params(method, context, request, extras)
+    result = method(**kwargs)
     if inspect.isawaitable(result):
         result = await result
-    publish_provides(method, result, app_registry, request_registry)
     return result
+
+
+def invoke_sync(instance: Any, method_name: str, context, request=None, extras=None):
+    method = getattr(instance, method_name)
+    return call_injected_sync(method, context, request, extras)
+
+
+async def invoke(instance: Any, method_name: str, context, request=None, extras=None):
+    method = getattr(instance, method_name)
+    return await call_injected(method, context, request, extras)
 
 
 def bind_cornerstone(instance: Any, app, meta, request=None) -> None:
     instance.app = app
     instance.cornerstone = meta
-    pkg_path = f"{meta.container_name}.{meta.name}"
-    instance.app_state = app.state.cornerstones[pkg_path]
     if request is None:
         return
     instance.request = request
-    instance.request_state = request.state.cornerstones[pkg_path]
 
 
 def bind_endpoint(instance: Any, app, meta) -> None:
     instance.app = app
     instance.endpoint = meta
-    pkg_path = f"{meta.container_name}.{meta.name}"
-    instance.app_state = app.state.endpoints[pkg_path]

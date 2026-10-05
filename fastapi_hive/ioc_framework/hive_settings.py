@@ -21,6 +21,9 @@ _FIELD_ALIASES = {
     "api_prefix": "API_PREFIX",
     "active_profiles": "ACTIVE_PROFILES",
     "features": "FEATURES",
+    "autoconfigure_enabled": "AUTOCONFIGURE_ENABLED",
+    "autoconfigure_imports": "AUTOCONFIGURE_IMPORTS",
+    "autoconfigure_exclude": "AUTOCONFIGURE_EXCLUDE",
     "router_mount_automated": "ROUTER_MOUNT_AUTOMATED",
     "hide_endpoint_container_in_api": "HIDE_ENDPOINT_CONTAINER_IN_API",
     "hide_endpoint_in_api": "HIDE_ENDPOINT_IN_API",
@@ -52,6 +55,10 @@ def _parse_scalar(raw: str) -> Any:
         return None
     if text[0] in {'"', "'"} and text[-1] == text[0]:
         return text[1:-1]
+    if text == "[]":
+        return []
+    if text == "{}":
+        return {}
     lowered = text.lower()
     if lowered in ("true", "yes", "on"):
         return True
@@ -66,7 +73,7 @@ def _parse_env_value(field: str, raw: str) -> Any:
     text = raw.strip()
     if field == "FEATURES":
         return json.loads(text) if text else {}
-    if field in ("ENDPOINT_PACKAGE_PATHS", "ACTIVE_PROFILES"):
+    if field in ("ENDPOINT_PACKAGE_PATHS", "ACTIVE_PROFILES", "AUTOCONFIGURE_IMPORTS", "AUTOCONFIGURE_EXCLUDE"):
         if text.startswith("["):
             return json.loads(text)
         if not text:
@@ -149,9 +156,22 @@ def parse_config_file(path: Path) -> Dict[str, Any]:
     return normalize_mapping(data)
 
 
+def _flatten_nested(data: Dict[str, Any]) -> Dict[str, Any]:
+    flattened = dict(data)
+    autoconfigure = flattened.pop("autoconfigure", None)
+    if isinstance(autoconfigure, dict):
+        if "enabled" in autoconfigure:
+            flattened["autoconfigure_enabled"] = autoconfigure["enabled"]
+        if "imports" in autoconfigure:
+            flattened["autoconfigure_imports"] = autoconfigure["imports"]
+        if "exclude" in autoconfigure:
+            flattened["autoconfigure_exclude"] = autoconfigure["exclude"]
+    return flattened
+
+
 def normalize_mapping(data: Dict[str, Any]) -> Dict[str, Any]:
     normalized = {}
-    for key, value in data.items():
+    for key, value in _flatten_nested(data).items():
         field = normalize_key(str(key))
         if field is None:
             continue

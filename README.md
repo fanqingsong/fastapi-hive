@@ -93,9 +93,10 @@ that must be attached to each request.
   or from `@endpoint(prefix=..., tags=...)`.
 - **Lifecycle hooks** — run sync or async startup and shutdown code at application,
   module, and request boundaries.
-- **Shared and isolated state** — publish process-level values with `@provides`
-  and request-scoped values with `@request_provides`. Routes read them through
-  `DependsHive`.
+- **Bean graph and auto-configuration** — `@provides` / `@component` become
+  definitions; `HiveContext` creates them by type. Starters register via the
+  `hive.autoconfigure` entry point and `@conditional` (`on_import`, `on_missing`,
+  `on_bean`, `enabled_when`). Routes and hooks read beans through `Inject`.
 - **Incremental adoption** — wrap an existing FastAPI app with only a small
   bootstrap block.
 
@@ -207,8 +208,8 @@ generated URL. Set `HIDE_ENDPOINT_IN_TAG` to control OpenAPI tag names.
 
 ### 4. Add lifecycle behavior
 
-Decorate a hook class in the endpoint package. `@provides` registers the
-return value for later injection:
+Decorate a hook class in the endpoint package. Put `@provides` on a dedicated
+provider method — not on `startup` / `configure` / other lifecycle hooks:
 
 ```python
 # my_app/endpoints/house_price/service/__init__.py
@@ -221,23 +222,43 @@ from .implement import HousePriceModel
 @endpoint(name="house_price")
 class HousePriceService(EndpointHooks):
     @provides(HousePriceModel)
-    def startup(self):
+    def model(self):
         return HousePriceModel("model.joblib")
 ```
 
-The route receives that object through `DependsHive`:
+The route receives that object through `Inject`. FastAPI analyzes routes at
+import time, so route parameters need an `Inject` default (not a bare type):
 
 ```python
-from fastapi_hive.ioc_framework.registry import DependsHive
+from fastapi_hive.ioc_framework.registry import Inject
 
-def predict(model: HousePriceModel = DependsHive(HousePriceModel)):
+def predict(model: HousePriceModel = Inject(HousePriceModel)):
     return model.predict(payload)
 ```
 
-Cornerstones use `@cornerstone`. `pre_endpoint_call` and `post_endpoint_call`
-run around each request; mark a return value with `@request_provides` to
-publish it for that request only. `DependsHive` reads the request registry
-before the application registry.
+Cornerstones use `@cornerstone` for lifecycle side effects. App-scoped beans
+are created at bootstrap (`refresh`). Request-scoped beans are created on first
+`get` in that request. Hook methods and `__init__` take the same keys as
+parameters (type hints or `Inject`).
+
+Third-party starters:
+
+```toml
+[project.entry-points."hive.autoconfigure"]
+hive.db = "hive_sqlalchemy.auto:SqlAlchemyAuto"
+```
+
+```python
+@autoconfigure(name="hive.db")
+@conditional(on_import="sqlalchemy", on_missing="db", enabled_when="db")
+class SqlAlchemyAuto:
+    @provides("db")
+    def engine(self):
+        return create_engine(...)
+```
+
+A user `@provides("db")` wins over the starter because of `on_missing`. Exclude
+with `hive.autoconfigure.exclude: ["hive.db"]`.
 
 `order` controls hook order and the order collected routers are mounted.
 `profiles` and `enabled_when` skip a module unless `ACTIVE_PROFILES` or

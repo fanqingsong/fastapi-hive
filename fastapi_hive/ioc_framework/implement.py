@@ -14,6 +14,9 @@ from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHookCaller
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
+from fastapi_hive.ioc_framework.autoconfigure import build_definitions, scanned_modules
+from fastapi_hive.ioc_framework.context import HiveContext
+from fastapi_hive.ioc_framework.decorators import create_hook, invoke_sync
 from fastapi_hive.ioc_framework.registry import HiveRegistry
 from fastapi_hive.ioc_framework.hive_settings import (
     apply_hive_settings,
@@ -79,12 +82,28 @@ class IoCFramework:
 
         # set endpoint state as app state to expose for endpoint access, such as ML model instance
         self._app.state.endpoints = self._get_initial_endpoint_state()
-        self._app.state.hive = HiveRegistry()
+        context = HiveContext(self._app)
+        definitions, autos = build_definitions(
+            scanned_modules(self._cornerstone_container, self._endpoint_container),
+            self._ioc_config,
+        )
+        context.add_definitions(definitions)
+        context.autoconfigure_classes = autos
+        context.validate()
+        self._app.state.hive = context
 
         # Starlette requires middleware to be registered before the application
-        # starts. Cornerstone configure() installs shared middleware while the
-        # app is being assembled.
+        # starts. Cornerstone configure() and autoconfigure.configure() install
+        # shared middleware while the app is being assembled.
         self._cornerstone_hook_caller.run_configure()
+        extras = {FastAPI: self._app}
+        owners = {item.owner_cls for item in definitions}
+        for cls in autos:
+            if cls not in owners or not hasattr(cls, "configure"):
+                continue
+            instance = create_hook(cls, context, extras)
+            invoke_sync(instance, "configure", context, extras=extras)
+        context.refresh()
 
         self._add_event_handler()
 

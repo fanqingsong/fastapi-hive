@@ -79,7 +79,7 @@ But for the ideal code structure, we take assumption that all codes of one servi
 
 FastAPI hive really support this code structure, and meet the preloading requirement which is implemented by regiser startup event.
 
-in the below file, the startup hook loads the machine learning model before requests and registers it with `@provides`.
+in the below file, an app-scoped provider loads the machine learning model before requests and registers it with `@provides`.
 
 example/endpoints_package1/house_price/service/__init__.py
 
@@ -95,22 +95,21 @@ from fastapi_hive.ioc_framework.decorators import endpoint, provides
 class EndpointHooksImpl(EndpointHooks):
 
     @provides(HousePriceModel)
-    def startup(self):
+    def model(self):
         return HousePriceModel(DEFAULT_MODEL_PATH)
 
     def shutdown(self):
         pass
 ```
 
-The predict route receives the loaded model through `DependsHive(HousePriceModel)`.
+The predict route receives the loaded model through `Inject(HousePriceModel)`.
 
 example/endpoints_package1/house_price/router/implement.py
 
 ```python
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
-from example.cornerstone import auth
-from fastapi_hive.ioc_framework.registry import DependsHive
+from fastapi_hive.ioc_framework.registry import Inject
 
 from example.endpoints_package1.house_price.schema.payload import (
     HousePredictionPayload)
@@ -124,9 +123,9 @@ router = APIRouter()
 
 @router.post("/predict", response_model=HousePredictionResult, name="predict")
 def post_predict(
-    authenticated: bool = Depends(auth.validate_request),
+    model: HousePriceModel = Inject(HousePriceModel),
+    authenticated: bool = Inject("auth.ok"),
     block_data: HousePredictionPayload = None,
-    model: HousePriceModel = DependsHive(HousePriceModel),
 ) -> HousePredictionResult:
 
     prediction: HousePredictionResult = model.predict(block_data)
@@ -318,8 +317,9 @@ Secondly, create db initial file, and implement hooks call.
 example/cornerstone/db/__init__.py
 
 ```python
+from fastapi import FastAPI
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
-from fastapi_hive.ioc_framework.decorators import cornerstone, provides, request_provides
+from fastapi_hive.ioc_framework.decorators import autoconfigure, conditional, cornerstone, provides
 from example.cornerstone.db.implement import Base, create_all_tables, add_db_middleware
 from fastapi_sqlalchemy import db
 
@@ -335,22 +335,27 @@ class LazyDBSession:
         return getattr(self._database.session, name)
 
 
+@autoconfigure(name="hive.db")
+@conditional(on_import="fastapi_sqlalchemy", enabled_when="db")
+class SqlAlchemyAuto:
+
+    def configure(self, app: FastAPI):
+        add_db_middleware(app, None)
+
+    @provides("db")
+    def engine(self):
+        return db
+
+    @provides("db.session", scope="request")
+    def session(self):
+        return LazyDBSession(db)
+
+
 @cornerstone(name="db", order=0)
 class CornerstoneHooksImpl(CornerstoneHooks):
 
-    @provides("db")
-    def configure(self):
-        add_db_middleware(self.app, self.cornerstone)
-        self.app_state['db'] = db
-        return db
-
     def post_endpoint_startup(self):
         create_all_tables(self.app)
-
-    @request_provides("db.session")
-    def pre_endpoint_call(self):
-        self.request_state['db'] = db
-        return LazyDBSession(db)
 ```
 
 
@@ -382,19 +387,19 @@ from fastapi import APIRouter
 from typing import List
 from example.endpoints_package1.notes import schemas
 from example.endpoints_package1.notes import db as dbmodel
-from fastapi_hive.ioc_framework.registry import DependsHive
+from fastapi_hive.ioc_framework.registry import Inject
 
 router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Note], name="query notes.")
-def get_notes(skip: int = 0, limit: int = 100, db=DependsHive("db.session")):
+def get_notes(skip: int = 0, limit: int = 100, db=Inject("db.session")):
     notes = db.query(dbmodel.Note).offset(skip).limit(limit).all()
     return notes
 
 
 @router.post("", response_model=schemas.Note, name="create note")
-def create_note(note: schemas.NoteIn, db=DependsHive("db.session")):
+def create_note(note: schemas.NoteIn, db=Inject("db.session")):
     db_note = dbmodel.Note(text=note.text, completed=note.completed)
     db.add(db_note)
     db.commit()

@@ -51,7 +51,11 @@ FastAPI Hive Framework loads packages of cornerstones and endpoints, It covers t
 so the overview of precedure:
 * loading cornerstones
 * loading endpoints (hooks and `router` modules in one pass)
-* call startup hooks to initialize all modules
+* collect bean definitions from scan + `hive.autoconfigure` entry points + `AUTOCONFIGURE_IMPORTS`
+* filter with `@conditional` (static checks, then `on_bean` / `on_missing` rounds)
+* run `configure()` (cornerstone hooks and accepted autoconfigure classes)
+* `HiveContext.refresh()` creates app-scoped singletons
+* call startup hooks
 * mount the collected routers when `ROUTER_MOUNT_AUTOMATED` is true
 
 ---

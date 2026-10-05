@@ -6,7 +6,12 @@ from fastapi_hive.ioc_framework.di_contiainer import DIContainer
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from typing import Optional
 from abc import ABC
-from fastapi_hive.ioc_framework.decorators import bind_endpoint, create_hook, invoke, select_hooks
+from fastapi_hive.ioc_framework.decorators import (
+    bind_endpoint,
+    create_hook,
+    invoke,
+    select_hooks,
+)
 
 
 class EndpointHooks(ABC):
@@ -31,7 +36,6 @@ class EndpointHooks(ABC):
     def __init__(self) -> None:
         self._app: Optional[FastAPI] = None
         self._endpoint: Optional[EndpointMeta] = None
-        self._app_state: Optional[dict] = None
 
     @property
     def app(self):
@@ -48,14 +52,6 @@ class EndpointHooks(ABC):
     @endpoint.setter
     def endpoint(self, value: EndpointMeta):
         self._endpoint = value
-
-    @property
-    def app_state(self):
-        return self._app_state
-
-    @app_state.setter
-    def app_state(self, value: dict):
-        self._app_state = value
 
     def startup(self):
         pass
@@ -86,11 +82,14 @@ class EndpointHookCaller:
         return select_hooks(pairs, self._ioc_config)
 
     async def _run(self, method_name: str):
-        app_registry = getattr(self._app.state, "hive", None)
+        context = getattr(self._app.state, "hive", None)
+        extras_base = {FastAPI: self._app}
         for cls, meta in self._pairs():
-            instance = create_hook(cls, app_registry)
+            extras = dict(extras_base)
+            extras[EndpointMeta] = meta
+            instance = create_hook(cls, context, extras)
             bind_endpoint(instance, self._app, meta)
-            await invoke(instance, method_name, app_registry)
+            await invoke(instance, method_name, context, extras=extras)
 
     async def run_startup_hook(self):
         await self._run("startup")

@@ -13,3 +13,9 @@ hive:
   hide_endpoint_container_in_api: true
   hide_endpoint_in_api: false
   hide_endpoint_in_tag: true
+  features:
+    db: true
+  autoconfigure:
+    enabled: true
+    imports: []
+    exclude: []

@@ -35,6 +35,19 @@ hive:
     assert data["features"] == {"notes": True}
 
 
+def test_normalize_mapping_flattens_autoconfigure():
+    from fastapi_hive.ioc_framework.hive_settings import normalize_mapping
+
+    values = normalize_mapping({
+        "features": {"db": True},
+        "autoconfigure": {"enabled": True, "imports": [], "exclude": ["hive.db"]},
+    })
+    assert values["FEATURES"] == {"db": True}
+    assert values["AUTOCONFIGURE_ENABLED"] is True
+    assert values["AUTOCONFIGURE_IMPORTS"] == []
+    assert values["AUTOCONFIGURE_EXCLUDE"] == ["hive.db"]
+
+
 def test_collect_hive_settings_prefers_env_over_file(tmp_path, monkeypatch):
     config_file = tmp_path / "hive.yaml"
     config_file.write_text(
