@@ -36,6 +36,7 @@ LIFECYCLE_METHODS = frozenset({
     "after_endpoint_shutdown",
     "startup",
     "shutdown",
+    "run",
 })
 
 
@@ -53,6 +54,16 @@ def endpoint(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None
              enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
         _attach(cls, "endpoint", name, order, profiles, enabled_when)
+        collect_providers(cls)
+        return cls
+
+    return wrap
+
+
+def runner(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None,
+           enabled_when: Optional[str] = None) -> Callable:
+    def wrap(cls: type) -> type:
+        _attach(cls, "runner", name, order, profiles, enabled_when)
         collect_providers(cls)
         return cls
 
@@ -315,3 +326,7 @@ def bind_foundation(instance: Any, app, meta) -> None:
 def bind_endpoint(instance: Any, app, meta) -> None:
     instance.app = app
     instance.endpoint = meta
+
+
+def bind_runner(instance: Any, app) -> None:
+    instance.app = app

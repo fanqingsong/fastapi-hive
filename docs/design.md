@@ -65,6 +65,7 @@ There are serveral stages in startup hooks calling stages:
 * call foundations' before_endpoint_startup hooks one by one.
 * call endpoints' startup hooks one by one. `@endpoint` classes must be defined in the endpoint package root (`__init__.py`). Mount `APIRouter` instances here with `app.include_router`.
 * call foundations' after_endpoint_startup hooks one by one
+* call application runners (`@runner`) one by one
 
 The same is as with shutdown hooks calling logic.
 
@@ -83,7 +84,8 @@ flowchart TD
     beforeStart[foundation before_endpoint_startup]
     epStart["endpoint startup: include_router"]
     afterStart[foundation after_endpoint_startup]
-    beforeStart --> epStart --> afterStart
+    runners[application runner run]
+    beforeStart --> epStart --> afterStart --> runners
   end
 
   subgraph shutdownEvent [FastAPI shutdown]

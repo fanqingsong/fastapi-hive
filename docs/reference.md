@@ -18,6 +18,7 @@ All configuarable parameters are listed below.
 | AUTOCONFIGURE_ENABLED | load `hive.autoconfigure` entry points and imports | True |
 | AUTOCONFIGURE_IMPORTS | extra `module:Class` autoconfigure paths | [] |
 | AUTOCONFIGURE_EXCLUDE | skip autoconfigure by name or `module:Class` | [] |
+| RUNNER_IMPORTS | extra `module:Class` application runner paths | [] |
 
 
 These configs are loaded from folder convention, `.env` keys with a `HIVE_`
@@ -55,6 +56,7 @@ Decorate the hook class so the container can discover it. Undecorated classes ar
 | --- | --- |
 | `@foundation(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `configure()` runs while the app is assembled and must be synchronous. Other hooks run from the async lifecycle. |
 | `@endpoint(name, order=0, profiles=None, enabled_when=None)` | business module. Define the class in the endpoint package root. Mount routers in `startup` with `self.app.include_router`. |
+| `@runner(name, order=0, profiles=None, enabled_when=None)` | application-level callback. Not owned by a foundation. `run()` executes after all endpoint startup and foundation `after_endpoint_startup` hooks. Loaded from scan or `RUNNER_IMPORTS`. |
 | `@provides(key, scope="app")` | register a factory method as a bean. `scope` is `app`, `request`, or `transient`. Lifecycle methods cannot use `@provides`. |
 | `@component` | register a class constructor as a bean. Default key is the class. |
 | `@autoconfigure(name, order=0, after=(), before=())` | mark a starter class. Loaded from scan, entry points, or `AUTOCONFIGURE_IMPORTS`. |
@@ -191,4 +193,29 @@ from fastapi_hive.ioc_framework.registry import Inject
 def post_predict(model: HousePriceModel = Inject(HousePriceModel)):
     return model.predict(block_data)
 ```
+
+
+## application runners
+
+----
+
+`ApplicationRunner` is an application-level callback, not a foundation or endpoint module. Decorate a subclass with `@runner`. `run()` may be `def` or `async def`. It runs after every foundation `after_endpoint_startup` hook.
+
+Classes are collected from scanned foundation/endpoint modules and from `RUNNER_IMPORTS` (`module:Class`). Duplicate `name` values fail at startup. `profiles` and `enabled_when` use the same filter as other Hive hooks.
+
+```python
+from fastapi import FastAPI
+from fastapi_hive.ioc_framework import ApplicationRunner, runner
+from fastapi_hive.ioc_framework.registry import Inject
+
+
+@runner(name="seed-data", order=10, profiles=["demo"])
+class SeedDataRunner(ApplicationRunner):
+
+    def run(self, app: FastAPI, imported=Inject("showcase.imported")):
+        app.state.hive_lifecycle.append("runner:" + imported)
+```
+
+See `example/starters/seed_runner.py` and `runners.imports` in `example/main.py`.
+
 

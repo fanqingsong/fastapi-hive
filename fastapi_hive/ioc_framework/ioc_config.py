@@ -13,4 +13,5 @@ class IoCConfig(BaseModel):
     AUTOCONFIGURE_ENABLED: bool = True
     AUTOCONFIGURE_IMPORTS: List[str] = Field(default_factory=list)
     AUTOCONFIGURE_EXCLUDE: List[str] = Field(default_factory=list)
+    RUNNER_IMPORTS: List[str] = Field(default_factory=list)
 

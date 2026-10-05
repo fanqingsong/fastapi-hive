@@ -8,15 +8,18 @@ from fastapi_hive.ioc_framework.decorators import (
     endpoint,
     provides,
     Qualifier,
+    runner,
 )
 from fastapi_hive.ioc_framework.registry import Inject, HiveRegistry
 from fastapi_hive.ioc_framework.context import HiveContext
+from fastapi_hive.ioc_framework.application_runner import ApplicationRunner
 
 
 __all__ = [
     "IoCFramework",
     "foundation",
     "endpoint",
+    "runner",
     "provides",
     "component",
     "autoconfigure",
@@ -25,6 +28,7 @@ __all__ = [
     "Inject",
     "HiveRegistry",
     "HiveContext",
+    "ApplicationRunner",
 ]
 
 

@@ -23,6 +23,7 @@ _FIELD_ALIASES = {
     "autoconfigure_enabled": "AUTOCONFIGURE_ENABLED",
     "autoconfigure_imports": "AUTOCONFIGURE_IMPORTS",
     "autoconfigure_exclude": "AUTOCONFIGURE_EXCLUDE",
+    "runner_imports": "RUNNER_IMPORTS",
 }
 
 
@@ -68,7 +69,13 @@ def _parse_env_value(field: str, raw: str) -> Any:
     text = raw.strip()
     if field == "FEATURES":
         return json.loads(text) if text else {}
-    if field in ("ENDPOINT_PACKAGE_PATHS", "ACTIVE_PROFILES", "AUTOCONFIGURE_IMPORTS", "AUTOCONFIGURE_EXCLUDE"):
+    if field in (
+        "ENDPOINT_PACKAGE_PATHS",
+        "ACTIVE_PROFILES",
+        "AUTOCONFIGURE_IMPORTS",
+        "AUTOCONFIGURE_EXCLUDE",
+        "RUNNER_IMPORTS",
+    ):
         if text.startswith("["):
             return json.loads(text)
         if not text:
@@ -87,6 +94,10 @@ def _flatten_nested(data: Dict[str, Any]) -> Dict[str, Any]:
             flattened["autoconfigure_imports"] = autoconfigure["imports"]
         if "exclude" in autoconfigure:
             flattened["autoconfigure_exclude"] = autoconfigure["exclude"]
+    runners = flattened.pop("runners", None)
+    if isinstance(runners, dict):
+        if "imports" in runners:
+            flattened["runner_imports"] = runners["imports"]
     return flattened
 
 

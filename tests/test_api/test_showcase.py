@@ -56,6 +56,8 @@ def test_feature_tour_covers_hive_capabilities(test_client) -> None:
     assert trace.index("before_endpoint_startup:lifecycle") < trace.index("showcase.startup")
     assert trace.index("showcase.startup") < trace.index("manual.startup")
     assert trace.index("manual.startup") < trace.index("after_endpoint_startup:threaded")
+    assert trace.index("after_endpoint_startup:threaded") < trace.index("runner:imported-by-config")
+    assert "never-seed" not in trace
 
     manual = test_client.get("/api/manual/ping")
     assert manual.status_code == 200

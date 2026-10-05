@@ -19,11 +19,13 @@ def test_normalize_mapping_flattens_autoconfigure():
     values = normalize_mapping({
         "features": {"db": True},
         "autoconfigure": {"enabled": True, "imports": [], "exclude": ["hive.db"]},
+        "runners": {"imports": ["example.starters.seed_runner:SeedDataRunner"]},
     })
     assert values["FEATURES"] == {"db": True}
     assert values["AUTOCONFIGURE_ENABLED"] is True
     assert values["AUTOCONFIGURE_IMPORTS"] == []
     assert values["AUTOCONFIGURE_EXCLUDE"] == ["hive.db"]
+    assert values["RUNNER_IMPORTS"] == ["example.starters.seed_runner:SeedDataRunner"]
 
 
 def test_collect_hive_settings_ignores_yaml_file(tmp_path, monkeypatch):

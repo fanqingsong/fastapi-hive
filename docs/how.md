@@ -58,7 +58,7 @@ Decorate the hook class. `order` decides who runs first in the same phase. `prof
 
 Only decorated hook classes are loaded. Methods may be `def` or `async def`. `configure()` on a foundation must stay synchronous so middleware can be registered before the app starts. Blocking I/O in a hook should use `anyio.to_thread.run_sync`.
 
-Beans stay on an `@autoconfigure` class. Foundation hooks, such as `example/foundation/db`, stay on `@foundation`.
+Beans stay on an `@autoconfigure` class. Foundation hooks, such as `example/foundation/db`, stay on `@foundation`. Application-wide startup work uses `@runner` (see `example/starters/seed_runner.py`), not a foundation module.
 
 For a foundation bean
 

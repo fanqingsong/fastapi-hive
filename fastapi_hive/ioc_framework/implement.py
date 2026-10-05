@@ -13,6 +13,10 @@ from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHookCaller
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 from dependency_injector.wiring import Provide, inject
 from fastapi_hive.ioc_framework.di_contiainer import DIContainer
+from fastapi_hive.ioc_framework.application_runner import (
+    ApplicationRunnerCaller,
+    collect_runner_classes,
+)
 from fastapi_hive.ioc_framework.autoconfigure import build_definitions, scanned_modules
 from fastapi_hive.ioc_framework.context import HiveContext
 from fastapi_hive.ioc_framework.decorators import create_hook, invoke_sync
@@ -52,6 +56,7 @@ class IoCFramework:
 
         self._foundation_hook_caller = FoundationHookCaller(app)
         self._endpoint_hook_caller = EndpointHookCaller(app)
+        self._runner_caller = ApplicationRunnerCaller(app, [], self._ioc_config)
 
     @classmethod
     def bootstrap(
@@ -77,14 +82,19 @@ class IoCFramework:
         # set endpoint state as app state to expose for endpoint access, such as ML model instance
         self._app.state.endpoints = self._get_initial_endpoint_state()
         context = HiveContext(self._app)
-        definitions, autos = build_definitions(
-            scanned_modules(self._foundation_container, self._endpoint_container),
-            self._ioc_config,
+        modules = scanned_modules(
+            self._foundation_container, self._endpoint_container
         )
+        definitions, autos = build_definitions(modules, self._ioc_config)
         context.add_definitions(definitions)
         context.autoconfigure_classes = autos
         context.validate()
         self._app.state.hive = context
+        self._runner_caller = ApplicationRunnerCaller(
+            self._app,
+            collect_runner_classes(modules, self._ioc_config),
+            self._ioc_config,
+        )
 
         # Starlette requires middleware to be registered before the application
         # starts. Foundation configure() and autoconfigure.configure() install
@@ -190,6 +200,7 @@ class IoCFramework:
             await self._foundation_hook_caller.run_before_startup_hook()
             await self._endpoint_hook_caller.run_startup_hook()
             await self._foundation_hook_caller.run_after_startup_hook()
+            await self._runner_caller.run_all()
 
         return startup
 

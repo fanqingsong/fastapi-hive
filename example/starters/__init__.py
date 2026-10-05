@@ -1,1 +1,1 @@
-"""Starters loaded by AUTOCONFIGURE_IMPORTS, outside the scanned packages."""
+"""Starters and runners loaded by imports, outside the scanned packages."""

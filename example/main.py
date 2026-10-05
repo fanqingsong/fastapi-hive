@@ -37,6 +37,12 @@ def get_app() -> FastAPI:
                 "imports": ["example.starters.imported_auto:ImportedAuto"],
                 "exclude": ["showcase.skipped"],
             },
+            "runners": {
+                "imports": [
+                    "example.starters.seed_runner:SeedDataRunner",
+                    "example.starters.seed_runner:NeverSeedRunner",
+                ],
+            },
         },
     )
 

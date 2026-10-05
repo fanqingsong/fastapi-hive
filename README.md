@@ -91,7 +91,8 @@ that must be attached to each request.
 - **Explicit router mounting** — include each endpoint's `APIRouter` in
   `startup` with `self.app.include_router(...)`.
 - **Lifecycle hooks** — run sync or async startup and shutdown code at application,
-  module, and request boundaries.
+  module, and request boundaries. `@runner` is the application-level callback
+  after foundation and endpoint startup.
 - **Bean graph and auto-configuration** — `@provides` / `@component` become
   definitions; `HiveContext` creates them by type. Starters register via the
   `hive.autoconfigure` entry point and `@conditional` (`on_import`, `on_missing`,
