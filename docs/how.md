@@ -155,10 +155,10 @@ over env and file.
 ## URL MAPPING
 
 The framework discovers cornerstones and endpoints in the same load pass.
-While an endpoint is imported, it also collects that package's `router` module
-(`router/__init__.py` must export an `APIRouter` named `router`) onto
-`EndpointMeta.routers`. After endpoint startup hooks run, a built-in caller
-mounts those collected routers.
+While an endpoint package is imported, the loader walks every submodule and
+collects each module-level `APIRouter` named `router` onto `EndpointMeta.routers`
+(the same object exported from several modules is mounted once). After endpoint
+startup hooks run, a built-in caller mounts those collected routers.
 
 The default URL is built from the API prefix, the endpoint container folder
 name, and the endpoint folder name, so paths stay unique and predictable.

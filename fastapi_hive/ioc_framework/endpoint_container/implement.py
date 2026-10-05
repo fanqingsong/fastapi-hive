@@ -1,6 +1,7 @@
 import importlib
 import os
-from typing import Optional
+import pkgutil
+from typing import List, Optional
 
 from loguru import logger
 from fastapi_hive.ioc_framework.decorators import (
@@ -11,15 +12,27 @@ from fastapi_hive.ioc_framework.decorators import (
 )
 
 
+def import_package_tree(package_name: str) -> List:
+    root = importlib.import_module(package_name)
+    modules = [root]
+    paths = getattr(root, "__path__", None)
+    if paths is None:
+        return modules
+    for module_info in pkgutil.walk_packages(paths, root.__name__ + "."):
+        leaf = module_info.name.rsplit(".", 1)[-1]
+        if leaf == "__pycache__":
+            continue
+        modules.append(importlib.import_module(module_info.name))
+    return modules
+
+
 class EndpointMeta:
     def __init__(self):
         self._name: Optional[str] = None
         self._container_name: Optional[str] = None
         self._package_path: Optional[str] = None
         self._imported_module = None
-        self._imported_module_db = None
-        self._imported_module_router = None
-        self._imported_module_service = None
+        self.imported_modules = []
         self.hooks = []
         self.mount_spec = resolve_mount([])
         self.routers = []
@@ -56,30 +69,6 @@ class EndpointMeta:
     def imported_module(self, value):
         self._imported_module = value
 
-    @property
-    def imported_module_db(self):
-        return self._imported_module_db
-
-    @imported_module_db.setter
-    def imported_module_db(self, value):
-        self._imported_module_db = value
-
-    @property
-    def imported_module_router(self):
-        return self._imported_module_router
-
-    @imported_module_router.setter
-    def imported_module_router(self, value):
-        self._imported_module_router = value
-
-    @property
-    def imported_module_service(self):
-        return self._imported_module_service
-
-    @imported_module_service.setter
-    def imported_module_service(self, value):
-        self._imported_module_service = value
-
 
 class EndpointContainer:
     def __init__(self):
@@ -110,39 +99,29 @@ class EndpointContainer:
             for one_endpoint_name in endpoint_paths:
                 one_endpoint_path = endpoint_paths[one_endpoint_name]
 
-                one_endpoint_entity = importlib.import_module(one_endpoint_path)
+                imported_modules = import_package_tree(one_endpoint_path)
+                one_endpoint_entity = imported_modules[0]
 
                 endpoint_instance = EndpointMeta()
                 endpoint_instance.name = one_endpoint_name
                 endpoint_instance.container_name = container_name
                 endpoint_instance.package_path = one_package_path
                 endpoint_instance.imported_module = one_endpoint_entity
-
-                # cache regular submodule - db
-                if os.path.exists(f'{one_package_path}/{one_endpoint_name}/db'):
-                    endpoint_instance.imported_module_db = importlib.import_module(f'{one_endpoint_path}.db')
-
-                # cache regular submodule - router
-                if os.path.exists(f'{one_package_path}/{one_endpoint_name}/router'):
-                    endpoint_instance.imported_module_router = importlib.import_module(f'{one_endpoint_path}.router')
-
-                # cache regular submodule - service, such as ML model loading cost time
-                if os.path.exists(f'{one_package_path}/{one_endpoint_name}/service'):
-                    endpoint_instance.imported_module_service = importlib.import_module(f'{one_endpoint_path}.service')
+                endpoint_instance.imported_modules = imported_modules
 
                 hooks = []
-                for module in (
-                    endpoint_instance.imported_module_db,
-                    endpoint_instance.imported_module_router,
-                    endpoint_instance.imported_module_service,
-                    one_endpoint_entity,
-                ):
-                    hooks.extend(collect_hooks(module, role="endpoint"))
+                seen_hooks = set()
+                for module in imported_modules:
+                    for cls in collect_hooks(module, role="endpoint"):
+                        if cls in seen_hooks:
+                            continue
+                        seen_hooks.add(cls)
+                        hooks.append(cls)
 
                 endpoint_instance.hooks = hooks
                 endpoint_instance.mount_spec = resolve_mount(hooks)
                 endpoint_instance.routers = collect_routers(
-                    endpoint_instance.imported_module_router,
+                    imported_modules,
                     mount_spec=endpoint_instance.mount_spec,
                     order=endpoint_hook_order(hooks),
                     name=one_endpoint_name,
@@ -190,4 +169,3 @@ class EndpointContainer:
                 endpoint_names.append(file)
 
         return endpoint_names
-

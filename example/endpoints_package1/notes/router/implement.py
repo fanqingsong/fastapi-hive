@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from typing import List
 from example.endpoints_package1.notes import schemas
 from example.endpoints_package1.notes import db as dbmodel
+from example.endpoints_package1.notes.service import NoteTextNormalizer
 from fastapi_hive.ioc_framework.registry import Inject
 
 router = APIRouter()
@@ -15,8 +16,12 @@ def get_notes(skip: int = 0, limit: int = 100, db=Inject("db.session")):
 
 
 @router.post("", response_model=schemas.Note, name="create note")
-def create_note(note: schemas.NoteIn, db=Inject("db.session")):
-    db_note = dbmodel.Note(text=note.text, completed=note.completed)
+def create_note(
+    note: schemas.NoteIn,
+    db=Inject("db.session"),
+    normalizer: NoteTextNormalizer = Inject(NoteTextNormalizer),
+):
+    db_note = dbmodel.Note(text=normalizer.normalize(note.text), completed=note.completed)
     db.add(db_note)
     db.commit()
     db.refresh(db_note)

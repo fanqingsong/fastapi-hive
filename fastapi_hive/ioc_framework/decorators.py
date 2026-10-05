@@ -205,11 +205,25 @@ def collect_routers(module, *, mount_spec: MountSpec, order: int = 0,
                     name: str = "") -> List[RouterBinding]:
     if module is None:
         return []
+    if isinstance(module, (list, tuple)):
+        modules = module
+    else:
+        modules = [module]
     from fastapi import APIRouter
-    router = getattr(module, "router", None)
-    if not isinstance(router, APIRouter):
-        return []
-    return [RouterBinding(router=router, mount=mount_spec, order=order, name=name)]
+    seen = set()
+    bindings = []
+    for item in modules:
+        if item is None:
+            continue
+        router = getattr(item, "router", None)
+        if not isinstance(router, APIRouter):
+            continue
+        router_id = id(router)
+        if router_id in seen:
+            continue
+        seen.add(router_id)
+        bindings.append(RouterBinding(router=router, mount=mount_spec, order=order, name=name))
+    return bindings
 
 
 def endpoint_hook_order(classes: Sequence[type]) -> int:

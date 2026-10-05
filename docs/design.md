@@ -50,7 +50,7 @@ FastAPI Hive Framework loads packages of cornerstones and endpoints, It covers t
 
 so the overview of precedure:
 * loading cornerstones
-* loading endpoints (hooks and `router` modules in one pass)
+* loading endpoints (recursive package walk; hooks and module-level `router` objects in one pass)
 * collect bean definitions from scan + `hive.autoconfigure` entry points + `AUTOCONFIGURE_IMPORTS`
 * filter with `@conditional` (static checks, then `on_bean` / `on_missing` rounds)
 * run `configure()` (cornerstone hooks and accepted autoconfigure classes)
@@ -64,7 +64,7 @@ so the overview of precedure:
 
 There are serveral stages in startup hooks calling stages:
 * call cornerstones' pre_endpoint_startup hooks one by one.
-* call endpoints' startup hooks one by one, but in this stage, there are three in-built sub-modules(db/service/router) which also can be hooked.
+* call endpoints' startup hooks one by one. `@endpoint` classes from any submodule of the package can be hooked.
 * mount collected routers (`select_routers` + `include_router`) when automatic mounting is enabled.
 * call cornerstones' post_endpoint_startup hooks one by one
 

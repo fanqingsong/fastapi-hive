@@ -39,10 +39,21 @@ def collect_from_module(module, source: str = "scan") -> Tuple[List[BeanDefiniti
 def collect_from_modules(modules: Iterable) -> Tuple[List[BeanDefinition], List[type]]:
     definitions = []
     autos = []
+    seen_defs = set()
+    seen_autos = set()
     for module in modules:
         defs, found = collect_from_module(module)
-        definitions.extend(defs)
-        autos.extend(found)
+        for item in defs:
+            token = (item.owner_cls, item.method_name, item.key)
+            if token in seen_defs:
+                continue
+            seen_defs.add(token)
+            definitions.append(item)
+        for cls in found:
+            if cls in seen_autos:
+                continue
+            seen_autos.add(cls)
+            autos.append(cls)
     return definitions, autos
 
 
@@ -190,12 +201,7 @@ def scanned_modules(cornerstone_container, endpoint_container) -> List:
     for meta in cornerstone_container.cornerstones.values():
         modules.append(meta.imported_module)
     for meta in endpoint_container.endpoints.values():
-        for module in (
-            meta.imported_module_db,
-            meta.imported_module_router,
-            meta.imported_module_service,
-            meta.imported_module,
-        ):
+        for module in getattr(meta, "imported_modules", None) or [meta.imported_module]:
             if module is not None:
                 modules.append(module)
     return modules

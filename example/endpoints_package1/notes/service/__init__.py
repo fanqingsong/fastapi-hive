@@ -1,5 +1,1 @@
-
-
-# from example.endpoints_package1.heart_beat2.service.implement import MODEL
-
-service = None
+from example.endpoints_package1.notes.service.implement import NoteTextNormalizer

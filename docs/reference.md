@@ -91,11 +91,11 @@ Routes should use `Inject(key)` because FastAPI builds the dependency graph at i
 
 ----
 
-Endpoint loading collects hooks and routers together. A `router` subpackage that exports `APIRouter` as `router` becomes an `EndpointMeta.routers` entry (`RouterBinding`: the router, mount spec, order, and name). Automatic mounting consumes that list with the same order as endpoint hooks.
+Endpoint loading walks every submodule of the endpoint package and collects hooks and routers together. A module-level `APIRouter` named `router` becomes an `EndpointMeta.routers` entry (`RouterBinding`: the router, mount spec, order, and name). The same router object exported from more than one module is collected once. Automatic mounting consumes that list with the same order as endpoint hooks.
 
 | helper | purpose |
 | --- | --- |
-| `collect_routers(module, mount_spec=..., order=..., name=...)` | pick the conventional `router` attribute |
+| `collect_routers(module, mount_spec=..., order=..., name=...)` | pick module-level `APIRouter` objects named `router` from one module or a sequence |
 | `select_routers(pairs)` | drop `mount=False` bindings and sort by order, then name |
 | `resolve_router_target(meta, binding, config)` | build prefix and tags from `API_PREFIX`, `HIDE_*`, or an explicit `@endpoint` mount |
 
@@ -179,14 +179,14 @@ Hook methods and `__init__` receive dependencies by parameter. Built-in extras:
 | name | type | meaning |
 | --- | --- | --- |
 | app | `FastAPI` | the FastAPI application |
-| endpoint | `EndpointMeta` | metadata of this endpoint. `endpoint.routers` is the list collected from the `router` subpackage. |
+| endpoint | `EndpointMeta` | metadata of this endpoint. `endpoint.routers` is the list collected from module-level `router` objects. |
 
 Published Hive keys are injected the same way as on cornerstone hooks. `self.app` / `self.endpoint` remain available as context after bind.
 
 
 please check in the code for usages.
 
-hooks can be set in endpoint init file and three sub-modules(db/service/router) init file.
+hooks can be set in any submodule of the endpoint package. `@component` is scanned the same way, so it does not have to live under `db`, `router`, or `service`.
 
 example/endpoints_package1/house_price/service/__init__.py
 

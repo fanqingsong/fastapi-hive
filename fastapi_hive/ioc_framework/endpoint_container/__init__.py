@@ -1,10 +1,12 @@
 
 from fastapi_hive.ioc_framework.endpoint_container.implement import (
     EndpointContainer,
-    EndpointMeta
+    EndpointMeta,
+    import_package_tree,
 )
 
 __all__ = [
     "EndpointContainer",
-    "EndpointMeta"
+    "EndpointMeta",
+    "import_package_tree",
 ]

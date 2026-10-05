@@ -184,6 +184,24 @@ def test_collect_routers_skips_missing_or_wrong_type():
     assert collect_routers(module, mount_spec=MountSpec()) == []
 
 
+def test_collect_routers_dedupes_same_instance_across_modules():
+    shared = APIRouter()
+    first = types.ModuleType("first_router")
+    first.router = shared
+    second = types.ModuleType("second_router")
+    second.router = shared
+
+    bindings = collect_routers([first, second], mount_spec=MountSpec())
+    assert len(bindings) == 1
+    assert bindings[0].router is shared
+
+
+def test_collect_routers_ignores_apirouter_not_named_router():
+    module = types.ModuleType("helper_router")
+    module.helper = APIRouter()
+    assert collect_routers(module, mount_spec=MountSpec()) == []
+
+
 def test_select_routers_skips_and_sorts():
     @endpoint(name="late", order=10)
     class Late(EndpointHooks):
