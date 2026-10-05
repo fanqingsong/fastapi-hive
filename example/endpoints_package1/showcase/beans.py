@@ -3,7 +3,7 @@
 Covers @component (primary, lazy, app scope), @provides scopes, @conditional
 (on_import, on_missing, on_bean, enabled_when, profiles, on_property), and
 autoconfigure after/before. ``showcase.skipped`` is removed by
-AUTOCONFIGURE_EXCLUDE in hive.yaml.
+AUTOCONFIGURE_EXCLUDE in bootstrap settings.
 """
 
 from fastapi import FastAPI

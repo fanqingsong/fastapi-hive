@@ -21,7 +21,24 @@ def get_app() -> FastAPI:
 
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
 
-    IoCFramework.bootstrap(fast_app)
+    IoCFramework.bootstrap(
+        fast_app,
+        settings={
+            "api_prefix": "/api",
+            "cornerstone_package_path": "./cornerstone",
+            "endpoint_package_paths": [
+                "./endpoints_package1",
+                "./endpoints_package2",
+            ],
+            "active_profiles": ["demo"],
+            "features": {"db": True, "audit": True},
+            "autoconfigure": {
+                "enabled": True,
+                "imports": ["example.starters.imported_auto:ImportedAuto"],
+                "exclude": ["showcase.skipped"],
+            },
+        },
+    )
 
     @fast_app.get("/")
     def get_root():

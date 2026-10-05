@@ -3,7 +3,7 @@ from fastapi_hive.ioc_framework.hive_settings import (
     apply_updates,
     collect_hive_settings,
     normalize_key,
-    parse_simple_yaml,
+    normalize_mapping,
 )
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 
@@ -15,27 +15,7 @@ def test_normalize_key_accepts_aliases_and_env_prefix():
     assert normalize_key("unknown") is None
 
 
-def test_parse_simple_yaml_unwraps_hive_mapping():
-    data = parse_simple_yaml(
-        """
-# comment
-hive:
-  api_prefix: /api
-  endpoint_package_paths:
-    - ./pkg1
-    - ./pkg2
-  features:
-    notes: true
-"""
-    )
-    assert data["api_prefix"] == "/api"
-    assert data["endpoint_package_paths"] == ["./pkg1", "./pkg2"]
-    assert data["features"] == {"notes": True}
-
-
 def test_normalize_mapping_flattens_autoconfigure():
-    from fastapi_hive.ioc_framework.hive_settings import normalize_mapping
-
     values = normalize_mapping({
         "features": {"db": True},
         "autoconfigure": {"enabled": True, "imports": [], "exclude": ["hive.db"]},
@@ -46,30 +26,40 @@ def test_normalize_mapping_flattens_autoconfigure():
     assert values["AUTOCONFIGURE_EXCLUDE"] == ["hive.db"]
 
 
-def test_collect_hive_settings_prefers_env_over_file(tmp_path, monkeypatch):
-    config_file = tmp_path / "hive.yaml"
-    config_file.write_text(
+def test_collect_hive_settings_ignores_yaml_file(tmp_path, monkeypatch):
+    (tmp_path / "hive.yaml").write_text(
         "api_prefix: /from-file\ncornerstone_package_path: ./from-file\n",
         encoding="utf-8",
     )
-    monkeypatch.setenv("HIVE_API_PREFIX", "/from-env")
+    monkeypatch.delenv("HIVE_API_PREFIX", raising=False)
     monkeypatch.delenv("HIVE_CORNERSTONE_PACKAGE_PATH", raising=False)
 
+    values = collect_hive_settings(roots=[tmp_path])
+    assert "API_PREFIX" not in values
+    assert values.get("CORNERSTONE_PACKAGE_PATH") != str(tmp_path / "from-file")
+
+
+def test_settings_paths_resolve_beside_caller(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    app_dir = tmp_path / "myapp"
+    (app_dir / "cornerstone").mkdir(parents=True)
+    (app_dir / "endpoints_package1").mkdir()
+
     values = collect_hive_settings(
-        config_path=str(config_file),
-        roots=[tmp_path],
+        overrides={
+            "cornerstone_package_path": "./cornerstone",
+            "endpoint_package_paths": ["./endpoints_package1"],
+        },
+        roots=[tmp_path, app_dir],
     )
-    assert values["API_PREFIX"] == "/from-env"
-    assert values["CORNERSTONE_PACKAGE_PATH"] == str(tmp_path / "from-file")
+    assert values["CORNERSTONE_PACKAGE_PATH"] == "./myapp/cornerstone"
+    assert values["ENDPOINT_PACKAGE_PATHS"] == ["./myapp/endpoints_package1"]
 
 
 def test_constructor_overrides_win(tmp_path, monkeypatch):
-    config_file = tmp_path / "hive.yaml"
-    config_file.write_text("api_prefix: /from-file\n", encoding="utf-8")
     monkeypatch.setenv("HIVE_API_PREFIX", "/from-env")
 
     values = collect_hive_settings(
-        config_path=str(config_file),
         overrides={"API_PREFIX": "/from-code"},
         roots=[tmp_path],
     )

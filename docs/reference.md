@@ -20,41 +20,29 @@ All configuarable parameters are listed below.
 | AUTOCONFIGURE_EXCLUDE | skip autoconfigure by name or `module:Class` | [] |
 
 
-These configs are loaded automatically from convention, `hive.yaml` /
-`hive.yml` / `hive.json` (beside the module that calls `bootstrap`, or in the
-working directory), `.env` keys with a `HIVE_` prefix, and process
-environment variables. Package paths in the file are relative to that file.
+These configs are loaded from folder convention, `.env` keys with a `HIVE_`
+prefix, process environment variables, and `settings=` on `bootstrap`.
 Precedence is:
 
-defaults / folder convention < config file < `.env` < process env <
+defaults / folder convention < `.env` < process env <
 `settings=` / `hive.config.*`
 
 `IoCFramework.bootstrap(app)` constructs the container and calls
-`init_modules()`. Pass `settings={...}` or `config_path=` when you do not want
-the working-directory file.
+`init_modules()`. Pass `settings={...}` when convention is not enough.
 
 ```python
 from fastapi import FastAPI
 from fastapi_hive.ioc_framework import IoCFramework
 
 app = FastAPI()
-IoCFramework.bootstrap(app)
-```
-
-```yaml
-# example/hive.yaml
-hive:
-  api_prefix: /api
-  cornerstone_package_path: ./cornerstone
-  endpoint_package_paths:
-    - ./endpoints_package1
-    - ./endpoints_package2
-```
-
-```python
-# optional code override, still supported
-hive = IoCFramework(app, settings={"API_PREFIX": "/api"})
-hive.init_modules()
+IoCFramework.bootstrap(app, settings={
+    "api_prefix": "/api",
+    "cornerstone_package_path": "./cornerstone",
+    "endpoint_package_paths": [
+        "./endpoints_package1",
+        "./endpoints_package2",
+    ],
+})
 ```
 
 ## module decorators

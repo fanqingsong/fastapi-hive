@@ -29,7 +29,6 @@ class IoCFramework:
         self,
         app: FastAPI,
         settings: Optional[Union[IoCConfig, Dict[str, Any]]] = None,
-        config_path: Optional[str] = None,
         ioc_config: IoCConfig = Provide[DIContainer.ioc_config],
         endpoint_container: EndpointContainer = Provide[
             DIContainer.endpoint_container
@@ -45,7 +44,6 @@ class IoCFramework:
         )
         apply_hive_settings(
             self._ioc_config,
-            config_path=config_path,
             overrides=overrides,
         )
 
@@ -60,9 +58,8 @@ class IoCFramework:
         cls,
         app: FastAPI,
         settings: Optional[Union[IoCConfig, Dict[str, Any]]] = None,
-        config_path: Optional[str] = None,
     ) -> "IoCFramework":
-        hive = cls(app, settings=settings, config_path=config_path)
+        hive = cls(app, settings=settings)
         hive.init_modules()
         return hive
 

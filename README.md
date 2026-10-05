@@ -164,16 +164,15 @@ app = FastAPI(title="My API")
 IoCFramework.bootstrap(app)
 ```
 
-Override convention with `hive.yaml` beside the module that calls `bootstrap`
-(the example keeps it at `example/hive.yaml`) or in the working directory.
-`HIVE_*` environment variables override the file:
+Override convention with `settings=` on `bootstrap`, or with `HIVE_*`
+environment variables. Code overrides win over env, which wins over folder
+convention:
 
-```yaml
-# hive.yaml
-hive:
-  api_prefix: /api/v1
-  endpoint_package_paths:
-    - ./my_app/endpoints
+```python
+IoCFramework.bootstrap(app, settings={
+    "api_prefix": "/api/v1",
+    "endpoint_package_paths": ["./my_app/endpoints"],
+})
 ```
 
 ```bash
@@ -181,9 +180,7 @@ export HIVE_API_PREFIX=/api/v1
 export HIVE_ENDPOINT_PACKAGE_PATHS=./pkg1,./pkg2
 ```
 
-You can still assign `hive.config.*` in code, or pass `settings={...}` to
-`IoCFramework` / `bootstrap`. Code overrides win over env, which wins over the
-file.
+You can still assign `hive.config.*` in code after construction.
 
 Mount each router with the prefix you want, for example `/api/v1/heartbeat`.
 

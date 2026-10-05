@@ -118,8 +118,7 @@ the same three stages in reverse around endpoint `shutdown`.
 
 Second, bootstrap the container. Convention looks for `cornerstone(s)/` and
 `endpoints/` beside the caller or the working directory. Put the rest in
-`hive.yaml` (beside that caller, or in the working directory) or in `HIVE_*`
-environment variables. The sample file is `example/hive.yaml`.
+`settings=` on `bootstrap`, or in `HIVE_*` environment variables.
 
 ```Python
 from fastapi import FastAPI
@@ -132,25 +131,25 @@ from fastapi_hive.ioc_framework import IoCFramework
 def get_app() -> FastAPI:
     logger.info("app is starting.")
     fast_app = FastAPI(title=APP_NAME, version=APP_VERSION, debug=IS_DEBUG)
-    IoCFramework.bootstrap(fast_app)
+    IoCFramework.bootstrap(
+        fast_app,
+        settings={
+            "api_prefix": "/api",
+            "cornerstone_package_path": "./cornerstone",
+            "endpoint_package_paths": [
+                "./endpoints_package1",
+                "./endpoints_package2",
+            ],
+        },
+    )
     return fast_app
 
 
 app = get_app()
 ```
 
-```yaml
-# example/hive.yaml — paths are relative to this file
-hive:
-  api_prefix: /api
-  cornerstone_package_path: ./cornerstone
-  endpoint_package_paths:
-    - ./endpoints_package1
-    - ./endpoints_package2
-```
-
 Programmatic assignment (`hive.config.API_PREFIX = ...`) still works and wins
-over env and file.
+over env.
 
 ## URL MAPPING
 

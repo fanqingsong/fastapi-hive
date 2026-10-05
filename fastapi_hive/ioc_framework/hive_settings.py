@@ -8,7 +8,6 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
 
 
-CONFIG_FILENAMES = ("hive.yaml", "hive.yml", "hive.json")
 ENV_PREFIX = "HIVE_"
 CORNERSTONE_DIR_NAMES = ("cornerstone", "cornerstones")
 ENDPOINT_DIR_NAMES = ("endpoints", "endpoint_packages")
@@ -78,80 +77,6 @@ def _parse_env_value(field: str, raw: str) -> Any:
     return _parse_scalar(text)
 
 
-def _line_indent(line: str) -> int:
-    return len(line) - len(line.lstrip(" "))
-
-
-def _parse_mapping(lines: List[str], start: int, indent: int):
-    data: Dict[str, Any] = {}
-    index = start
-    while index < len(lines):
-        line = lines[index]
-        if not line.strip() or line.lstrip().startswith("#"):
-            index += 1
-            continue
-        current = _line_indent(line)
-        if current < indent:
-            break
-        if current > indent:
-            raise ValueError("invalid hive.yaml indentation")
-        stripped = line.strip()
-        if stripped.startswith("- "):
-            break
-        key, _, rest = stripped.partition(":")
-        rest = rest.strip()
-        index += 1
-        if rest:
-            data[key] = _parse_scalar(rest)
-            continue
-        if index < len(lines) and lines[index].lstrip().startswith("- "):
-            values, index = _parse_list(lines, index, current + 2)
-            data[key] = values
-        else:
-            nested, index = _parse_mapping(lines, index, current + 2)
-            data[key] = nested
-    return data, index
-
-
-def _parse_list(lines: List[str], start: int, indent: int):
-    values: List[Any] = []
-    index = start
-    while index < len(lines):
-        line = lines[index]
-        if not line.strip() or line.lstrip().startswith("#"):
-            index += 1
-            continue
-        current = _line_indent(line)
-        if current < indent - 2:
-            break
-        stripped = line.strip()
-        if not stripped.startswith("- "):
-            break
-        values.append(_parse_scalar(stripped[2:]))
-        index += 1
-    return values, index
-
-
-def parse_simple_yaml(text: str) -> Dict[str, Any]:
-    lines = text.replace("\t", "  ").splitlines()
-    data, _ = _parse_mapping(lines, 0, 0)
-    hive = data.get("hive")
-    if isinstance(hive, dict):
-        return hive
-    return data
-
-
-def parse_config_file(path: Path) -> Dict[str, Any]:
-    text = path.read_text(encoding="utf-8")
-    if path.suffix.lower() == ".json":
-        data = json.loads(text) or {}
-    else:
-        data = parse_simple_yaml(text)
-    if isinstance(data.get("hive"), dict):
-        data = data["hive"]
-    return normalize_mapping(data)
-
-
 def _flatten_nested(data: Dict[str, Any]) -> Dict[str, Any]:
     flattened = dict(data)
     autoconfigure = flattened.pop("autoconfigure", None)
@@ -201,57 +126,6 @@ def load_process_env() -> Dict[str, Any]:
             continue
         values[field] = _parse_env_value(field, value)
     return values
-
-
-def find_config_file(
-    config_path: Optional[str] = None,
-    roots: Optional[Sequence[Path]] = None,
-) -> Optional[Path]:
-    if config_path:
-        path = Path(config_path)
-        if not path.is_file():
-            raise FileNotFoundError(f"hive config file not found: {path}")
-        return path
-    env_path = os.environ.get("HIVE_CONFIG")
-    if env_path:
-        path = Path(env_path)
-        if not path.is_file():
-            raise FileNotFoundError(f"hive config file not found: {path}")
-        return path
-    search_roots = list(roots) if roots is not None else discover_roots()
-    for root in search_roots:
-        for name in CONFIG_FILENAMES:
-            candidate = root / name
-            if candidate.is_file():
-                return candidate
-    return None
-
-
-def resolve_package_paths(values: Dict[str, Any], base: Path) -> None:
-    cornerstone = values.get("CORNERSTONE_PACKAGE_PATH")
-    if isinstance(cornerstone, str) and cornerstone:
-        values["CORNERSTONE_PACKAGE_PATH"] = _path_beside(cornerstone, base)
-    endpoints = values.get("ENDPOINT_PACKAGE_PATHS")
-    if isinstance(endpoints, list):
-        values["ENDPOINT_PACKAGE_PATHS"] = [
-            _path_beside(item, base) if isinstance(item, str) else item
-            for item in endpoints
-        ]
-
-
-def _path_beside(value: str, base: Path) -> str:
-    path = Path(value)
-    if path.is_absolute():
-        return value
-    located = base / path
-    try:
-        relative = located.resolve().relative_to(Path.cwd().resolve())
-    except ValueError:
-        return str(located)
-    text = relative.as_posix()
-    if text == ".":
-        return "./"
-    return "./" + text
 
 
 def _unique_paths(paths: Iterable[Path]) -> List[Path]:
@@ -315,6 +189,33 @@ def apply_convention(values: Dict[str, Any], roots: Optional[Sequence[Path]] = N
             values["ENDPOINT_PACKAGE_PATHS"] = [found]
 
 
+def resolve_package_paths(values: Dict[str, Any], base: Path) -> None:
+    cornerstone = values.get("CORNERSTONE_PACKAGE_PATH")
+    if isinstance(cornerstone, str) and cornerstone:
+        values["CORNERSTONE_PACKAGE_PATH"] = _path_beside(cornerstone, base)
+    endpoints = values.get("ENDPOINT_PACKAGE_PATHS")
+    if isinstance(endpoints, list):
+        values["ENDPOINT_PACKAGE_PATHS"] = [
+            _path_beside(item, base) if isinstance(item, str) else item
+            for item in endpoints
+        ]
+
+
+def _path_beside(value: str, base: Path) -> str:
+    path = Path(value)
+    if path.is_absolute():
+        return value
+    located = base / path
+    try:
+        relative = located.resolve().relative_to(Path.cwd().resolve())
+    except ValueError:
+        return str(located)
+    text = relative.as_posix()
+    if text == ".":
+        return "./"
+    return "./" + text
+
+
 def dump_config(config: IoCConfig) -> Dict[str, Any]:
     if hasattr(config, "model_dump"):
         return config.model_dump()
@@ -330,33 +231,28 @@ def apply_updates(config: IoCConfig, updates: Dict[str, Any]) -> IoCConfig:
 
 
 def collect_hive_settings(
-    config_path: Optional[str] = None,
     overrides: Optional[Dict[str, Any]] = None,
     roots: Optional[Sequence[Path]] = None,
 ) -> Dict[str, Any]:
     values: Dict[str, Any] = {}
-    file_path = find_config_file(config_path, roots=roots)
-    if file_path is not None:
-        values.update(parse_config_file(file_path))
-        resolve_package_paths(values, file_path.parent)
     search_roots = list(roots) if roots is not None else discover_roots()
     for root in search_roots:
         values.update(load_dotenv_hive_vars(root / ".env"))
     values.update(load_process_env())
     if overrides:
-        values.update(normalize_mapping(overrides))
+        mapped = normalize_mapping(overrides)
+        resolve_package_paths(mapped, search_roots[-1] if search_roots else Path.cwd())
+        values.update(mapped)
     apply_convention(values, roots)
     return values
 
 
 def apply_hive_settings(
     config: IoCConfig,
-    config_path: Optional[str] = None,
     overrides: Optional[Dict[str, Any]] = None,
     roots: Optional[Sequence[Path]] = None,
 ) -> IoCConfig:
     updates = collect_hive_settings(
-        config_path=config_path,
         overrides=overrides,
         roots=roots,
     )
