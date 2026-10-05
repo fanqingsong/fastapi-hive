@@ -8,13 +8,13 @@ class EndpointHooksImpl(EndpointHooks):
     def __init__(self):
         super(EndpointHooksImpl, self).__init__()
 
-    def setup(self):
-        print("call pre setup from EndpointHooksImpl!!!")
+    def startup(self):
+        print("call pre startup from EndpointHooksImpl!!!")
         print("---- get fastapi app ------")
         print(self.app)
 
-    def teardown(self):
-        print("call pre teardown from EndpointHooksImpl!!!")
+    def shutdown(self):
+        print("call pre shutdown from EndpointHooksImpl!!!")
 
 
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
@@ -22,9 +22,9 @@ class EndpointAsyncHooksImpl(EndpointAsyncHooks):
     def __init__(self):
         super(EndpointAsyncHooksImpl, self).__init__()
 
-    async def setup(self):
-        print("call pre setup from EndpointAsyncHooksImpl!!!")
+    async def startup(self):
+        print("call pre startup from EndpointAsyncHooksImpl!!!")
 
-    async def teardown(self):
-        print("call pre teardown from EndpointAsyncHooksImpl!!!")
+    async def shutdown(self):
+        print("call pre shutdown from EndpointAsyncHooksImpl!!!")
 

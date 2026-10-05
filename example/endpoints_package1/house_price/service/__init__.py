@@ -13,13 +13,13 @@ class EndpointHooksImpl(EndpointHooks):
         super(EndpointHooksImpl, self).__init__()
 
     @provides(HousePriceModel)
-    def setup(self):
-        print("call pre setup from EndpointHooksImpl (service)!!!")
+    def startup(self):
+        print("call pre startup from EndpointHooksImpl (service)!!!")
 
         return HousePriceModel(DEFAULT_MODEL_PATH)
 
-    def teardown(self):
-        print("call pre teardown from EndpointHooksImpl (service)!!!")
+    def shutdown(self):
+        print("call pre shutdown from EndpointHooksImpl (service)!!!")
 
 
 @endpoint(name="house_price")
@@ -28,10 +28,10 @@ class EndpointAsyncHooksImpl(EndpointAsyncHooks):
     def __init__(self):
         super(EndpointAsyncHooksImpl, self).__init__()
 
-    async def setup(self):
-        print("call pre setup from EndpointAsyncHooksImpl (service)!!!")
+    async def startup(self):
+        print("call pre startup from EndpointAsyncHooksImpl (service)!!!")
 
-    async def teardown(self):
-        print("call pre teardown from EndpointAsyncHooksImpl (service)!!!")
+    async def shutdown(self):
+        print("call pre shutdown from EndpointAsyncHooksImpl (service)!!!")
 
 

@@ -79,7 +79,7 @@ But for the ideal code structure, we take assumption that all codes of one servi
 
 FastAPI hive really support this code structure, and meet the preloading requirement which is implemented by regiser startup event.
 
-in the below file, the setup hook loads the machine learning model before requests and registers it with `@provides`.
+in the below file, the startup hook loads the machine learning model before requests and registers it with `@provides`.
 
 example/endpoints_package1/house_price/service/__init__.py
 
@@ -95,20 +95,20 @@ from fastapi_hive.ioc_framework.decorators import endpoint, provides
 class EndpointHooksImpl(EndpointHooks):
 
     @provides(HousePriceModel)
-    def setup(self):
+    def startup(self):
         return HousePriceModel(DEFAULT_MODEL_PATH)
 
-    def teardown(self):
+    def shutdown(self):
         pass
 
 
 @endpoint(name="house_price")
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    async def setup(self):
+    async def startup(self):
         pass
 
-    async def teardown(self):
+    async def shutdown(self):
         pass
 ```
 
@@ -349,12 +349,12 @@ class LazyDBSession:
 class CornerstoneHooksImpl(CornerstoneHooks):
 
     @provides("db")
-    def pre_endpoint_setup(self):
+    def pre_endpoint_startup(self):
         add_db_middleware(self.app, self.cornerstone)
         self.app_state['db'] = db
         return db
 
-    def post_endpoint_setup(self):
+    def post_endpoint_startup(self):
         create_all_tables(self.app)
 
     @request_provides("db.session")
@@ -366,7 +366,7 @@ class CornerstoneHooksImpl(CornerstoneHooks):
 @cornerstone(name="db", order=0)
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    async def pre_endpoint_setup(self):
+    async def pre_endpoint_startup(self):
         pass
 ```
 

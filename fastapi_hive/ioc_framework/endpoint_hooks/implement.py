@@ -23,7 +23,7 @@ class EndpointHooks(ABC):
 
 
     class EndpointHooksImpl(EndpointHooks):
-        def setup(self):
+        def startup(self):
             pass
     ```
     '''
@@ -57,10 +57,10 @@ class EndpointHooks(ABC):
     def app_state(self, value: dict):
         self._app_state = value
 
-    def setup(self):
+    def startup(self):
         pass
 
-    def teardown(self):
+    def shutdown(self):
         pass
 
 
@@ -78,7 +78,7 @@ class EndpointAsyncHooks(ABC):
 
 
     class EndpointAsyncHooksImpl(EndpointAsyncHooks):
-        async def setup(self):
+        async def startup(self):
             pass
     ```
     '''
@@ -112,10 +112,10 @@ class EndpointAsyncHooks(ABC):
     def app_state(self, value: dict):
         self._app_state = value
 
-    async def setup(self):
+    async def startup(self):
         pass
 
-    async def teardown(self):
+    async def shutdown(self):
         pass
 
 
@@ -147,11 +147,11 @@ class EndpointHookCaller:
             bind_endpoint(instance, self._app, meta)
             invoke(instance, method_name, app_registry)
 
-    def run_setup_hook(self):
-        self._run("setup")
+    def run_startup_hook(self):
+        self._run("startup")
 
-    def run_teardown_hook(self):
-        self._run("teardown")
+    def run_shutdown_hook(self):
+        self._run("shutdown")
 
 
 class EndpointHookAsyncCaller:
@@ -182,10 +182,10 @@ class EndpointHookAsyncCaller:
             bind_endpoint(instance, self._app, meta)
             await invoke_async(instance, method_name, app_registry)
 
-    async def run_setup_hook(self):
-        await self._run("setup")
+    async def run_startup_hook(self):
+        await self._run("startup")
 
-    async def run_teardown_hook(self):
-        await self._run("teardown")
+    async def run_shutdown_hook(self):
+        await self._run("shutdown")
 
 

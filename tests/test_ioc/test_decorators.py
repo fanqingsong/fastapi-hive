@@ -92,12 +92,12 @@ def test_select_hooks_sorts_and_filters():
 def test_provides_is_visible_through_depends_hive():
     class Owner:
         @provides("model")
-        def setup(self):
+        def startup(self):
             return "loaded"
 
     app = FastAPI()
     app.state.hive = HiveRegistry()
-    invoke(Owner(), "setup", app.state.hive)
+    invoke(Owner(), "startup", app.state.hive)
 
     @app.get("/model")
     def read_model(model: str = DependsHive("model")):

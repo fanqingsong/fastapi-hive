@@ -19,14 +19,14 @@ All configuarable parameters are listed below.
 | HIDE_ENDPOINT_CONTAINER_IN_API | if endpoint container folder name showed in API | False |
 | HIDE_ENDPOINT_IN_API | if endpoint name showed in API | Flase |
 | HIDE_ENDPOINT_IN_TAG | if endpoint name showed in tag | False |
-| PRE_ENDPOINT_SETUP | external pre endpoint setup | None |
-| POST_ENDPOINT_SETUP | external post endpoint setup | None |
-| PRE_ENDPOINT_TEARDOWN | external pre endpoint teardown | None |
-| POST_ENDPOINT_TEARDOWN | external post endpoint POST_ENDPOINT_TEARDOWN | None |
-| ASYNC_PRE_ENDPOINT_SETUP | external async pre endpoint setup | None |
-| ASYNC_POST_ENDPOINT_SETUP | external async post endpoint setup | None |
-| ASYNC_PRE_ENDPOINT_TEARDOWN | external async pre endpoint teardown | None |
-| ASYNC_POST_ENDPOINT_TEARDOWN | external async post endpoint POST_ENDPOINT_TEARDOWN | None |
+| PRE_ENDPOINT_STARTUP | external pre endpoint startup | None |
+| POST_ENDPOINT_STARTUP | external post endpoint startup | None |
+| PRE_ENDPOINT_SHUTDOWN | external pre endpoint shutdown | None |
+| POST_ENDPOINT_SHUTDOWN | external post endpoint shutdown | None |
+| ASYNC_PRE_ENDPOINT_STARTUP | external async pre endpoint startup | None |
+| ASYNC_POST_ENDPOINT_STARTUP | external async post endpoint startup | None |
+| ASYNC_PRE_ENDPOINT_SHUTDOWN | external async pre endpoint shutdown | None |
+| ASYNC_POST_ENDPOINT_SHUTDOWN | external async post endpoint shutdown | None |
 
 
 These configs are loaded automatically from convention, `hive.yaml` /
@@ -65,7 +65,7 @@ hive:
 ```python
 # optional code override, still supported
 hive = IoCFramework(app, settings={"API_PREFIX": "/api"})
-hive.config.PRE_ENDPOINT_SETUP = hive_pre_setup
+hive.config.PRE_ENDPOINT_STARTUP = hive_pre_startup
 hive.init_modules()
 ```
 
@@ -77,8 +77,8 @@ Decorate the hook class so the container can discover it. A module without a dec
 
 | decorator | purpose |
 | --- | --- |
-| `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `pre_endpoint_setup` runs before the application starts. |
-| `@endpoint(name, order=0, prefix=None, tags=None, mount=True, profiles=None, enabled_when=None)` | business module. `prefix` and `tags` override automatic router mounting. `mount=False` leaves mounting to `setup`. |
+| `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `pre_endpoint_startup` runs before the application starts. |
+| `@endpoint(name, order=0, prefix=None, tags=None, mount=True, profiles=None, enabled_when=None)` | business module. `prefix` and `tags` override automatic router mounting. `mount=False` leaves mounting to `startup`. |
 | `@provides(key)` | register the method return value on the application registry. `key` is a type or a string. |
 | `@request_provides(key)` | register the method return value on the current request registry. |
 
@@ -96,10 +96,10 @@ the following is the visibility of dependency objects regarding to each hook.
 
 | hook name | app | cornerstone | request | app_state  | request_state |
 | --- | --- | --- | --- | --- | --- |
-| pre_endpoint_setup | Yes | Yes | No | Yes | No |
-| post_endpoint_setup | Yes | Yes | No | Yes | No |
-| pre_endpoint_teardown | Yes | Yes | No | Yes | No |
-| post_endpoint_teardown | Yes | Yes | No | Yes |  No |
+| pre_endpoint_startup | Yes | Yes | No | Yes | No |
+| post_endpoint_startup | Yes | Yes | No | Yes | No |
+| pre_endpoint_shutdown | Yes | Yes | No | Yes | No |
+| post_endpoint_shutdown | Yes | Yes | No | Yes |  No |
 | pre_endpoint_call | Yes | Yes | Yes | Yes | Yes |
 | post_endpoint_call | Yes | Yes | Yes | Yes | Yes |
 
@@ -147,12 +147,12 @@ class LazyDBSession:
 class CornerstoneHooksImpl(CornerstoneHooks):
 
     @provides("db")
-    def pre_endpoint_setup(self):
+    def pre_endpoint_startup(self):
         add_db_middleware(self.app, self.cornerstone)
         self.app_state['db'] = db
         return db
 
-    def post_endpoint_setup(self):
+    def post_endpoint_startup(self):
         create_all_tables(self.app)
 
     @request_provides("db.session")
@@ -164,10 +164,10 @@ class CornerstoneHooksImpl(CornerstoneHooks):
 @cornerstone(name="db", order=0)
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    async def pre_endpoint_setup(self):
+    async def pre_endpoint_startup(self):
         pass
 
-    async def post_endpoint_setup(self):
+    async def post_endpoint_startup(self):
         pass
 ```
 
@@ -182,8 +182,8 @@ the following is the visibility of dependency objects regarding to each hook.
 
 | hook name | app | endpoint | app_state |
 | --- | --- | --- | --- |
-| setup | Yes | Yes | Yes |
-| teardown | Yes | Yes | Yes |
+| startup | Yes | Yes | Yes |
+| shutdown | Yes | Yes | Yes |
 
 If the visibility of one dependency object is Yes to one hook, i.e. this dependency can be used in the hook.
 
@@ -215,20 +215,20 @@ from fastapi_hive.ioc_framework.decorators import endpoint, provides
 class EndpointHooksImpl(EndpointHooks):
 
     @provides(HousePriceModel)
-    def setup(self):
+    def startup(self):
         return HousePriceModel(DEFAULT_MODEL_PATH)
 
-    def teardown(self):
+    def shutdown(self):
         pass
 
 
 @endpoint(name="house_price")
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    async def setup(self):
+    async def startup(self):
         pass
 
-    async def teardown(self):
+    async def shutdown(self):
         pass
 ```
 

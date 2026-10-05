@@ -89,7 +89,7 @@ that must be attached to each request.
   from configurable paths.
 - **Automatic router mounting** — derive URL prefixes and OpenAPI tags from the
   folder structure.
-- **Lifecycle hooks** — run sync or async setup and teardown code at application,
+- **Lifecycle hooks** — run sync or async startup and shutdown code at application,
   module, and request boundaries.
 - **Shared and isolated state** — publish process-level values with `@provides`
   and request-scoped values with `@request_provides`. Routes read them through
@@ -201,7 +201,7 @@ from .implement import HousePriceModel
 @endpoint(name="house_price")
 class HousePriceService(EndpointHooks):
     @provides(HousePriceModel)
-    def setup(self):
+    def startup(self):
         return HousePriceModel("model.joblib")
 ```
 

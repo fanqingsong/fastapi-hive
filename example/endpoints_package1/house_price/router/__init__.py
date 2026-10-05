@@ -11,8 +11,8 @@ class EndpointHooksImpl(EndpointHooks):
     def __init__(self):
         super(EndpointHooksImpl, self).__init__()
 
-    def setup(self):
-        print("call pre setup from EndpointHooksImpl (router)!!!")
+    def startup(self):
+        print("call pre startup from EndpointHooksImpl (router)!!!")
         print(self.app)
 
 

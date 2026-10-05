@@ -24,24 +24,24 @@ class CornerstoneHooksImpl(CornerstoneHooks):
         super(CornerstoneHooksImpl, self).__init__()
 
     @provides("db")
-    def pre_endpoint_setup(self):
-        print("call pre setup from cornerstone db!!!")
+    def pre_endpoint_startup(self):
+        print("call pre startup from cornerstone db!!!")
 
         add_db_middleware(self.app, self.cornerstone)
 
         self.app_state['db'] = db
         return db
 
-    def post_endpoint_setup(self):
-        print("call post setup from cornerstone!!!")
+    def post_endpoint_startup(self):
+        print("call post startup from cornerstone!!!")
 
         create_all_tables(self.app)
 
-    def pre_endpoint_teardown(self):
-        print("call pre teardown from cornerstone!!!")
+    def pre_endpoint_shutdown(self):
+        print("call pre shutdown from cornerstone!!!")
 
-    def post_endpoint_teardown(self):
-        print("call pre teardown from cornerstone!!!")
+    def post_endpoint_shutdown(self):
+        print("call pre shutdown from cornerstone!!!")
 
     @request_provides("db.session")
     def pre_endpoint_call(self):
@@ -60,17 +60,17 @@ class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
     def __init__(self):
         super(CornerstoneAsyncHooksImpl, self).__init__()
 
-    async def pre_endpoint_setup(self):
-        print("call pre setup from cornerstone async!!!")
+    async def pre_endpoint_startup(self):
+        print("call pre startup from cornerstone async!!!")
 
-    async def post_endpoint_setup(self):
-        print("call post setup from cornerstone async!!!")
+    async def post_endpoint_startup(self):
+        print("call post startup from cornerstone async!!!")
 
-    async def pre_endpoint_teardown(self):
-        print("call pre teardown from cornerstone async!!!")
+    async def pre_endpoint_shutdown(self):
+        print("call pre shutdown from cornerstone async!!!")
 
-    async def post_endpoint_teardown(self):
-        print("call pre teardown from cornerstone async!!!")
+    async def post_endpoint_shutdown(self):
+        print("call pre shutdown from cornerstone async!!!")
 
     async def pre_endpoint_call(self):
         print("call pre endpoint call from cornerstone async!!!")

@@ -24,7 +24,7 @@ class CornerstoneHooks(ABC):
 
 
     class CornerstoneImpl(CornerstoneHooks):
-        def pre_endpoint_setup(self):
+        def pre_endpoint_startup(self):
             pass
     ```
     '''
@@ -76,16 +76,16 @@ class CornerstoneHooks(ABC):
     def request_state(self, value: dict):
         self._request_state = value
 
-    def pre_endpoint_setup(self):
+    def pre_endpoint_startup(self):
         pass
 
-    def post_endpoint_setup(self):
+    def post_endpoint_startup(self):
         pass
 
-    def pre_endpoint_teardown(self):
+    def pre_endpoint_shutdown(self):
         pass
 
-    def post_endpoint_teardown(self):
+    def post_endpoint_shutdown(self):
         pass
 
     def pre_endpoint_call(self):
@@ -109,7 +109,7 @@ class CornerstoneAsyncHooks(ABC):
 
 
     class CornerstoneAsyncImpl(CornerstoneAsyncHooks):
-        async def pre_endpoint_setup(self):
+        async def pre_endpoint_startup(self):
             pass
     ```
     '''
@@ -161,16 +161,16 @@ class CornerstoneAsyncHooks(ABC):
     def req_state(self, value: dict):
         self._req_state = value
 
-    async def pre_endpoint_setup(self):
+    async def pre_endpoint_startup(self):
         pass
 
-    async def post_endpoint_setup(self):
+    async def post_endpoint_startup(self):
         pass
 
-    async def pre_endpoint_teardown(self):
+    async def pre_endpoint_shutdown(self):
         pass
 
-    async def post_endpoint_teardown(self):
+    async def post_endpoint_shutdown(self):
         pass
 
     async def pre_endpoint_call(self):
@@ -209,21 +209,21 @@ class CornerstoneHookCaller:
             bind_cornerstone(instance, self._app, meta, request)
             invoke(instance, method_name, app_registry, request_registry)
 
-    def run_pre_setup_hook(self):
-        logger.info("running cornerstone_hooks sync pre endpoint setup...")
-        self._run("pre_endpoint_setup")
+    def run_pre_startup_hook(self):
+        logger.info("running cornerstone_hooks sync pre endpoint startup...")
+        self._run("pre_endpoint_startup")
 
-    def run_post_setup_hook(self):
-        logger.info("running cornerstone_hooks sync post endpoint setup...")
-        self._run("post_endpoint_setup")
+    def run_post_startup_hook(self):
+        logger.info("running cornerstone_hooks sync post endpoint startup...")
+        self._run("post_endpoint_startup")
 
-    def run_pre_teardown_hook(self):
-        logger.info("running cornerstone_hooks sync pre endpoint teardown...")
-        self._run("pre_endpoint_teardown")
+    def run_pre_shutdown_hook(self):
+        logger.info("running cornerstone_hooks sync pre endpoint shutdown...")
+        self._run("pre_endpoint_shutdown")
 
-    def run_post_teardown_hook(self):
-        logger.info("running cornerstone_hooks sync post endpoint teardown...")
-        self._run("post_endpoint_teardown")
+    def run_post_shutdown_hook(self):
+        logger.info("running cornerstone_hooks sync post endpoint shutdown...")
+        self._run("post_endpoint_shutdown")
 
     def run_pre_call_hook(self, request: Request):
         logger.info("running cornerstone_hooks sync pre endpoint call...")
@@ -263,21 +263,21 @@ class CornerstoneHookAsyncCaller:
             bind_cornerstone(instance, self._app, meta, request)
             await invoke_async(instance, method_name, app_registry, request_registry)
 
-    async def run_pre_setup_hook(self):
-        logger.info("running cornerstone_hooks async pre endpoint setup...")
-        await self._run("pre_endpoint_setup")
+    async def run_pre_startup_hook(self):
+        logger.info("running cornerstone_hooks async pre endpoint startup...")
+        await self._run("pre_endpoint_startup")
 
-    async def run_post_setup_hook(self):
-        logger.info("running cornerstone_hooks async post endpoint setup...")
-        await self._run("post_endpoint_setup")
+    async def run_post_startup_hook(self):
+        logger.info("running cornerstone_hooks async post endpoint startup...")
+        await self._run("post_endpoint_startup")
 
-    async def run_pre_teardown_hook(self):
-        logger.info("running cornerstone_hooks async pre endpoint teardown...")
-        await self._run("pre_endpoint_teardown")
+    async def run_pre_shutdown_hook(self):
+        logger.info("running cornerstone_hooks async pre endpoint shutdown...")
+        await self._run("pre_endpoint_shutdown")
 
-    async def run_post_teardown_hook(self):
-        logger.info("running cornerstone_hooks async post endpoint teardown...")
-        await self._run("post_endpoint_teardown")
+    async def run_post_shutdown_hook(self):
+        logger.info("running cornerstone_hooks async post endpoint shutdown...")
+        await self._run("post_endpoint_shutdown")
 
     async def run_pre_call_hook(self, request: Request):
         logger.info("running cornerstone_hooks async pre endpoint call...")

@@ -85,9 +85,9 @@ class IoCFramework:
         self._app.state.hive = HiveRegistry()
 
         # Starlette requires middleware to be registered before the application
-        # starts. Cornerstone pre-setup commonly installs shared middleware, so
+        # starts. Cornerstone pre-startup commonly installs shared middleware, so
         # synchronous preparation must happen while the app is being assembled.
-        self._cornerstone_hook_caller.run_pre_setup_hook()
+        self._cornerstone_hook_caller.run_pre_startup_hook()
 
         self._add_event_handler()
 
@@ -190,150 +190,150 @@ class IoCFramework:
     def _get_sync_startup_handler(self) -> Callable:
         app = self._app
 
-        def run_external_pre_endpoint_setup():
-            logger.info("running external sync pre endpoint setup")
+        def run_external_pre_endpoint_startup():
+            logger.info("running external sync pre endpoint startup")
 
-            external_pre_endpoint_setup = self._ioc_config.PRE_ENDPOINT_SETUP
-            if callable(external_pre_endpoint_setup):
-                external_pre_endpoint_setup()
+            external_pre_endpoint_startup = self._ioc_config.PRE_ENDPOINT_STARTUP
+            if callable(external_pre_endpoint_startup):
+                external_pre_endpoint_startup()
 
-        def run_external_post_endpoint_setup():
-            logger.info("running external sync post endpoint setup")
+        def run_external_post_endpoint_startup():
+            logger.info("running external sync post endpoint startup")
 
-            external_post_endpoint_setup = self._ioc_config.POST_ENDPOINT_SETUP
-            if callable(external_post_endpoint_setup):
-                external_post_endpoint_setup()
+            external_post_endpoint_startup = self._ioc_config.POST_ENDPOINT_STARTUP
+            if callable(external_post_endpoint_startup):
+                external_post_endpoint_startup()
 
         def startup() -> None:
-            logger.info("running all sync setup handlers...")
+            logger.info("running all sync startup handlers...")
 
-            run_external_pre_endpoint_setup()
+            run_external_pre_endpoint_startup()
 
-            self._sync_setup()
+            self._sync_startup()
 
-            run_external_post_endpoint_setup()
+            run_external_post_endpoint_startup()
 
-            self._cornerstone_hook_caller.run_post_setup_hook()
+            self._cornerstone_hook_caller.run_post_startup_hook()
 
         return startup
 
     def _get_sync_shutdown_handler(self) -> Callable:
         app = self._app
 
-        def run_external_pre_endpoint_teardown():
-            logger.info("running external sync pre endpoint teardown")
+        def run_external_pre_endpoint_shutdown():
+            logger.info("running external sync pre endpoint shutdown")
 
-            external_pre_endpoint_teardown = self._ioc_config.PRE_ENDPOINT_TEARDOWN
-            if callable(external_pre_endpoint_teardown):
-                external_pre_endpoint_teardown()
+            external_pre_endpoint_shutdown = self._ioc_config.PRE_ENDPOINT_SHUTDOWN
+            if callable(external_pre_endpoint_shutdown):
+                external_pre_endpoint_shutdown()
 
-        def run_external_post_endpoint_teardown():
-            logger.info("running external sync post endpoint teardown")
+        def run_external_post_endpoint_shutdown():
+            logger.info("running external sync post endpoint shutdown")
 
-            external_post_endpoint_teardown = self._ioc_config.POST_ENDPOINT_TEARDOWN
-            if callable(external_post_endpoint_teardown):
-                external_post_endpoint_teardown()
+            external_post_endpoint_shutdown = self._ioc_config.POST_ENDPOINT_SHUTDOWN
+            if callable(external_post_endpoint_shutdown):
+                external_post_endpoint_shutdown()
 
         def shutdown() -> None:
-            logger.info("running all sync teardown handlers...")
+            logger.info("running all sync shutdown handlers...")
 
-            run_external_pre_endpoint_teardown()
+            run_external_pre_endpoint_shutdown()
 
-            self._cornerstone_hook_caller.run_pre_teardown_hook()
+            self._cornerstone_hook_caller.run_pre_shutdown_hook()
 
-            self._sync_teardown()
+            self._sync_shutdown()
 
-            run_external_post_endpoint_teardown()
+            run_external_post_endpoint_shutdown()
 
-            self._cornerstone_hook_caller.run_post_teardown_hook()
+            self._cornerstone_hook_caller.run_post_shutdown_hook()
 
         return shutdown
 
     def _get_async_startup_handler(self) -> Callable:
         app = self._app
 
-        async def run_external_async_pre_endpoint_setup():
-            logger.info("running external async pre endpoint setup.")
+        async def run_external_async_pre_endpoint_startup():
+            logger.info("running external async pre endpoint startup.")
 
-            external_async_pre_endpoint_setup = self._ioc_config.ASYNC_PRE_ENDPOINT_SETUP
-            if callable(external_async_pre_endpoint_setup):
-                await external_async_pre_endpoint_setup()
+            external_async_pre_endpoint_startup = self._ioc_config.ASYNC_PRE_ENDPOINT_STARTUP
+            if callable(external_async_pre_endpoint_startup):
+                await external_async_pre_endpoint_startup()
 
-        async def run_external_async_post_endpoint_setup():
-            logger.info("running external async post endpoint setup")
+        async def run_external_async_post_endpoint_startup():
+            logger.info("running external async post endpoint startup")
 
-            external_async_post_endpoint_setup = self._ioc_config.ASYNC_POST_ENDPOINT_SETUP
-            if callable(external_async_post_endpoint_setup):
-                await external_async_post_endpoint_setup()
+            external_async_post_endpoint_startup = self._ioc_config.ASYNC_POST_ENDPOINT_STARTUP
+            if callable(external_async_post_endpoint_startup):
+                await external_async_post_endpoint_startup()
 
         async def startup() -> None:
-            logger.info("running all async setup handlers...")
+            logger.info("running all async startup handlers...")
 
-            await run_external_async_pre_endpoint_setup()
+            await run_external_async_pre_endpoint_startup()
 
-            await self._cornerstone_hook_async_caller.run_pre_setup_hook()
+            await self._cornerstone_hook_async_caller.run_pre_startup_hook()
 
-            await self._async_setup()
+            await self._async_startup()
 
-            await run_external_async_post_endpoint_setup()
+            await run_external_async_post_endpoint_startup()
 
-            await self._cornerstone_hook_async_caller.run_post_setup_hook()
+            await self._cornerstone_hook_async_caller.run_post_startup_hook()
 
         return startup
 
     def _get_async_shutdown_handler(self) -> Callable:
         app = self._app
 
-        async def run_external_async_pre_endpoint_teardown():
-            logger.info("running external async pre endpoint teardown")
+        async def run_external_async_pre_endpoint_shutdown():
+            logger.info("running external async pre endpoint shutdown")
 
-            external_async_pre_endpoint_teardown = self._ioc_config.ASYNC_PRE_ENDPOINT_TEARDOWN
-            if callable(external_async_pre_endpoint_teardown):
-                await external_async_pre_endpoint_teardown()
+            external_async_pre_endpoint_shutdown = self._ioc_config.ASYNC_PRE_ENDPOINT_SHUTDOWN
+            if callable(external_async_pre_endpoint_shutdown):
+                await external_async_pre_endpoint_shutdown()
 
-        async def run_external_async_post_endpoint_teardown():
-            logger.info("running external async post endpoint teardown")
+        async def run_external_async_post_endpoint_shutdown():
+            logger.info("running external async post endpoint shutdown")
 
-            external_async_post_endpoint_teardown = self._ioc_config.ASYNC_POST_ENDPOINT_TEARDOWN
-            if callable(external_async_post_endpoint_teardown):
-                await external_async_post_endpoint_teardown()
+            external_async_post_endpoint_shutdown = self._ioc_config.ASYNC_POST_ENDPOINT_SHUTDOWN
+            if callable(external_async_post_endpoint_shutdown):
+                await external_async_post_endpoint_shutdown()
 
         async def shutdown() -> None:
-            logger.info("running all async teardown handlers...")
+            logger.info("running all async shutdown handlers...")
 
-            await run_external_async_pre_endpoint_teardown()
+            await run_external_async_pre_endpoint_shutdown()
 
-            await self._cornerstone_hook_async_caller.run_pre_teardown_hook()
+            await self._cornerstone_hook_async_caller.run_pre_shutdown_hook()
 
-            await self._async_teardown()
+            await self._async_shutdown()
 
-            await run_external_async_post_endpoint_teardown()
+            await run_external_async_post_endpoint_shutdown()
 
-            await self._cornerstone_hook_async_caller.run_post_teardown_hook()
+            await self._cornerstone_hook_async_caller.run_post_shutdown_hook()
 
         return shutdown
 
-    def _sync_setup(self) -> None:
-        logger.info("running sync endpoint setup...")
+    def _sync_startup(self) -> None:
+        logger.info("running sync endpoint startup...")
 
-        self._endpoint_hook_caller.run_setup_hook()
+        self._endpoint_hook_caller.run_startup_hook()
 
         if self._ioc_config.ROUTER_MOUNT_AUTOMATED:
             self._endpoint_router_mounter.mount()
 
-    def _sync_teardown(self) -> None:
-        logger.info("running sync endpoint teardown...")
+    def _sync_shutdown(self) -> None:
+        logger.info("running sync endpoint shutdown...")
 
-        self._endpoint_hook_caller.run_teardown_hook()
+        self._endpoint_hook_caller.run_shutdown_hook()
 
-    async def _async_setup(self) -> None:
-        logger.info("running async endpoint setup...")
+    async def _async_startup(self) -> None:
+        logger.info("running async endpoint startup...")
 
-        await self._endpoint_hook_async_caller.run_setup_hook()
+        await self._endpoint_hook_async_caller.run_startup_hook()
 
-    async def _async_teardown(self) -> None:
-        logger.info("running async endpoint teardown...")
+    async def _async_shutdown(self) -> None:
+        logger.info("running async endpoint shutdown...")
 
-        await self._endpoint_hook_async_caller.run_teardown_hook()
+        await self._endpoint_hook_async_caller.run_shutdown_hook()
 
 

@@ -51,7 +51,7 @@ Code Folder Structure
                 __init__.py
 
 
-From code view, the setup or teardown hooks should be set in __init__.py if needed.
+From code view, the startup or shutdown hooks should be set in __init__.py if needed.
 
 Decorate the hook class. `order` decides who runs first in the same phase. `profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` reads a dotted key from `FEATURES`. `@provides` registers the method return value on the app registry. `@request_provides` registers it on the current request.
 
@@ -70,23 +70,23 @@ from example.cornerstone.auth.implement import validate_request
 class CornerstoneHooksImpl(CornerstoneHooks):
 
     @provides("auth.validate_request")
-    def pre_endpoint_setup(self):
-        print("call pre setup from CornerstoneHooksImpl!!!")
+    def pre_endpoint_startup(self):
+        print("call pre startup from CornerstoneHooksImpl!!!")
         print(self.app)
         return validate_request
 
-    def post_endpoint_setup(self):
-        print("call post setup from CornerstoneHooksImpl!!!")
+    def post_endpoint_startup(self):
+        print("call post startup from CornerstoneHooksImpl!!!")
 
 
 @cornerstone(name="auth", order=100)
 class CornerstoneAsyncHooksImpl(CornerstoneAsyncHooks):
 
-    async def pre_endpoint_setup(self):
-        print("call pre setup from CornerstoneAsyncHooksImpl!!!")
+    async def pre_endpoint_startup(self):
+        print("call pre startup from CornerstoneAsyncHooksImpl!!!")
 
-    async def post_endpoint_setup(self):
-        print("call post setup from CornerstoneAsyncHooksImpl!!!")
+    async def post_endpoint_startup(self):
+        print("call post startup from CornerstoneAsyncHooksImpl!!!")
 
 ```
 
@@ -105,23 +105,23 @@ from example.endpoints_package1.house_price.config import DEFAULT_MODEL_PATH
 class EndpointHooksImpl(EndpointHooks):
 
     @provides(HousePriceModel)
-    def setup(self):
-        print("call pre setup from EndpointHooksImpl!!!")
+    def startup(self):
+        print("call pre startup from EndpointHooksImpl!!!")
         print(self.app)
         return HousePriceModel(DEFAULT_MODEL_PATH)
 
-    def teardown(self):
-        print("call pre teardown from EndpointHooksImpl!!!")
+    def shutdown(self):
+        print("call pre shutdown from EndpointHooksImpl!!!")
 
 
 @endpoint(name="house_price")
 class EndpointAsyncHooksImpl(EndpointAsyncHooks):
 
-    async def setup(self):
-        print("call pre setup from EndpointAsyncHooksImpl!!!")
+    async def startup(self):
+        print("call pre startup from EndpointAsyncHooksImpl!!!")
 
-    async def teardown(self):
-        print("call pre teardown from EndpointAsyncHooksImpl!!!")
+    async def shutdown(self):
+        print("call pre shutdown from EndpointAsyncHooksImpl!!!")
 
 ```
 
@@ -180,7 +180,7 @@ hive:
 ```
 
 Programmatic assignment (`hive.config.API_PREFIX = ...`) still works and wins
-over env and file. Lifecycle callbacks such as `PRE_ENDPOINT_SETUP` remain
+over env and file. Lifecycle callbacks such as `PRE_ENDPOINT_STARTUP` remain
 code-only.
 
 ## URL MAPPING
@@ -241,8 +241,8 @@ from fastapi_hive.ioc_framework.decorators import endpoint
 @endpoint(name="house_price", mount=False)
 class EndpointHooksImpl(EndpointHooks):
 
-    def setup(self):
-        print("call pre setup from EndpointHooksImpl (service)!!!")
+    def startup(self):
+        print("call pre startup from EndpointHooksImpl (service)!!!")
 
         app: FastAPI = self.app
 
