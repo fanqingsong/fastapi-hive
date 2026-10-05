@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1076" height="674" viewBox="0 0 1076 674" role="img" aria-labelledby="title desc">
+  <title id="title">FastAPI Hive architecture</title>
+  <desc id="desc">Endpoint packages sit on shared foundations, which sit on FastAPI.</desc>
+  <rect width="1076" height="674" fill="#ffffff"/>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="156" y="98" width="316" height="272" fill="#ffc000" stroke="#bf9000" stroke-width="1.5"/>
+    <text x="314" y="138" text-anchor="middle" font-size="22" font-weight="700" fill="#000000">PACKAGE1</text>
+    <ellipse cx="306" cy="203" rx="112" ry="34" fill="#4472c4" stroke="#2f528f" stroke-width="1.5"/>
+    <text x="306" y="209" text-anchor="middle" font-size="20" fill="#ffffff">endpoint1</text>
+    <ellipse cx="314" cy="306" rx="112" ry="36" fill="#4472c4" stroke="#2f528f" stroke-width="1.5"/>
+    <text x="314" y="312" text-anchor="middle" font-size="20" fill="#ffffff">endpoint2</text>
+
+    <rect x="533" y="98" width="316" height="272" fill="#ffc000" stroke="#bf9000" stroke-width="1.5"/>
+    <text x="691" y="138" text-anchor="middle" font-size="22" font-weight="700" fill="#000000">PACKAGE2</text>
+    <ellipse cx="689" cy="203" rx="112" ry="34" fill="#4472c4" stroke="#2f528f" stroke-width="1.5"/>
+    <text x="689" y="209" text-anchor="middle" font-size="20" fill="#ffffff">endpoint3</text>
+    <ellipse cx="697" cy="306" rx="112" ry="36" fill="#4472c4" stroke="#2f528f" stroke-width="1.5"/>
+    <text x="697" y="312" text-anchor="middle" font-size="20" fill="#ffffff">endpoint4</text>
+
+    <rect x="155" y="386" width="699" height="87" fill="#ed7d31" stroke="#c65911" stroke-width="1.5"/>
+    <ellipse cx="341" cy="430" rx="140" ry="34" fill="#4472c4" stroke="#2f528f" stroke-width="1.5"/>
+    <text x="341" y="436" text-anchor="middle" font-size="20" fill="#ffffff">foundation1</text>
+    <ellipse cx="671" cy="430" rx="140" ry="34" fill="#4472c4" stroke="#2f528f" stroke-width="1.5"/>
+    <text x="671" y="436" text-anchor="middle" font-size="20" fill="#ffffff">foundation2</text>
+
+    <rect x="155" y="494" width="699" height="106" fill="#4472c4" stroke="#2f528f" stroke-width="1.5"/>
+    <text x="504" y="555" text-anchor="middle" font-size="22" font-weight="700" fill="#ffffff">FASTAPI</text>
+  </g>
+</svg>

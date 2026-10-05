@@ -40,7 +40,7 @@ foundation for common modules which are dependent on by endpoints.
 
 endpoint for every service module which expose routers on swagger API page.
 
-![architecture](img/architecture.png)
+![architecture](img/architecture.svg)
 
 ---
 
