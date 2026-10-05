@@ -29,27 +29,19 @@ def get_app() -> FastAPI:
             "docs": "/docs",
             "feature_tour": "/api/showcase/tour",
             "manual_mount": "/api/manual/ping",
-            "collected_routers": "/hive/routers",
+            "mounted_routers": "/hive/routers",
         }
 
     @fast_app.get("/hive/routers")
-    def list_collected_routers():
+    def list_mounted_routers():
         items = []
-        for key, slot in fast_app.state.endpoints.items():
-            meta = slot.get("__endpoint__")
-            if meta is None:
-                continue
-            for binding in getattr(meta, "routers", []):
-                items.append({
-                    "endpoint": key,
-                    "name": binding.name,
-                    "order": binding.order,
-                    "skip": binding.mount.skip,
-                    "prefix": binding.mount.prefix,
-                    "tags": binding.mount.tags,
-                    "explicit": binding.mount.explicit,
-                    "paths": [getattr(route, "path", None) for route in binding.router.routes],
-                })
+        for path, operations in fast_app.openapi().get("paths", {}).items():
+            methods = sorted(
+                name.upper()
+                for name in operations
+                if name not in {"parameters", "summary", "description", "servers"}
+            )
+            items.append({"path": path, "methods": methods})
         return items
 
     return fast_app

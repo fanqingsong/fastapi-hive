@@ -2,8 +2,6 @@
 
 ![architecture](img/hive.jpg)
 
-![startup_flow](img/startup_flow.png)
-
 <p align="center">
     <em>FastAPI Hive Framework, modulization of code layout, decoupling codes into cornerstones and endpoints, developer-friendly, easy to be integrated</em>
 </p>
@@ -52,7 +50,7 @@ The key features are:
 * **Conerstone Container**: a top-level folder to layout codes by function folder, like db and authentication. 
 * **Endpoint Container**: a top-level folder to layout service codes by endpoint folder,  
 * **Endpoint folder**: a sub-folder in Endpoint Container, layout one service code by function folder(router, db, service, etc).
-* **Router Mounting Automatically**: each endpoint's `router` module is collected with its hooks; the framework mounts those routers automatically (or uses `@endpoint(prefix=..., tags=...)`).
+* **Explicit router mounting**: each endpoint includes its `APIRouter` from `startup` with `self.app.include_router(...)`.
 * **Model Preloading Easily**: the service(such as ML model) defined by module will be mounted into app easily, in order to reduce loading time during endpoint request.
 * **Developer-Friendly**: all one-endpoint/cornerstone codes are put in one same folders, easy to review and update.
 * **Easy-to-be-Integrated**: Just several line codes to integrate it in your app.
@@ -61,7 +59,7 @@ The key features are:
 
 ## Overview
 
-Folders are set in such layout, urls are mapped by folder structure automatically.
+Folders are set in such layout. Each endpoint chooses its URL prefix when it mounts the router.
 
 ![architecture](img/url_by_folder.png)
 

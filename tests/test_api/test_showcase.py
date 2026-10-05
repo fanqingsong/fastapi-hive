@@ -39,7 +39,6 @@ def test_feature_tour_covers_hive_capabilities(test_client) -> None:
 
     assert body["bean_order"] == ["first", "second", "third"]
     assert body["hooks"]["endpoint"] == "showcase"
-    assert body["hooks"]["router_count"] == 1
     assert body["autoconfigure"]["import_path"].endswith("ImportedAuto")
 
     if sys.version_info >= (3, 9):
@@ -66,12 +65,12 @@ def test_feature_tour_covers_hive_capabilities(test_client) -> None:
     assert test_client.get("/api/gated/ping").status_code == 404
 
     listed = test_client.get("/hive/routers").json()
-    showcase = [item for item in listed if item["name"] == "showcase"]
-    manual_binding = [item for item in listed if item["name"] == "manual_mount"]
-    assert len(showcase) == 1
-    assert showcase[0]["skip"] is False
-    assert len(manual_binding) == 1
-    assert manual_binding[0]["skip"] is True
+    paths = {item["path"] for item in listed}
+    assert "/api/showcase/tour" in paths
+    assert "/api/manual/ping" in paths
+    assert "/api/hb2/heartbeat" in paths
+    assert "/api/parked/ping" not in paths
+    assert "/api/gated/ping" not in paths
 
     heartbeat = test_client.get("/api/hb2/heartbeat")
     assert heartbeat.status_code == 200

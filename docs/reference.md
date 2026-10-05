@@ -18,10 +18,6 @@ All configuarable parameters are listed below.
 | AUTOCONFIGURE_ENABLED | load `hive.autoconfigure` entry points and imports | True |
 | AUTOCONFIGURE_IMPORTS | extra `module:Class` autoconfigure paths | [] |
 | AUTOCONFIGURE_EXCLUDE | skip autoconfigure by name or `module:Class` | [] |
-| ROUTER_MOUNT_AUTOMATED | if router mounted automatically | True |
-| HIDE_ENDPOINT_CONTAINER_IN_API | if endpoint container folder name showed in API | False |
-| HIDE_ENDPOINT_IN_API | if endpoint name showed in API | Flase |
-| HIDE_ENDPOINT_IN_TAG | if endpoint name showed in tag | False |
 
 
 These configs are loaded automatically from convention, `hive.yaml` /
@@ -53,8 +49,6 @@ hive:
   endpoint_package_paths:
     - ./endpoints_package1
     - ./endpoints_package2
-  hide_endpoint_container_in_api: true
-  hide_endpoint_in_tag: true
 ```
 
 ```python
@@ -72,7 +66,7 @@ Decorate the hook class so the container can discover it. Undecorated classes ar
 | decorator | purpose |
 | --- | --- |
 | `@cornerstone(name, order=0, profiles=None, enabled_when=None)` | infrastructure module. `configure()` runs while the app is assembled and must be synchronous. Other hooks run from the async lifecycle. |
-| `@endpoint(name, order=0, prefix=None, tags=None, mount=True, profiles=None, enabled_when=None)` | business module. `prefix` and `tags` override automatic router mounting. `mount=False` leaves mounting to `startup`. |
+| `@endpoint(name, order=0, profiles=None, enabled_when=None)` | business module. Define the class in the endpoint package root. Mount routers in `startup` with `self.app.include_router`. |
 | `@provides(key, scope="app")` | register a factory method as a bean. `scope` is `app`, `request`, or `transient`. Lifecycle methods cannot use `@provides`. |
 | `@component` | register a class constructor as a bean. Default key is the class. |
 | `@autoconfigure(name, order=0, after=(), before=())` | mark a starter class. Loaded from scan, entry points, or `AUTOCONFIGURE_IMPORTS`. |
@@ -87,19 +81,14 @@ Conditions: first `on_import` / `profiles` / `enabled_when` / `on_property`; the
 
 Routes should use `Inject(key)` because FastAPI builds the dependency graph at import time. Hook parameters can use type hints. If a resolved value is a callable whose only required argument is `Request`, `Inject` calls it.
 
-## router collection
+## endpoint routers
 
 ----
 
-Endpoint loading walks every submodule of the endpoint package and collects hooks and routers together. A module-level `APIRouter` named `router` becomes an `EndpointMeta.routers` entry (`RouterBinding`: the router, mount spec, order, and name). The same router object exported from more than one module is collected once. Automatic mounting consumes that list with the same order as endpoint hooks.
+The framework does not collect or mount `APIRouter` objects. In an `@endpoint`
+`startup` hook, call `self.app.include_router(router, prefix=..., tags=...)`.
+See `example/endpoints_package1/house_price/__init__.py`.
 
-| helper | purpose |
-| --- | --- |
-| `collect_routers(module, mount_spec=..., order=..., name=...)` | pick module-level `APIRouter` objects named `router` from one module or a sequence |
-| `select_routers(pairs)` | drop `mount=False` bindings and sort by order, then name |
-| `resolve_router_target(meta, binding, config)` | build prefix and tags from `API_PREFIX`, `HIDE_*`, or an explicit `@endpoint` mount |
-
-Set `prefix` / `tags` on `@endpoint` to override the generated URL. See `example/endpoints_package2/heart_beat2`.
 
 ## cornerstone hooks
 
@@ -178,14 +167,17 @@ Hook methods and `__init__` receive dependencies by parameter. Built-in extras:
 | name | type | meaning |
 | --- | --- | --- |
 | app | `FastAPI` | the FastAPI application |
-| endpoint | `EndpointMeta` | metadata of this endpoint. `endpoint.routers` is the list collected from module-level `router` objects. |
+| endpoint | `EndpointMeta` | metadata of this endpoint |
 
 Published Hive keys are injected the same way as on cornerstone hooks. `self.app` / `self.endpoint` remain available as context after bind.
 
 
 please check in the code for usages.
 
-hooks can be set in any submodule of the endpoint package. `@component` and `@autoconfigure` are scanned the same way, so a bean factory does not have to live on the hook class.
+`@endpoint` classes must be defined in the endpoint package root (`__init__.py`).
+A class in a submodule such as `router/` fails at load time. `@component` and
+`@autoconfigure` are still scanned from every submodule, so a bean factory does
+not have to live on the hook class.
 
 example/endpoints_package1/house_price/service/__init__.py
 

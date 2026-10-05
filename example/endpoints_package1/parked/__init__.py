@@ -4,7 +4,7 @@ from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from example.endpoints_package1.parked.router.implement import router
 
 
-@endpoint(name="parked", profiles=["never"], mount=False)
+@endpoint(name="parked", profiles=["never"])
 class ParkedHooks(EndpointHooks):
     """profiles does not overlap ACTIVE_PROFILES, so startup never mounts it."""
 

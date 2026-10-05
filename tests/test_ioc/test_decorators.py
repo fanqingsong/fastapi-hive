@@ -2,26 +2,20 @@ import asyncio
 import types
 
 import pytest
-from fastapi import APIRouter, FastAPI
+from fastapi import FastAPI
 from starlette.testclient import TestClient
 
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHooks
 from fastapi_hive.ioc_framework.decorators import (
-    MountSpec,
-    RouterBinding,
     collect_hooks,
     collect_providers,
-    collect_routers,
     cornerstone,
     create_hook,
     endpoint,
-    endpoint_hook_order,
     invoke,
     invoke_sync,
     provides,
-    resolve_router_target,
     select_hooks,
-    select_routers,
 )
 from fastapi_hive.ioc_framework.beans import definitions_from_class
 from fastapi_hive.ioc_framework.context import HiveContext
@@ -154,101 +148,6 @@ class NotesHooks(EndpointHooks):
     def __init__(self, token: Token):
         super().__init__()
         self.token = token
-
-
-def test_collect_routers_uses_module_convention():
-    module = types.ModuleType("sample_router")
-    module.router = APIRouter()
-
-    bindings = collect_routers(
-        module,
-        mount_spec=MountSpec(prefix="/notes", explicit=True),
-        order=3,
-        name="notes",
-    )
-
-    assert len(bindings) == 1
-    assert bindings[0].router is module.router
-    assert bindings[0].order == 3
-    assert bindings[0].name == "notes"
-    assert bindings[0].mount.prefix == "/notes"
-
-
-def test_collect_routers_skips_missing_or_wrong_type():
-    empty = types.ModuleType("empty_router")
-    assert collect_routers(empty, mount_spec=MountSpec()) == []
-    assert collect_routers(None, mount_spec=MountSpec()) == []
-
-    module = types.ModuleType("not_a_router")
-    module.router = object()
-    assert collect_routers(module, mount_spec=MountSpec()) == []
-
-
-def test_collect_routers_dedupes_same_instance_across_modules():
-    shared = APIRouter()
-    first = types.ModuleType("first_router")
-    first.router = shared
-    second = types.ModuleType("second_router")
-    second.router = shared
-
-    bindings = collect_routers([first, second], mount_spec=MountSpec())
-    assert len(bindings) == 1
-    assert bindings[0].router is shared
-
-
-def test_collect_routers_ignores_apirouter_not_named_router():
-    module = types.ModuleType("helper_router")
-    module.helper = APIRouter()
-    assert collect_routers(module, mount_spec=MountSpec()) == []
-
-
-def test_select_routers_skips_and_sorts():
-    @endpoint(name="late", order=10)
-    class Late(EndpointHooks):
-        pass
-
-    @endpoint(name="early", order=1)
-    class Early(EndpointHooks):
-        pass
-
-    late = types.SimpleNamespace(name="late")
-    early = types.SimpleNamespace(name="early")
-    skipped = types.SimpleNamespace(name="off")
-    pairs = [
-        (RouterBinding(APIRouter(), MountSpec(), order=endpoint_hook_order([Late]), name="late"), late),
-        (RouterBinding(APIRouter(), MountSpec(skip=True), order=0, name="off"), skipped),
-        (RouterBinding(APIRouter(), MountSpec(), order=endpoint_hook_order([Early]), name="early"), early),
-    ]
-
-    selected = select_routers(pairs)
-    assert [binding.name for binding, _ in selected] == ["early", "late"]
-
-
-def test_resolve_router_target_uses_config_and_explicit_mount():
-    meta = types.SimpleNamespace(name="notes", container_name="endpoints")
-    config = IoCConfig(API_PREFIX="/api")
-
-    prefix, tags = resolve_router_target(meta, RouterBinding(APIRouter(), MountSpec()), config)
-    assert prefix == "/api/endpoints/notes"
-    assert tags == ["endpoints.notes"]
-
-    hidden = IoCConfig(
-        API_PREFIX="/api",
-        HIDE_ENDPOINT_CONTAINER_IN_API=True,
-        HIDE_ENDPOINT_IN_API=True,
-        HIDE_ENDPOINT_IN_TAG=True,
-    )
-    prefix, tags = resolve_router_target(meta, RouterBinding(APIRouter(), MountSpec()), hidden)
-    assert prefix == "/api"
-    assert tags == ["endpoints"]
-
-    explicit = RouterBinding(
-        APIRouter(),
-        MountSpec(prefix="/v1/notes", tags=["notes"], explicit=True),
-    )
-    prefix, tags = resolve_router_target(meta, explicit, config)
-    assert prefix == "/v1/notes"
-    assert tags == ["notes"]
 
 
 def test_constructor_injection_uses_registry():

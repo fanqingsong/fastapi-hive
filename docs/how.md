@@ -51,7 +51,8 @@ Code Folder Structure
                 __init__.py
 
 
-From code view, the startup or shutdown hooks should be set in __init__.py if needed.
+From code view, the startup or shutdown hooks should be set in the endpoint
+package root `__init__.py`. An `@endpoint` class in a submodule is rejected.
 
 Decorate the hook class. `order` decides who runs first in the same phase. `profiles` must overlap `ACTIVE_PROFILES` when it is set. `enabled_when` reads a dotted key from `FEATURES`. `@provides` / `@component` register beans on `HiveContext`. Lifecycle methods cannot use `@provides`. Hook parameters and `Inject` resolve the same keys. `@autoconfigure` + `@conditional` load optional starters.
 
@@ -108,10 +109,9 @@ def post_predict(model: HousePriceModel = Inject(HousePriceModel)):
 
 ```
 
-For the hooks running flow, please reference the belowing diagram:
-Note: it only depict the startup flow, it is same as shutdown flow.
-
-![startup_flow](img/startup_flow.png)
+For the hooks running flow, please reference the diagram in
+[Architecture](design.md). `@endpoint.startup` mounts routers; shutdown uses
+the same three stages in reverse around endpoint `shutdown`.
 
 
 ### Setup hive framework init codes 
@@ -147,8 +147,6 @@ hive:
   endpoint_package_paths:
     - ./endpoints_package1
     - ./endpoints_package2
-  hide_endpoint_container_in_api: true
-  hide_endpoint_in_tag: true
 ```
 
 Programmatic assignment (`hive.config.API_PREFIX = ...`) still works and wins
@@ -157,13 +155,8 @@ over env and file.
 ## URL MAPPING
 
 The framework discovers cornerstones and endpoints in the same load pass.
-While an endpoint package is imported, the loader walks every submodule and
-collects each module-level `APIRouter` named `router` onto `EndpointMeta.routers`
-(the same object exported from several modules is mounted once). After endpoint
-startup hooks run, a built-in caller mounts those collected routers.
-
-The default URL is built from the API prefix, the endpoint container folder
-name, and the endpoint folder name, so paths stay unique and predictable.
+`@endpoint` hook classes must live in the endpoint package root. Mount routers
+yourself in `startup` with `self.app.include_router(...)`.
 
 If the folder structure likes below
 
@@ -181,55 +174,27 @@ If the folder structure likes below
         main.py
 ```
 
-Then, the API URLs will be like below:
+Then register routes in the endpoint startup hook, for example
+`self.app.include_router(router, prefix="/api/heartbeat", tags=["heartbeat"])`.
 
-```text
-{API_PREFIX}/endpoint_packages/heartbeat/xxx
-{API_PREFIX}/endpoint_packages/prediction/yyy
-```
+The example `heart_beat2` module mounts at `/api/hb2`. `GET /hive/routers` on
+the example app lists routes already included on the FastAPI app.
 
-Note:
-
-1. xxx url path is defined in endpoint_packages/heartbeat/router.py
-2. yyy url path is defined in endpoint_packages/prediction/router.py
-
-if your app don't want to display container_name name in URL, you can turn on HIDE_PACKAGE_IN_URL of configuration,
-After turnning off, the endpoint URLs will be like:
-
-```text
-{API_PREFIX}/heartbeat/xxx
-{API_PREFIX}/prediction/yyy
-```
-
-`@endpoint(prefix=..., tags=...)` replaces the generated prefix and OpenAPI tag.
-The example `heart_beat2` module mounts at `/api/hb2` instead of
-`/api/heart_beat2`. `GET /hive/routers` on the example app lists every collected
-binding.
-
-If you want to disable automatic mounting, set `ROUTER_MOUNT_AUTOMATED = False`
-(or `router_mount_automated: false` in `hive.yaml`) and register the router in
-a startup hook:
-
-example/endpoints_package1/house_price/router/__init__.py
+example/endpoints_package1/house_price/__init__.py
 
 
 ```python
 
 from example.endpoints_package1.house_price.router.implement import router
 
-from fastapi import FastAPI
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from fastapi_hive.ioc_framework.decorators import endpoint
 
 
-@endpoint(name="house_price", mount=False)
+@endpoint(name="house_price")
 class EndpointHooksImpl(EndpointHooks):
 
     def startup(self):
-        print("call pre startup from EndpointHooksImpl (service)!!!")
-
-        app: FastAPI = self.app
-
-        app.include_router(router, tags=["house price"], prefix="/v1/house_price1")
+        self.app.include_router(router, tags=["house_price"], prefix="/api/house_price")
 
 ```

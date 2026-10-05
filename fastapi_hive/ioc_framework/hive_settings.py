@@ -24,10 +24,6 @@ _FIELD_ALIASES = {
     "autoconfigure_enabled": "AUTOCONFIGURE_ENABLED",
     "autoconfigure_imports": "AUTOCONFIGURE_IMPORTS",
     "autoconfigure_exclude": "AUTOCONFIGURE_EXCLUDE",
-    "router_mount_automated": "ROUTER_MOUNT_AUTOMATED",
-    "hide_endpoint_container_in_api": "HIDE_ENDPOINT_CONTAINER_IN_API",
-    "hide_endpoint_in_api": "HIDE_ENDPOINT_IN_API",
-    "hide_endpoint_in_tag": "HIDE_ENDPOINT_IN_TAG",
 }
 
 

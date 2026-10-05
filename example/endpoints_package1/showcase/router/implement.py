@@ -94,7 +94,6 @@ def feature_tour(
         "hooks": {
             "lifecycle": list(request.app.state.hive_lifecycle),
             "endpoint": request.app.state.showcase_endpoint_name,
-            "router_count": request.app.state.showcase_router_count,
         },
         "autoconfigure": {
             "import_path": "example.starters.imported_auto:ImportedAuto",

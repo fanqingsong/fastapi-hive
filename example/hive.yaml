@@ -9,11 +9,6 @@ hive:
   endpoint_package_paths:
     - ./endpoints_package1
     - ./endpoints_package2
-  # Global automatic mounting stays on. manual_mount opts out with mount=False.
-  router_mount_automated: true
-  hide_endpoint_container_in_api: true
-  hide_endpoint_in_api: false
-  hide_endpoint_in_tag: true
   # Profiles gate @cornerstone / @endpoint / @conditional(profiles=...).
   active_profiles:
     - demo

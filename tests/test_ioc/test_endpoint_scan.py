@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+import pytest
 
 from fastapi_hive.ioc_framework.autoconfigure import scanned_modules
 from fastapi_hive.ioc_framework.endpoint_container import (
@@ -49,8 +49,6 @@ def test_endpoint_scan_finds_component_and_router_without_db_router_service(
     meta = container.endpoints["epkg.demo"]
     module_names = {module.__name__ for module in meta.imported_modules}
     assert "epkg.demo.schemas" in module_names
-    assert len(meta.routers) == 1
-    assert isinstance(meta.routers[0].router, APIRouter)
 
     class Cornerstones:
         cornerstones = {}
@@ -90,3 +88,51 @@ def test_reexported_component_is_registered_once(tmp_path, monkeypatch):
     definitions, _ = collect_from_modules(container.endpoints["epkg.demo"].imported_modules)
     keys = [item.key for item in definitions if getattr(item.owner_cls, "__name__", "") == "Marker"]
     assert len(keys) == 1
+
+
+def test_endpoint_hook_in_package_root_is_collected(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.syspath_prepend(str(tmp_path))
+    endpoint = tmp_path / "rootpkg" / "demo"
+    endpoint.mkdir(parents=True)
+    (tmp_path / "rootpkg" / "__init__.py").write_text("")
+    (endpoint / "__init__.py").write_text(
+        "from fastapi_hive.ioc_framework.decorators import endpoint\n"
+        "from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks\n"
+        "\n"
+        "@endpoint(name='demo')\n"
+        "class DemoHooks(EndpointHooks):\n"
+        "    pass\n"
+    )
+    (endpoint / "router.py").write_text("router = object()\n")
+
+    container = EndpointContainer()
+    container.register_endpoint_package_paths(["rootpkg"])
+    container.load_endpoints()
+
+    hooks = container.endpoints["rootpkg.demo"].hooks
+    assert [cls.__name__ for cls in hooks] == ["DemoHooks"]
+
+
+def test_endpoint_hook_in_submodule_raises(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.syspath_prepend(str(tmp_path))
+    endpoint = tmp_path / "nestedpkg" / "demo"
+    router = endpoint / "router"
+    router.mkdir(parents=True)
+    (tmp_path / "nestedpkg" / "__init__.py").write_text("")
+    (endpoint / "__init__.py").write_text("")
+    (router / "__init__.py").write_text(
+        "from fastapi_hive.ioc_framework.decorators import endpoint\n"
+        "from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks\n"
+        "\n"
+        "@endpoint(name='demo')\n"
+        "class DemoHooks(EndpointHooks):\n"
+        "    pass\n"
+    )
+
+    container = EndpointContainer()
+    container.register_endpoint_package_paths(["nestedpkg"])
+    with pytest.raises(TypeError, match="endpoint package root"):
+        container.load_endpoints()
+

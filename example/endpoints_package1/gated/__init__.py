@@ -4,7 +4,7 @@ from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks
 from example.endpoints_package1.gated.router.implement import router
 
 
-@endpoint(name="gated", enabled_when="missing_flag", mount=False)
+@endpoint(name="gated", enabled_when="missing_flag")
 class GatedHooks(EndpointHooks):
     """enabled_when misses FEATURES, so startup never mounts it."""
 

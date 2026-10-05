@@ -21,7 +21,6 @@ def test_parse_simple_yaml_unwraps_hive_mapping():
 # comment
 hive:
   api_prefix: /api
-  hide_endpoint_in_tag: true
   endpoint_package_paths:
     - ./pkg1
     - ./pkg2
@@ -30,7 +29,6 @@ hive:
 """
     )
     assert data["api_prefix"] == "/api"
-    assert data["hide_endpoint_in_tag"] is True
     assert data["endpoint_package_paths"] == ["./pkg1", "./pkg2"]
     assert data["features"] == {"notes": True}
 

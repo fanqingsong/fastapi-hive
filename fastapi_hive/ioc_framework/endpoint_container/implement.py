@@ -4,12 +4,32 @@ import pkgutil
 from typing import List, Optional
 
 from loguru import logger
-from fastapi_hive.ioc_framework.decorators import (
-    collect_hooks,
-    collect_routers,
-    endpoint_hook_order,
-    resolve_mount,
-)
+from fastapi_hive.ioc_framework.decorators import collect_hooks
+
+
+def collect_root_endpoint_hooks(imported_modules):
+    if not imported_modules:
+        return []
+    root_name = imported_modules[0].__name__
+    hooks = []
+    misplaced = []
+    seen = set()
+    for module in imported_modules:
+        for cls in collect_hooks(module, role="endpoint"):
+            if cls in seen:
+                continue
+            seen.add(cls)
+            if cls.__module__ != root_name:
+                misplaced.append(cls)
+            else:
+                hooks.append(cls)
+    if misplaced:
+        names = ", ".join(f"{cls.__module__}.{cls.__name__}" for cls in misplaced)
+        raise TypeError(
+            f"@endpoint classes must be defined in the endpoint package root "
+            f"{root_name!r}, not in submodules: {names}"
+        )
+    return hooks
 
 
 def import_package_tree(package_name: str) -> List:
@@ -34,8 +54,6 @@ class EndpointMeta:
         self._imported_module = None
         self.imported_modules = []
         self.hooks = []
-        self.mount_spec = resolve_mount([])
-        self.routers = []
 
     @property
     def name(self) -> str:
@@ -109,23 +127,7 @@ class EndpointContainer:
                 endpoint_instance.imported_module = one_endpoint_entity
                 endpoint_instance.imported_modules = imported_modules
 
-                hooks = []
-                seen_hooks = set()
-                for module in imported_modules:
-                    for cls in collect_hooks(module, role="endpoint"):
-                        if cls in seen_hooks:
-                            continue
-                        seen_hooks.add(cls)
-                        hooks.append(cls)
-
-                endpoint_instance.hooks = hooks
-                endpoint_instance.mount_spec = resolve_mount(hooks)
-                endpoint_instance.routers = collect_routers(
-                    imported_modules,
-                    mount_spec=endpoint_instance.mount_spec,
-                    order=endpoint_hook_order(hooks),
-                    name=one_endpoint_name,
-                )
+                endpoint_instance.hooks = collect_root_endpoint_hooks(imported_modules)
 
                 self._endpoints[f'{container_name}.{one_endpoint_name}'] = endpoint_instance
 

@@ -15,38 +15,15 @@ class HiveMeta:
     order: int = 0
     profiles: Optional[List[str]] = None
     enabled_when: Optional[str] = None
-    prefix: Optional[str] = None
-    tags: Optional[List[str]] = None
-    mount: bool = True
 
 
-@dataclass
-class MountSpec:
-    skip: bool = False
-    prefix: Optional[str] = None
-    tags: Optional[List[str]] = None
-    explicit: bool = False
-
-
-@dataclass
-class RouterBinding:
-    router: Any
-    mount: MountSpec
-    order: int = 0
-    name: str = ""
-
-
-def _attach(cls: type, role: str, name: str, order: int, profiles, enabled_when,
-            prefix, tags, mount) -> type:
+def _attach(cls: type, role: str, name: str, order: int, profiles, enabled_when) -> type:
     cls.__hive__ = HiveMeta(
         role=role,
         name=name,
         order=order,
         profiles=list(profiles) if profiles else None,
         enabled_when=enabled_when,
-        prefix=prefix,
-        tags=list(tags) if tags else None,
-        mount=mount,
     )
     return cls
 
@@ -65,19 +42,17 @@ LIFECYCLE_METHODS = frozenset({
 def cornerstone(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None,
                 enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
-        _attach(cls, "cornerstone", name, order, profiles, enabled_when, None, None, True)
+        _attach(cls, "cornerstone", name, order, profiles, enabled_when)
         collect_providers(cls)
         return cls
 
     return wrap
 
 
-def endpoint(name: str, order: int = 0, prefix: Optional[str] = None,
-             tags: Optional[Sequence[str]] = None, mount: bool = True,
-             profiles: Optional[Sequence[str]] = None,
+def endpoint(name: str, order: int = 0, profiles: Optional[Sequence[str]] = None,
              enabled_when: Optional[str] = None) -> Callable:
     def wrap(cls: type) -> type:
-        _attach(cls, "endpoint", name, order, profiles, enabled_when, prefix, tags, mount)
+        _attach(cls, "endpoint", name, order, profiles, enabled_when)
         collect_providers(cls)
         return cls
 
@@ -197,80 +172,6 @@ def collect_hooks(module, *, role: str) -> List[type]:
             continue
         hooks.append(obj)
     return hooks
-
-
-def collect_routers(module, *, mount_spec: MountSpec, order: int = 0,
-                    name: str = "") -> List[RouterBinding]:
-    if module is None:
-        return []
-    if isinstance(module, (list, tuple)):
-        modules = module
-    else:
-        modules = [module]
-    from fastapi import APIRouter
-    seen = set()
-    bindings = []
-    for item in modules:
-        if item is None:
-            continue
-        router = getattr(item, "router", None)
-        if not isinstance(router, APIRouter):
-            continue
-        router_id = id(router)
-        if router_id in seen:
-            continue
-        seen.add(router_id)
-        bindings.append(RouterBinding(router=router, mount=mount_spec, order=order, name=name))
-    return bindings
-
-
-def endpoint_hook_order(classes: Sequence[type]) -> int:
-    orders = [
-        cls.__hive__.order
-        for cls in classes
-        if getattr(cls, "__hive__", None) is not None and cls.__hive__.role == "endpoint"
-    ]
-    return min(orders) if orders else 0
-
-
-def select_routers(pairs: Sequence[Tuple["RouterBinding", Any]]) -> List[Tuple["RouterBinding", Any]]:
-    chosen = [(binding, meta) for binding, meta in pairs if not binding.mount.skip]
-    chosen.sort(key=lambda item: (item[0].order, item[0].name or getattr(item[1], "name", "")))
-    return chosen
-
-
-def resolve_router_target(meta, binding: RouterBinding, config) -> Tuple[str, List[str]]:
-    prefix = f"{config.API_PREFIX}"
-    if not config.HIDE_ENDPOINT_CONTAINER_IN_API:
-        prefix = f"{prefix}/{meta.container_name}"
-    if not config.HIDE_ENDPOINT_IN_API:
-        prefix = f"{prefix}/{meta.name}"
-    tag = f"{meta.container_name}"
-    if not config.HIDE_ENDPOINT_IN_TAG:
-        tag = f"{tag}.{meta.name}"
-    mount = binding.mount
-    if mount.explicit:
-        if mount.prefix is not None:
-            prefix = mount.prefix
-        tags = mount.tags if mount.tags is not None else [tag]
-    else:
-        tags = [tag]
-    return prefix, tags
-
-
-def resolve_mount(classes: Sequence[type]) -> MountSpec:
-    decorated = []
-    for cls in classes:
-        hive = getattr(cls, "__hive__", None)
-        if hive is not None and hive.role == "endpoint":
-            decorated.append(cls)
-    if any(not cls.__hive__.mount for cls in decorated):
-        return MountSpec(skip=True)
-    for cls in decorated:
-        hive = cls.__hive__
-        if hive.prefix is not None or hive.tags is not None:
-            return MountSpec(prefix=hive.prefix, tags=hive.tags, explicit=True)
-    return MountSpec()
 
 
 @dataclass

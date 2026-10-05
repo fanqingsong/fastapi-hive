@@ -21,7 +21,7 @@ class EndpointHooks(ABC):
     Usage
     ===
 
-    In your endpoint `__init__.py` create a subclass of `EndpointHooks`
+    In your endpoint package root `__init__.py` create a subclass of `EndpointHooks`
 
     ```python
     from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHooks

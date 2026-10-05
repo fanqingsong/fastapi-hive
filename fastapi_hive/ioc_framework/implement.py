@@ -8,7 +8,6 @@ from loguru import logger
 from starlette.requests import Request
 from fastapi_hive.ioc_framework.endpoint_container import EndpointContainer
 from fastapi_hive.ioc_framework.cornerstone_container import CornerstoneContainer
-from fastapi_hive.ioc_framework.endpoint_router_mounter import EndpointRouterMounter
 from fastapi_hive.ioc_framework.cornerstone_hooks import CornerstoneHookCaller
 from fastapi_hive.ioc_framework.endpoint_hooks import EndpointHookCaller
 from fastapi_hive.ioc_framework.ioc_config import IoCConfig
@@ -52,8 +51,6 @@ class IoCFramework:
 
         self._endpoint_container = endpoint_container
         self._cornerstone_container = cornerstone_container
-
-        self._endpoint_router_mounter = EndpointRouterMounter(app)
 
         self._cornerstone_hook_caller = CornerstoneHookCaller(app)
         self._endpoint_hook_caller = EndpointHookCaller(app)
@@ -195,10 +192,6 @@ class IoCFramework:
 
             await self._cornerstone_hook_caller.run_before_startup_hook()
             await self._endpoint_hook_caller.run_startup_hook()
-
-            if self._ioc_config.ROUTER_MOUNT_AUTOMATED:
-                self._endpoint_router_mounter.mount()
-
             await self._cornerstone_hook_caller.run_after_startup_hook()
 
         return startup
